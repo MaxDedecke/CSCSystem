@@ -1,2 +1,6 @@
 @import url('./main-layout.css');
 @import url('./views/mitglieder-view.css');
+@import url('./views/arbeitsplanung-view.css');
+@import url('./views/finanzen-view.css');
+@import url('./views/waitinglist-view.css');
+ 

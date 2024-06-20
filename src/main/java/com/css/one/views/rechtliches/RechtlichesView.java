@@ -15,7 +15,9 @@ import jakarta.annotation.security.PermitAll;
 @PermitAll
 public class RechtlichesView extends VerticalLayout {
 
-    public RechtlichesView() {
+    private static final long serialVersionUID = -3563321934496915055L;
+
+	public RechtlichesView() {
         setSpacing(false);
 
         Image img = new Image("images/empty-plant.png", "placeholder plant");

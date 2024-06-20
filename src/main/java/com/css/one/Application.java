@@ -1,6 +1,6 @@
 package com.css.one;
 
-import com.css.one.data.SamplePersonRepository;
+import com.css.one.data.PersonRepository;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
@@ -22,13 +22,15 @@ import org.springframework.context.annotation.Bean;
 @Theme(value = "css-system-one", variant = Lumo.DARK)
 public class Application implements AppShellConfigurator {
 
-    public static void main(String[] args) {
+    private static final long serialVersionUID = 3173515292498804205L;
+
+	public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
 
     @Bean
     SqlDataSourceScriptDatabaseInitializer dataSourceScriptDatabaseInitializer(DataSource dataSource,
-            SqlInitializationProperties properties, SamplePersonRepository repository) {
+            SqlInitializationProperties properties, PersonRepository repository) {
         // This bean ensures the database is only initialized when empty
         return new SqlDataSourceScriptDatabaseInitializer(dataSource, properties) {
             @Override

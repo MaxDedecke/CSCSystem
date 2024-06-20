@@ -17,7 +17,8 @@ import jakarta.annotation.security.PermitAll;
 @PermitAll
 public class ÜbersichtView extends HorizontalLayout {
 
-    private TextField name;
+    private static final long serialVersionUID = 7776014341101416897L;
+	private TextField name;
     private Button sayHello;
 
     public ÜbersichtView() {

@@ -25,8 +25,16 @@ public class User extends AbstractEntity {
     @Lob
     @Column(length = 1000000)
     private byte[] profilePicture;
+    
+    private int associationId;
 
-    public String getUsername() {
+    public int getAssociationId() {
+		return associationId;
+	}
+	public void setAssociationId(int associationId) {
+		this.associationId = associationId;
+	}
+	public String getUsername() {
         return username;
     }
     public void setUsername(String username) {
