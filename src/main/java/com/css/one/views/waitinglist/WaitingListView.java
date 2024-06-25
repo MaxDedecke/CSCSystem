@@ -287,8 +287,6 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 				refreshGrid();
 
 				Notification.show("Neues Mitglied hinzugefügt.");
-			} else {
-				Notification.show("Es muss feststehen, welche Rolle die Person haben wird.");
 			}
 		});
 
@@ -301,7 +299,7 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 	private boolean checkBeforeSave(ComboBox<AssociationRole> comboBox, TextField nameOfPerson) {
 		boolean returnValue = true;
 		
-		if(comboBox.getValue() != null) {
+		if(comboBox.getValue() == null) {
 			returnValue = false;
 			Notification.show("Einer Person muss eine Rolle zugewiesen werden");
 			return returnValue;
