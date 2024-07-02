@@ -4,7 +4,9 @@ public enum GrowStatus {
 	NEW("Neu gepflanzt"), 
 	GROWING("Im Wachstum"), 
 	READY("Erntereif"),
-	HARVESTED("Geerntet");
+	HARVESTED("Geerntet"),
+	VERIFYING("Im Labor"),
+	OUTPUT_READY("Ausgabebereit");
 	
 	public final String label;
 

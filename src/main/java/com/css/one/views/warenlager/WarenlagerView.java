@@ -249,6 +249,10 @@ public class WarenlagerView extends Div {
 		newStrain.setThc(strainInfoThc.getValue());
 		newStrain.setAssociationId(associationId);
 		newStrain.setStatus(statusBox.getValue());
+		
+		int amountPerMember = strainInfoAmount.getValue().intValue() / personService.findAllByAssociation(associationId).size();
+		newStrain.setAmountPerMember(amountPerMember);
+		
 		strainService.update(newStrain);
 		refreshGrid();
 	}
