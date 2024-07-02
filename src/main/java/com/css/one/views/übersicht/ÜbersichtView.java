@@ -224,7 +224,7 @@ public class ÜbersichtView extends Div {
     	
     	outputMemberGrid.addColumn(o -> o.getName()).setAutoWidth(true).setHeader("Sorte");
     	outputMemberGrid.addColumn(o -> o.getDateFinished()).setAutoWidth(true).setHeader("Datum der Ernte");
-    	outputMemberGrid.addColumn(o -> resolveOutputOfStrainPerMember(o.getId())).setAutoWidth(true).setHeader("Kontigent");
+    	outputMemberGrid.addColumn(o -> resolveOutputOfStrainPerMember(o)).setAutoWidth(true).setHeader("Kontigent");
 	
     	H2 h2Work = new H2("Arbeitszeiten");
     	
@@ -235,9 +235,9 @@ public class ÜbersichtView extends Div {
     	memberInfoDialog.getFooter().add(cancelButton);
     }
     
-    private String resolveOutputOfStrainPerMember(Long id) {
+    private String resolveOutputOfStrainPerMember(Strain s) {
     	List<Output> outputOfMember = outputService.findOutputByMember(selectedMember.getId().intValue());
-    	List<Output> outputOfSpecificStrain = outputOfMember.stream().filter(e -> e.getStrainId() == id.intValue()).toList();
+    	List<Output> outputOfSpecificStrain = outputOfMember.stream().filter(e -> e.getStrainId() == s.getId().intValue()).toList();
     	
     	Double amountOfStrain = 0.0;
     	
@@ -245,7 +245,7 @@ public class ÜbersichtView extends Div {
     		amountOfStrain = amountOfStrain + o.getAmount();
     	}
     	
-    	return String.valueOf(amountOfStrain) + " / 0 Gramm";
+    	return String.valueOf(amountOfStrain) + " / " + s.getAmountPerMember() + " Gramm";
     }
     
     private void initMemberInfoDialog(Person person) {
@@ -297,7 +297,7 @@ public class ÜbersichtView extends Div {
     }
     
     private void initStrainInfoDialog(Strain strain) {
-    	List<Output> outputOfStrain = outputService.findOutputByStrain(strain.getId().intValue());
+//    	List<Output> outputOfStrain = outputService.findOutputByStrain(strain.getId().intValue());
     	
     	strainNameField.setValue(strain.getName());
     	strainNameField.setEnabled(false);

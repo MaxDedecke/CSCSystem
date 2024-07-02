@@ -2,6 +2,7 @@ package com.css.one.data;
 
 import java.time.LocalDate;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,7 +26,10 @@ public class Transaction {
 	private TransactionType type;
     private LocalDate dateOfTransaction;
     private int associationId;
-
+    @Nullable
+    private int memberId;
+    private PaymentMethod paymentMethod;
+    
 	public Long getId() {
 		return id;
 	}
@@ -95,5 +99,21 @@ public class Transaction {
 
 	public void setAssociationId(int associationId) {
 		this.associationId = associationId;
+	}
+
+	public int getMemberId() {
+		return memberId;
+	}
+
+	public void setMemberId(int memberId) {
+		this.memberId = memberId;
+	}
+
+	public PaymentMethod getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(PaymentMethod paymentMethod) {
+		this.paymentMethod = paymentMethod;
 	}
 }
