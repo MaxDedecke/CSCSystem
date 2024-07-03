@@ -26,9 +26,10 @@ public class Transaction {
 	private TransactionType type;
     private LocalDate dateOfTransaction;
     private int associationId;
+    private PaymentMethod paymentMethod;
+    
     @Nullable
     private int memberId;
-    private PaymentMethod paymentMethod;
     
 	public Long getId() {
 		return id;

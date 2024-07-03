@@ -7,7 +7,9 @@ import java.util.Optional;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import com.css.one.data.AssociationRole;
+import com.css.one.data.MemberSubscription;
 import com.css.one.data.Person;
+import com.css.one.services.MemberSubscriptionService;
 import com.css.one.services.PersonService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.UI;
@@ -66,11 +68,14 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
     private Person samplePerson;
 
     private final PersonService samplePersonService;
+    private final MemberSubscriptionService subscriptionService;
     
     private int associationId;
 
-    public MitgliederView(PersonService samplePersonService) {
+    public MitgliederView(PersonService samplePersonService, MemberSubscriptionService subscriptionService) {
         this.samplePersonService = samplePersonService;
+        this.subscriptionService = subscriptionService;
+        
         addClassNames("mitglieder-view");
 
         // Create UI
@@ -146,9 +151,12 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
 						samplePerson.setDateOfHigherRole(LocalDate.now());
 					}
 					binder.writeBean(this.samplePerson);
-					samplePersonService.update(this.samplePerson);
+					this.samplePerson = samplePersonService.update(this.samplePerson);
+					createSingleSubscriptionForNewMember(this.samplePerson);
 					clearForm();
 					refreshGrid();
+					
+					
 					Notification.show("Mitglied hinzugefügt");
 					UI.getCurrent().navigate(MitgliederView.class);
 				} else {
@@ -167,7 +175,20 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
 		});
     }
 
-    @Override
+    private void createSingleSubscriptionForNewMember(Person member) {
+		
+    	LocalDate now = LocalDate.now();
+    	MemberSubscription subscription = new MemberSubscription();
+		subscription.setAssociationId(associationId);
+		subscription.setMonth(now.getMonthValue());
+		subscription.setYear(now.getYear());
+		subscription.setPersonId(member.getId().intValue());
+		subscription.setPayed(false);
+
+		subscriptionService.update(subscription);
+	}
+
+	@Override
     public void beforeEnter(BeforeEnterEvent event) {
         Optional<Long> samplePersonId = event.getRouteParameters().get(SAMPLEPERSON_ID).map(Long::parseLong);
         if (samplePersonId.isPresent()) {
