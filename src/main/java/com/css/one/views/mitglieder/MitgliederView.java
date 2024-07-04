@@ -2,18 +2,21 @@ package com.css.one.views.mitglieder;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import com.css.one.data.AssociationRole;
+import com.css.one.data.MemberSubscription;
 import com.css.one.data.Person;
+import com.css.one.services.MemberSubscriptionService;
 import com.css.one.services.PersonService;
 import com.css.one.views.MainLayout;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.Uses;
@@ -26,15 +29,16 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
 
@@ -56,21 +60,24 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
     private TextField phone;
     private DatePicker dateOfBirth;
     private ComboBox<AssociationRole> role;
-    private Checkbox important;
 
     private final Button cancel = new Button("Abbrechen");
     private final Button save = new Button("Speichern");
-
+    private Text memberCount;
+    
     private final BeanValidationBinder<Person> binder;
 
     private Person samplePerson;
 
     private final PersonService samplePersonService;
+    private final MemberSubscriptionService subscriptionService;
     
     private int associationId;
 
-    public MitgliederView(PersonService samplePersonService) {
+    public MitgliederView(PersonService samplePersonService, MemberSubscriptionService subscriptionService) {
         this.samplePersonService = samplePersonService;
+        this.subscriptionService = subscriptionService;
+        
         addClassNames("mitglieder-view");
 
         // Create UI
@@ -85,26 +92,20 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
 
         // Configure Grid
 
+        grid.addColumn(p -> p.getMemberNumber()).setAutoWidth(true).setHeader("Mitgliedsnummer");
         grid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
         grid.addColumn(p -> p.getEmail()).setAutoWidth(true).setHeader("Email");
         grid.addColumn(p -> p.getPhone()).setAutoWidth(true).setHeader("Telefonnummer");
         grid.addColumn(p -> p.getAssociationRole().getLabel()).setAutoWidth(true).setHeader("Rolle").setSortable(true);
         grid.addColumn(p -> renderDate(p.getDateOfRegistration())).setAutoWidth(true).setHeader("Beitrittsdatum").setSortable(true);
-
-        LitRenderer<Person> importantRenderer = LitRenderer.<Person>of(
-                "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
-                .withProperty("icon", important -> important.isImportant() ? "check" : "minus").withProperty("color",
-                        important -> important.isImportant()
-                                ? "var(--lumo-primary-text-color)"
-                                : "var(--lumo-disabled-text-color)");
-
-        grid.addColumn(importantRenderer).setHeader("Relevant").setAutoWidth(true).setSortable(true);
-       
-        grid.addComponentColumn(item -> new Button("Löschen", click -> {
+        
+        grid.addComponentColumn(item -> new Button("Entfernen", click -> {
         	samplePersonService.delete(item.getId());
+        	subscriptionService.delete(null);
             refreshGrid();
         }));
         
+        grid.addClassNames(LumoUtility.Height.FULL);
         
         grid.setItems(samplePersonService.findAllByAssociation(associationId));
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
@@ -135,19 +136,31 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
 			try {
 
 				if (role.getValue() != null) {
+					
+					boolean newMember = false;
 					if (this.samplePerson == null) {
 						this.samplePerson = new Person();
+						newMember = true;
 					}
 					samplePerson.setAssociationId(associationId);
 					samplePerson.setAssociationRole(role.getValue());
-
+					samplePerson.setDateOfRegistration(LocalDate.now());
+					if(newMember) {						
+						samplePerson.setMemberNumber(samplePersonService.getFreeMemberNumber(associationId));
+					}
+					
 					if (role.getValue() != AssociationRole.MEMBER) {
 						samplePerson.setDateOfHigherRole(LocalDate.now());
 					}
 					binder.writeBean(this.samplePerson);
-					samplePersonService.update(this.samplePerson);
+					this.samplePerson = samplePersonService.update(this.samplePerson);
+					if(newMember) {						
+						createSingleSubscriptionForNewMember(this.samplePerson);
+					}
 					clearForm();
 					refreshGrid();
+					
+					
 					Notification.show("Mitglied hinzugefügt");
 					UI.getCurrent().navigate(MitgliederView.class);
 				} else {
@@ -166,7 +179,20 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
 		});
     }
 
-    @Override
+    private void createSingleSubscriptionForNewMember(Person member) {
+		
+    	LocalDate now = LocalDate.now();
+    	MemberSubscription subscription = new MemberSubscription();
+		subscription.setAssociationId(associationId);
+		subscription.setMonth(now.getMonthValue());
+		subscription.setYear(now.getYear());
+		subscription.setPersonId(member.getId().intValue());
+		subscription.setPayed(false);
+
+		subscriptionService.update(subscription);
+	}
+
+	@Override
     public void beforeEnter(BeforeEnterEvent event) {
         Optional<Long> samplePersonId = event.getRouteParameters().get(SAMPLEPERSON_ID).map(Long::parseLong);
         if (samplePersonId.isPresent()) {
@@ -190,19 +216,24 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
 		String day = "";
 		String month = "";
 
-		if (date.getDayOfMonth() < 10) {
-			day = "0" + String.valueOf(date.getDayOfMonth());
-		} else {
-			day = String.valueOf(date.getDayOfMonth());
+		if (date != null) {
+
+			if (date.getDayOfMonth() < 10) {
+				day = "0" + String.valueOf(date.getDayOfMonth());
+			} else {
+				day = String.valueOf(date.getDayOfMonth());
+			}
+
+			if (date.getMonthValue() < 10) {
+				month = "0" + String.valueOf(date.getMonthValue());
+			} else {
+				month = String.valueOf(date.getMonthValue());
+			}
+
+			return day + "." + month + "." + date.getYear();
 		}
 
-		if (date.getMonthValue() < 10) {
-			month = "0" + String.valueOf(date.getMonthValue());
-		} else {
-			month = String.valueOf(date.getMonthValue());
-		}
-
-		return day + "." + month + "." + date.getYear();
+		return "";
 	}
 
     private void createEditorLayout(SplitLayout splitLayout) {
@@ -218,13 +249,13 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
         lastName = new TextField("Nachname");
         email = new TextField("Email");
         phone = new TextField("Telefonnummer");
+        phone.setAllowedCharPattern("[0-9/]");
         dateOfBirth = new DatePicker("Geburtstag");
         role = new ComboBox<AssociationRole>("Rolle im Verein");
         role.setItems(Arrays.asList(AssociationRole.values()));
         role.setItemLabelGenerator(e -> e.getLabel());
         
-        important = new Checkbox("Relevant");
-        formLayout.add(firstName, lastName, email, phone, dateOfBirth, role, important);
+        formLayout.add(firstName, lastName, email, phone, dateOfBirth, role);
 
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
@@ -242,15 +273,29 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
     }
 
     private void createGridLayout(SplitLayout splitLayout) {
+    	VerticalLayout mainLayout = new VerticalLayout();
+    	mainLayout.addClassNames(LumoUtility.Border.ALL, LumoUtility.Padding.NONE);
         Div wrapper = new Div();
         wrapper.setClassName("grid-wrapper");
-        splitLayout.addToPrimary(wrapper);
         wrapper.add(grid);
+        wrapper.setHeight("100%");
+        
+        HorizontalLayout bottomLayout = new HorizontalLayout();
+        bottomLayout.setWidth("100%");
+        bottomLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Bottom.SMALL, LumoUtility.Padding.Left.MEDIUM, LumoUtility.JustifyContent.CENTER);
+        memberCount = new Text("Mitglieder: " + samplePersonService.count());
+        
+        bottomLayout.add(memberCount);
+        
+        mainLayout.add(wrapper, bottomLayout);
+        splitLayout.addToPrimary(mainLayout);
     }
 
     private void refreshGrid() {
         grid.select(null);
-        grid.setItems(samplePersonService.findAllByAssociation(associationId));
+        List<Person> allByAssociation = samplePersonService.findAllByAssociation(associationId);
+        grid.setItems(allByAssociation);
+        memberCount.setText("Mitglieder: " + allByAssociation.size());
     }
 
     private void clearForm() {

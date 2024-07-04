@@ -10,6 +10,7 @@ import com.css.one.views.verein.VereinView;
 import com.css.one.views.waitinglist.WaitingListView;
 import com.css.one.views.warenlager.WarenlagerView;
 import com.css.one.views.übersicht.ÜbersichtView;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -26,6 +27,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
@@ -35,7 +37,6 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.util.Optional;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
@@ -76,11 +77,11 @@ public class MainLayout extends AppLayout {
     	
     	VerticalLayout layout = new VerticalLayout();
     	
-        Span appName = new Span("CSCSystem");
+        Span appName = new Span("Ceres");
         appName.addClassNames(LumoUtility.FontWeight.SEMIBOLD, LumoUtility.FontSize.LARGE);
 
-        StreamResource imageResource = new StreamResource("logoCSCSystemWhite.png",
-                () -> getClass().getResourceAsStream("/logoCSCSystemWhite.png"));
+        StreamResource imageResource = new StreamResource("NewLogo040724.png",
+                () -> getClass().getResourceAsStream("/NewLogo040724.png"));
 
         Image logoImage = new Image(imageResource, "");
         logoImage.setHeight(250, Unit.PIXELS);
@@ -93,7 +94,16 @@ public class MainLayout extends AppLayout {
 
         Scroller scroller = new Scroller(createNavigation());
 
-        addToDrawer(header, scroller, createFooter());
+        HorizontalLayout versionLayout = new HorizontalLayout();
+        versionLayout.setWidth("100%");
+        versionLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.SMALL);
+        versionLayout.add(new Text("Ceres - v.0.0.1"));
+        layout.add(versionLayout);
+        
+        Hr hr2 = new Hr();
+        hr2.addClassNames(LumoUtility.Margin.SMALL);
+        
+        addToDrawer(header, scroller,createFooter(), hr2, versionLayout);
     }
 
     private SideNav createNavigation() {
@@ -170,6 +180,7 @@ public class MainLayout extends AppLayout {
             });
 
             layout.add(userMenu);
+            layout.addClassNames(LumoUtility.JustifyContent.CENTER);
         } else {
             Anchor loginLink = new Anchor("login", "Sign in");
             layout.add(loginLink);

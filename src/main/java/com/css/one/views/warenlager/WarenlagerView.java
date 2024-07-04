@@ -3,7 +3,9 @@ package com.css.one.views.warenlager;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,11 +19,13 @@ import com.css.one.services.StrainService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Hr;
@@ -30,12 +34,12 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
-import com.vaadin.flow.component.tabs.TabSheetVariant;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @PageTitle("Warenlager")
 @Route(value = "waren", layout = MainLayout.class)
@@ -55,7 +59,9 @@ public class WarenlagerView extends Div {
 	Grid<Output> outputGrid = new Grid<Output>();
 	
 	ComboBox<GrowStatus> statusBox = new ComboBox<GrowStatus>("Status");
-
+	Checkbox box;
+	DateTimePicker dateHarvested;
+	
 	H2 amount = new H2("0 Gramm");
 	H2 amount2 = new H2("0 Gramm");
 
@@ -77,15 +83,24 @@ public class WarenlagerView extends Div {
         createChangeStatusDialog();
         
         TabSheet tabSheet = new TabSheet();
-        tabSheet.addThemeVariants(TabSheetVariant.LUMO_TABS_CENTERED);
+//        tabSheet.addThemeVariants(TabSheetVariant.LUMO_TABS_CENTERED);
 
         tabSheet.setSizeFull();
         
         createStrainsLayout(tabSheet);
+        createCuttingsLayout(tabSheet);
         createGiveawayLayout(tabSheet);
         
         add(tabSheet);
     }
+
+	private void createCuttingsLayout(TabSheet tabSheet) {
+		Div wrapper = new Div();
+		wrapper.setClassName("grid-wrapper");
+		
+		
+		tabSheet.add("Stecklinge", wrapper);
+	}
 
 	private void createStrainsLayout(TabSheet tabSheet) {
 		
@@ -117,7 +132,8 @@ public class WarenlagerView extends Div {
 		horizontalLayout.add(layoutButton);
 		horizontalLayout.add(layout);
 		wrapper.add(horizontalLayout);
-				
+		
+		strainGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 		strainGrid.addColumn(p -> p.getName()).setHeader("Name").setAutoWidth(true).setSortable(true);
 		strainGrid.addColumn(p -> renderDate(p.getDatePlanted())).setHeader("Gepflanzt am").setAutoWidth(true).setSortable(true);
 		strainGrid.addColumn(p -> renderDate(p.getDateFinished())).setHeader("Geerntet am").setAutoWidth(true).setSortable(true);
@@ -128,6 +144,9 @@ public class WarenlagerView extends Div {
 		strainGrid.addComponentColumn(item -> new Button("Status aktualisieren", click -> {
 			changeStrain = item;
 			statusBox.setValue(changeStrain.getStatus());
+			if (changeStrain.getDateFinished() != null) {
+				dateHarvested.setValue(LocalDateTime.of(changeStrain.getDateFinished(), LocalTime.now()));
+			}
 			changeStrainStatusDialog.open();
         }));
 		
@@ -147,8 +166,29 @@ public class WarenlagerView extends Div {
 		statusBox.setItems(GrowStatus.values());
 		statusBox.setItemLabelGenerator(e -> e.getLabel());
 		statusBox.setWidthFull();
+		
+		dateHarvested = new DateTimePicker("Geerntet am");
+		dateHarvested.setEnabled(false);
+		
+		statusBox.addValueChangeListener(e -> {
+			if (e.getValue() == GrowStatus.HARVESTED || e.getValue() == GrowStatus.VERIFYING
+					|| e.getValue() == GrowStatus.OUTPUT_READY) {
+
+				if (changeStrain.getDateFinished() == null) {
+					dateHarvested.setValue(LocalDateTime.now());
+					dateHarvested.setEnabled(true);
+				}
+			} else {
+				dateHarvested.setEnabled(false);
+			}
+		});
+		
 		Button saveStatusButton = new Button("Aktualisieren", e -> {		
 			changeStrain.setStatus(statusBox.getValue());
+			
+			if(dateHarvested.isEnabled() && changeStrain.getDateFinished() == null) {				
+				changeStrain.setDateFinished(dateHarvested.getValue().toLocalDate());
+			}
 			strainService.update(changeStrain);
 			refreshGrid();
 			changeStrainStatusDialog.close();
@@ -156,7 +196,7 @@ public class WarenlagerView extends Div {
 		
 		Button cancelSaveStatusButton = new Button("Abbrechen", e -> changeStrainStatusDialog.close());
 
-		layout.add(title, hr, statusBox);
+		layout.add(title, hr, statusBox, dateHarvested);
 		
 		changeStrainStatusDialog.add(layout);
 		changeStrainStatusDialog.getFooter().add(cancelSaveStatusButton);
@@ -167,24 +207,28 @@ public class WarenlagerView extends Div {
 		String day = "";
 		String month = "";
 		
-		if(datePlanted.getDayOfMonth() < 10) {
-			day = "0" + String.valueOf(datePlanted.getDayOfMonth());
+		if (datePlanted != null) {
+			if (datePlanted.getDayOfMonth() < 10) {
+				day = "0" + String.valueOf(datePlanted.getDayOfMonth());
+			} else {
+				day = String.valueOf(datePlanted.getDayOfMonth());
+			}
+
+			if (datePlanted.getMonthValue() < 10) {
+				month = "0" + String.valueOf(datePlanted.getMonthValue());
+			} else {
+				month = String.valueOf(datePlanted.getMonthValue());
+			}
+
+			return day + "." + month + "." + datePlanted.getYear();
 		} else {
-			day = String.valueOf(datePlanted.getDayOfMonth());
+			return "-";
 		}
-		
-		if(datePlanted.getMonthValue() < 10) {
-			month = "0" + String.valueOf(datePlanted.getMonthValue());
-		} else {
-			month = String.valueOf(datePlanted.getMonthValue());
-		}
-		
-		return day + "." + month + "." + datePlanted.getYear();
 	}
 
 	private void openAddStrainDialog() {
-		addStrainDialog = new Dialog();
 		
+		addStrainDialog = new Dialog();
 		VerticalLayout headerLayout = new VerticalLayout();
 		
 		H2 header = new H2("Neue Sorte hinzufügen");
@@ -192,7 +236,8 @@ public class WarenlagerView extends Div {
 		headerLayout.add(header, hr);
 		
 		FormLayout formLayout = new FormLayout();
-		formLayout.setWidth(400, Unit.PIXELS);
+		formLayout.setMaxWidth(1000, Unit.PIXELS);
+		
 		TextField nameField = new TextField("Name");
 		
 		DateTimePicker date = new DateTimePicker();
@@ -204,16 +249,39 @@ public class WarenlagerView extends Div {
 		dateAvailable.setLabel("Geerntet am");
 		dateAvailable.setStep(Duration.ofSeconds(1));
 		dateAvailable.setValue(LocalDateTime.now());
+		dateAvailable.setEnabled(false);
+		dateAvailable.setWidthFull();
+		dateAvailable.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
+		
+		ComboBox<GrowStatus> statusBox = new ComboBox<GrowStatus>("Status");
+		
+		VerticalLayout availableLayout = new VerticalLayout();
+		availableLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Top.LARGE);
+		availableLayout.setWidthFull();
+		box = new Checkbox("Bereits geerntet");
+		box.addValueChangeListener(e -> {
+			if(e.getValue()) {				
+				dateAvailable.setEnabled(true);	
+				statusBox.setItems(GrowStatus.values());
+			} else {
+				dateAvailable.setEnabled(false);
+				statusBox.setItems(Arrays.asList(GrowStatus.NEW, GrowStatus.GROWING, GrowStatus.READY));
+			}
+		});
+		
+		availableLayout.add(box, dateAvailable);
 		
 		NumberField strainInfoThc = new NumberField("THC Gehalt in Prozent");
 		NumberField strainInfoAmount = new NumberField("Menge in Gramm");
 		
-		ComboBox<GrowStatus> statusBox = new ComboBox<GrowStatus>("Status");
-		statusBox.setItems(GrowStatus.values());
+		statusBox.setItems(Arrays.asList(GrowStatus.NEW, GrowStatus.GROWING, GrowStatus.READY));
 		statusBox.setItemLabelGenerator(e -> e.getLabel());
 		statusBox.setValue(GrowStatus.NEW);
 		
-		formLayout.add(nameField, strainInfoThc, strainInfoAmount, date, dateAvailable, statusBox);
+		TextField amountOfPlantsField = new TextField("Anzahl Pflanzen");
+		amountOfPlantsField.setAllowedCharPattern("[0-9/]");
+		
+		formLayout.add(nameField, strainInfoThc, strainInfoAmount, amountOfPlantsField, date, statusBox, availableLayout);
 		
 		formLayout.setColspan(nameField, 2);
 		addStrainDialog.add(headerLayout);
@@ -244,11 +312,18 @@ public class WarenlagerView extends Div {
 		
 		newStrain.setName(name);
 		newStrain.setDatePlanted(dateBegin.toLocalDate());
-		newStrain.setDateFinished(dateEnd.toLocalDate());
+		
+		if(box.getValue()) {			
+			newStrain.setDateFinished(dateEnd.toLocalDate());
+		}
 		newStrain.setAmount(strainInfoAmount.getValue());
 		newStrain.setThc(strainInfoThc.getValue());
 		newStrain.setAssociationId(associationId);
 		newStrain.setStatus(statusBox.getValue());
+		
+		int amountPerMember = strainInfoAmount.getValue().intValue() / personService.findAllByAssociation(associationId).size();
+		newStrain.setAmountPerMember(amountPerMember);
+		
 		strainService.update(newStrain);
 		refreshGrid();
 	}
@@ -304,10 +379,11 @@ public class WarenlagerView extends Div {
 		horizontalLayout.add(layoutButton);
 		horizontalLayout.add(layout);
 		wrapper.add(horizontalLayout);
-						
+		
+		outputGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 		outputGrid.addColumn(p -> renderDate(p.getDate())).setHeader("Datum").setAutoWidth(true).setSortable(true);
-		outputGrid.addColumn(p -> strainService.get(Integer.toUnsignedLong(p.getStrainId())).get().getName()).setHeader("Sorte").setAutoWidth(true).setSortable(true);
-		outputGrid.addColumn(p -> renderPersonName(personService.get(Integer.toUnsignedLong(p.getStrainId())))).setHeader("Mitglied").setAutoWidth(true).setSortable(true);
+		outputGrid.addColumn(p -> resolveStrain(p.getStrainId())).setHeader("Sorte").setAutoWidth(true).setSortable(true);
+		outputGrid.addColumn(p -> renderPersonName(personService.get(Integer.toUnsignedLong(p.getPersonId())))).setHeader("Mitglied").setAutoWidth(true).setSortable(true);
 		outputGrid.addColumn(p -> p.getAmount() + " Gramm").setHeader("Menge").setAutoWidth(true).setSortable(true);
 		outputGrid.addColumn(p -> p.getNote()).setHeader("Notiz").setAutoWidth(true).setSortable(true);
 		
@@ -315,8 +391,10 @@ public class WarenlagerView extends Div {
 			item.setOutdated(true);
 			outputService.update(item);
 			Optional<Strain> optionalStrain = strainService.get(Integer.toUnsignedLong(item.getStrainId()));
-			optionalStrain.get().setAmount(optionalStrain.get().getAmount() + item.getAmount());
-			strainService.update(optionalStrain.get());	
+			if(optionalStrain.isPresent()) {				
+				optionalStrain.get().setAmount(optionalStrain.get().getAmount() + item.getAmount());
+				strainService.update(optionalStrain.get());	
+			}
 			refreshGrid();
         }));
 		
@@ -326,6 +404,11 @@ public class WarenlagerView extends Div {
 		tabSheet.add("Abgabe", wrapper);			
 	}
 	
+	private String resolveStrain(int strainId) {
+		Optional<Strain> optionalStrain = strainService.get(Integer.toUnsignedLong(strainId));
+		return optionalStrain.isPresent() ? optionalStrain.get().getName() : "-";
+	}
+
 	private void openAddOutput() {
 		addOutputDialog = new Dialog();
 		
@@ -424,7 +507,7 @@ public class WarenlagerView extends Div {
 			Person p = person.get();
 			return p.getFirstName() + " " + p.getLastName();
 		} else {
-			return "Dummie";			
+			return "-";			
 		}
 	}
 

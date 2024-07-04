@@ -50,4 +50,12 @@ public class OutputService {
     public List<Output> getAllAsList() {
     	return repository.findAll();
     }
+    
+    public List<Output> findOutputByMember(int personId) {
+    	return repository.findAll().stream().filter(e -> e.getPersonId() == personId).toList();
+    }
+    
+    public List<Output> findOutputByStrain(int strainId) {
+    	return repository.findAll().stream().filter(e -> e.getStrainId() == strainId).toList();
+    }
 }
