@@ -304,7 +304,7 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 			Notification.show("Einer Person muss eine Rolle zugewiesen werden");
 			return returnValue;
 		}
-		if(personService.count() <= 500) {
+		if(personService.count() >= 500) {
 			returnValue = false;
 			Notification.show("Die maximale Anzahl an Mitgliedern ist bereits erreicht !");
 			return returnValue;

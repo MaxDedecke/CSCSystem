@@ -4,10 +4,11 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
@@ -43,7 +44,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
 
@@ -84,6 +85,8 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
     String categoryOne = "Gärtnereiarbeiten";
     String categoryTwo = "Verwaltungsdienst";
     String categoryThree = "Einkaufsaufwände";
+    
+    List<Button> categoriesButtonList = new ArrayList<>();
     
     private int associationId;
 
@@ -148,6 +151,7 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
                 	workingUnit.setBegin(startWork.getValue().toLocalDate());
                 	workingUnit.setEnd(stopWork.getValue().toLocalDate());
                 	workingUnit.setWorkingHours((int)ChronoUnit.MINUTES.between(startWork.getValue(), stopWork.getValue()));
+                	workingUnit.setAssociationId(associationId);
                 	
                 	binder.writeBean(this.workingUnit);
                 	workingUnitService.update(this.workingUnit);
@@ -165,6 +169,8 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
                 Notification.show("Failed to update the data. Check again that all values are valid");
             }
         });
+        
+        refreshGridWithCategory(null);
     }
     
 	private String renderDate(LocalDate date) {
@@ -222,10 +228,15 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
 		allServices = new Button(layout);
 		allServices.setHeight(100, Unit.PIXELS);
 		allServices.setWidth(250, Unit.PIXELS);
+		allServices.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		allServices.addClickListener(e -> {
 			refreshGridWithCategory(null);
+			refreshButtonBorders();
+			allServices.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		});
-					
+		
+		categoriesButtonList.add(allServices);
+		
 		horizontalLayout.add(allServices);
 		
 		layout = new VerticalLayout();
@@ -237,8 +248,10 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
 		gardeningButton.setWidth(250, Unit.PIXELS);
 		gardeningButton.addClickListener(e -> {
 			refreshGridWithCategory(categoryOne);
+			refreshButtonBorders();
+			gardeningButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		});
-					
+		categoriesButtonList.add(gardeningButton);			
 		horizontalLayout.add(gardeningButton);
 		
 		layout = new VerticalLayout();
@@ -251,8 +264,11 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
 		
 		operatingServiceButton.addClickListener(e -> {
 			refreshGridWithCategory(categoryTwo);
+			refreshButtonBorders();
+			operatingServiceButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		});
-					
+		categoriesButtonList.add(operatingServiceButton);			
+	
 		horizontalLayout.add(operatingServiceButton);
 		
 		layout = new VerticalLayout();
@@ -264,11 +280,20 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
 		salesServiceButton.setWidth(250, Unit.PIXELS);
 		salesServiceButton.addClickListener(e -> {
 			refreshGridWithCategory(categoryThree);
+			refreshButtonBorders();
+			salesServiceButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		});
-					
+		categoriesButtonList.add(salesServiceButton);			
+	
 		horizontalLayout.add(salesServiceButton);
 	}
 	
+	private void refreshButtonBorders() {
+		categoriesButtonList.forEach(e -> {
+			e.removeClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		});	
+	}
+
 	private void createEditorLayout(SplitLayout splitLayout) {
         Div editorLayoutDiv = new Div();
         editorLayoutDiv.setClassName("editor-layout");
@@ -329,9 +354,7 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
 	
 	private void refreshGridWithCategory(String category) {
 		if(category == null) {
-			grid.setItems(query -> workingUnitService.list(
-	                PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
-	                .stream());
+			grid.setItems(workingUnitService.findAllByAssociation(associationId));
 		} else {			
 			grid.setItems(workingUnitService.findByCategory(category, associationId));
 		}			

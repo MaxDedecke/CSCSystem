@@ -45,7 +45,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
-import com.vaadin.flow.component.tabs.TabSheetVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -154,7 +153,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 					transaction.setMemberId(optionalPersonBox.getValue().getId().intValue());
 				}
 				
-				if (amount.getValue() == null || amount.getValue().equals("0,00")) {
+				if (amount.getValue() == null || amount.getValue().toString().equals("0,00")) {
 					Notification.show("Ohne Betrag kann keine Ausgabe/Einnahme gebucht werden !");
 				} else {
 					transaction.setAmount(amount.getValue().getNumber().doubleValue());
@@ -199,8 +198,8 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		tabSheet.setSizeFull();
 	
 		tabSheet.add("Allgemein", createGeneralTab());
-		tabSheet.add("Mitgliedsbeiträge", createMemberPaymentTab());
 		tabSheet.add("Regelmäßige Zahlungen", createRecurringPaymentsTab());
+		tabSheet.add("Mitgliedsbeiträge", createMemberPaymentTab());
 		
 		tabSheet.addSelectedChangeListener(e -> {
 			
@@ -466,11 +465,14 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		layout.add(new H2("Alle"));
 		layout.setAlignItems(Alignment.CENTER);
 		allTransactionsButton = new Button(layout);
+		allTransactionsButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		allTransactionsButton.setHeight(100, Unit.PIXELS);
 		allTransactionsButton.setWidth(250, Unit.PIXELS);
 		allTransactionsButton.addClickListener(e -> {
 			refreshGridWithType(null);
 			this.currentType = null;
+			refreshButtonStyle();
+			allTransactionsButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		});
 		
 
@@ -486,6 +488,8 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 
 		costButton.addClickListener(e -> {
 			refreshGridWithType(TransactionType.COST);
+			refreshButtonStyle();
+			costButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		});
 
 		horizontalLayout.add(costButton);
@@ -500,6 +504,8 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 
 		incomeButton.addClickListener(e -> {
 			refreshGridWithType(TransactionType.INCOME);
+			refreshButtonStyle();
+			incomeButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		});
 
 		horizontalLayout.add(incomeButton);
@@ -516,6 +522,12 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	}
 
 	
+	private void refreshButtonStyle() {
+		incomeButton.removeClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		costButton.removeClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		allTransactionsButton.removeClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+	}
+
 	private void refreshGridWithType(TransactionType type) {
 
 		NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("de", "DE"));

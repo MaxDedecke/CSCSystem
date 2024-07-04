@@ -2,6 +2,7 @@ package com.css.one.data;
 
 import java.time.LocalDate;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 
 @Entity
@@ -12,9 +13,11 @@ public class Strain extends AbstractEntity {
 	 	private double amountPerMember;
 	 	private double thc;
 	 	private LocalDate datePlanted;
+	 	private int associationId;
+	 	private GrowStatus status;
+	 	
+	 	@Nullable
 	 	private LocalDate dateFinished;
-	    private int associationId;
-	    private GrowStatus status;
 	 	
 		public double getAmount() {
 			return amount;

@@ -37,6 +37,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
@@ -54,6 +55,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @PageTitle("Verein")
 @Route(value = "verein", layout = MainLayout.class)
@@ -757,10 +759,12 @@ public class VereinView extends Div implements BeforeEnterObserver {
 		H2 responsibles = new H2("Verantwortliche");
 
 		Grid<Person> responsiblesGrid = new Grid<>(Person.class, false);
+		responsiblesGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 		responsiblesGrid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
 		responsiblesGrid.addColumn(p -> p.getAssociationRole().getLabel()).setAutoWidth(true).setHeader("Rolle");
 		responsiblesGrid.addColumn(p -> renderDate(p.getDateOfHigherRole())).setAutoWidth(true).setHeader("In der Funktion seit");
-
+		responsiblesGrid.addClassNames(LumoUtility.Margin.MEDIUM);
+		
 		Optional<Association> optionalAssociation = associationService.get(Integer.toUnsignedLong(associationId));
 
 		if (optionalAssociation.isPresent()) {
@@ -799,9 +803,11 @@ public class VereinView extends Div implements BeforeEnterObserver {
 		horizontalWrapperGrid.setMargin(true);
 		horizontalWrapperGrid.add(responsibles);
 
+		Hr hr = new Hr();
+		hr.addClassNames(LumoUtility.Margin.MEDIUM);
+		
 		wrapper.add(horizontalWrapperFormLayout);
-
-		wrapper.add(horizontalWrapperGrid);
+		wrapper.add(hr, horizontalWrapperGrid);
 		wrapper.add(responsiblesGrid);
 		splitLayout.addToPrimary(wrapper);
 		splitLayout.setSplitterPosition(72);

@@ -32,7 +32,6 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -90,22 +89,14 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
 
         // Configure Grid
 
+        grid.addColumn(p -> "1").setAutoWidth(true).setHeader("Mitgliedsnummer");
         grid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
         grid.addColumn(p -> p.getEmail()).setAutoWidth(true).setHeader("Email");
         grid.addColumn(p -> p.getPhone()).setAutoWidth(true).setHeader("Telefonnummer");
         grid.addColumn(p -> p.getAssociationRole().getLabel()).setAutoWidth(true).setHeader("Rolle").setSortable(true);
         grid.addColumn(p -> renderDate(p.getDateOfRegistration())).setAutoWidth(true).setHeader("Beitrittsdatum").setSortable(true);
 
-        LitRenderer<Person> importantRenderer = LitRenderer.<Person>of(
-                "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
-                .withProperty("icon", important -> important.isImportant() ? "check" : "minus").withProperty("color",
-                        important -> important.isImportant()
-                                ? "var(--lumo-primary-text-color)"
-                                : "var(--lumo-disabled-text-color)");
-
-        grid.addColumn(importantRenderer).setHeader("Relevant").setAutoWidth(true).setSortable(true);
-       
-        grid.addComponentColumn(item -> new Button("Löschen", click -> {
+        grid.addComponentColumn(item -> new Button("Entfernen", click -> {
         	samplePersonService.delete(item.getId());
             refreshGrid();
         }));
