@@ -1,0 +1,26 @@
+services:
+    postgresql:
+        image: postgres
+        hostname: postgres.local
+        restart: always
+        shm_size: 128mb
+        env_file: ~/docker_data/cscs/postgres.env
+
+    adminer:
+        image: adminer
+        restart: always
+        depends_on:
+            - postgresql
+        ports:
+            - 28080:8080
+
+    cscs:
+        build: .
+        hostname: cscs.local
+        restart: always
+        ports:
+            - 18080:8080
+        depends_on:
+            - postgresql
+        volumes:
+            - ~/docker_data/cscs/application.properties:/application.properties
