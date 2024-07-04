@@ -11,8 +11,11 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.vaadin.addons.MoneyField;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
+import com.css.one.data.PaymentMethod;
+import com.css.one.data.Person;
 import com.css.one.data.Transaction;
 import com.css.one.data.TransactionType;
+import com.css.one.services.PersonService;
 import com.css.one.services.TransactionService;
 import com.css.one.views.MainLayout;
 import com.css.one.views.arbeitsplanung.ArbeitsplanungView;
@@ -52,6 +55,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	private static final long serialVersionUID = -4231560701323089634L;
 
 	private final TransactionService transactionService;
+	private final PersonService personService;
 	private final BeanValidationBinder<Transaction> binder;
 
 	private final String TRANSACTION_ID = "transactionID";
@@ -62,6 +66,9 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	private TextField note;
 	private DateTimePicker date;
 	private ComboBox<TransactionType> type;
+	private ComboBox<PaymentMethod> paymentMethodBox;
+	private ComboBox<Person> optionalPersonBox;
+	
 	private MoneyField amount;
 
 	private Transaction transaction;
@@ -80,9 +87,11 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	
 	private TransactionType currentType;
 	
-	public FinanzenView(TransactionService transactionService) {
+	public FinanzenView(TransactionService transactionService, PersonService personService) {
 		this.transactionService = transactionService;
+		this.personService = personService;
 		addClassNames("finanzen-view");
+		associationId = MainLayout.getAssociationId();
 
 		// Create UI
 		SplitLayout splitLayout = new SplitLayout();
@@ -93,12 +102,14 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		add(splitLayout);
 
 		NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("de", "DE"));
-		associationId = MainLayout.getAssociationId();
 
 		grid.addColumn(t -> t.getType().getDisplayName()).setAutoWidth(true).setHeader("Typ");
 		grid.addColumn(t -> formatter.format(t.getAmount())).setAutoWidth(true).setHeader("Betrag");
 		grid.addColumn(t -> renderDate(t.getDateOfTransaction())).setAutoWidth(true).setHeader("Zeitpunkt");
 		grid.addColumn(t -> t.getNote()).setAutoWidth(true).setHeader("Notiz");
+		grid.addColumn(t -> t.getPaymentMethod().getLabel()).setAutoWidth(true).setHeader("Zahlungsmethode");
+		grid.addColumn(t -> resolveMember(t.getMemberId())).setAutoWidth(true).setHeader("Mitglied");
+		
 		grid.addComponentColumn(item -> new Button("Löschen", click -> {
 			transactionService.delete(item.getId());
 			refreshGrid();
@@ -138,6 +149,11 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 				transaction.setType(type.getValue());
 				transaction.setDateOfTransaction(date.getValue().toLocalDate());
 				transaction.setAssociationId(associationId);
+				transaction.setPaymentMethod(paymentMethodBox.getValue());
+				
+				if(optionalPersonBox.getValue() != null) {
+					transaction.setMemberId(optionalPersonBox.getValue().getId().intValue());
+				}
 				
 				if (amount.getValue() == null || amount.getValue().equals("0,00")) {
 					Notification.show("Ohne Betrag kann keine Ausgabe/Einnahme gebucht werden !");
@@ -165,6 +181,11 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		sum.setText(formatter.format(transactionService.getBalanceForType(null, associationId).getAmount()));
 	}
 
+	private String resolveMember(int memberId) {
+		Optional<Person> optionalMember = personService.get(Integer.toUnsignedLong(memberId));
+		return optionalMember.isPresent() ? optionalMember.get().getFirstName() + " " + optionalMember.get().getLastName() : "-";
+	}
+
 	private void createGridLayout(SplitLayout splitLayout) {
 
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -176,12 +197,15 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		Div wrapper = new Div();
 		wrapper.setClassName("grid-wrapper");
 
-		splitLayout.setSplitterPosition(70);
-		splitLayout.addToPrimary(wrapper);
-
+		HorizontalLayout headerLayout = new HorizontalLayout();
+		
 		wrapper.add(horizontalLayout);
 		wrapper.add(new Hr());
 		wrapper.add(grid);
+		
+		splitLayout.setSplitterPosition(70);
+		splitLayout.addToPrimary(wrapper);
+
 	}
 	
 	private String renderDate(LocalDate date) {
@@ -301,7 +325,17 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		date.setValue(LocalDateTime.now());
 
 		note = new TextField("Notiz");
-		formLayout.add(type, amount, date, note);
+		
+		optionalPersonBox = new ComboBox<Person>("Optional - Mitglied");
+		optionalPersonBox.setItems(personService.findAllByAssociation(associationId));
+		optionalPersonBox.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
+		
+		paymentMethodBox = new ComboBox<PaymentMethod>("Zahlungsmethode");
+		paymentMethodBox.setItems(PaymentMethod.values());
+		paymentMethodBox.setItemLabelGenerator(e -> e.getLabel());
+		paymentMethodBox.setValue(paymentMethodBox.getListDataView().getItem(0));
+		
+		formLayout.add(type, amount, date, note, paymentMethodBox, optionalPersonBox);
 
 		editorDiv.add(formLayout);
 		createButtonLayout(editorLayoutDiv);

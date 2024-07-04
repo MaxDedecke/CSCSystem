@@ -50,4 +50,8 @@ public class WorkingUnitService {
 	    public List<WorkingUnit> findByCategory(String category, int associationId) {
 	    	return findAllByAssociation(associationId).stream().filter(e -> e.getCategory().equals(category)).toList();
 	    }
+	    
+	    public List<WorkingUnit> findByMember(int personId) {
+	    	return repository.findAll().stream().filter(e -> e.getPersonId().intValue() == personId).toList();
+	    }
 }

@@ -140,7 +140,8 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
 					}
 					samplePerson.setAssociationId(associationId);
 					samplePerson.setAssociationRole(role.getValue());
-
+					samplePerson.setDateOfRegistration(LocalDate.now());
+					
 					if (role.getValue() != AssociationRole.MEMBER) {
 						samplePerson.setDateOfHigherRole(LocalDate.now());
 					}
@@ -190,19 +191,24 @@ public class MitgliederView extends Div implements BeforeEnterObserver {
 		String day = "";
 		String month = "";
 
-		if (date.getDayOfMonth() < 10) {
-			day = "0" + String.valueOf(date.getDayOfMonth());
-		} else {
-			day = String.valueOf(date.getDayOfMonth());
+		if (date != null) {
+
+			if (date.getDayOfMonth() < 10) {
+				day = "0" + String.valueOf(date.getDayOfMonth());
+			} else {
+				day = String.valueOf(date.getDayOfMonth());
+			}
+
+			if (date.getMonthValue() < 10) {
+				month = "0" + String.valueOf(date.getMonthValue());
+			} else {
+				month = String.valueOf(date.getMonthValue());
+			}
+
+			return day + "." + month + "." + date.getYear();
 		}
 
-		if (date.getMonthValue() < 10) {
-			month = "0" + String.valueOf(date.getMonthValue());
-		} else {
-			month = String.valueOf(date.getMonthValue());
-		}
-
-		return day + "." + month + "." + date.getYear();
+		return "";
 	}
 
     private void createEditorLayout(SplitLayout splitLayout) {

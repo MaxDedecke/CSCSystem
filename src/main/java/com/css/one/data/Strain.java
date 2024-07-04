@@ -9,6 +9,7 @@ public class Strain extends AbstractEntity {
 	
 	 	private String name;
 	 	private double amount;
+	 	private double amountPerMember;
 	 	private double thc;
 	 	private LocalDate datePlanted;
 	 	private LocalDate dateFinished;
@@ -56,5 +57,11 @@ public class Strain extends AbstractEntity {
 		}
 		public void setStatus(GrowStatus status) {
 			this.status = status;
+		}
+		public double getAmountPerMember() {
+			return amountPerMember;
+		}
+		public void setAmountPerMember(double amountPerMember) {
+			this.amountPerMember = amountPerMember;
 		}	 	
 }
