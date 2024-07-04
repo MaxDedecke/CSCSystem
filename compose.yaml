@@ -6,13 +6,13 @@ services:
         shm_size: 128mb
         env_file: ~/docker_data/cscs/postgres.env
 
-    adminer:
-        image: adminer
-        restart: always
-        depends_on:
-            - postgresql
-        ports:
-            - 28080:8080
+#    adminer:
+#        image: adminer
+#        restart: always
+#        depends_on:
+#            - postgresql
+#        ports:
+#            - 17080:8080
 
     cscs:
         build: .
