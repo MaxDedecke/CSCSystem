@@ -5,6 +5,8 @@ import com.css.one.data.PersonRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -50,5 +52,23 @@ public class PersonService {
     public List<Person> getAllAsList() {
     	return repository.findAll();
     }
-
+    
+    public int getFreeMemberNumber(int associationId) {
+    	
+    	Random rand = new Random();
+    	boolean isNotEqual = false;
+    	int n = 0;
+    	
+		while (!isNotEqual) {
+			n = rand.nextInt(1000000);
+			for (Person p : findAllByAssociation(associationId)) {
+				if (p.getMemberNumber() == n) {
+					isNotEqual = false;
+				}
+			}
+			isNotEqual = true;
+		}
+		
+    	return n;
+    }
 }

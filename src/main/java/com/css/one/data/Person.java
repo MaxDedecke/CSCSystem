@@ -1,12 +1,14 @@
 package com.css.one.data;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.Email;
 import java.time.LocalDate;
 
 @Entity
 public class Person extends AbstractEntity {
-
+	
+    private int memberNumber;
     private String firstName;
     private String lastName;
     @Email
@@ -14,9 +16,9 @@ public class Person extends AbstractEntity {
     private String phone;
     private LocalDate dateOfBirth;
     private AssociationRole associationRole;
-    private boolean important;
     private int associationId;
     private LocalDate dateOfRegistration;
+    @Nullable
     private LocalDate dateOfHigherRole;
     
     public String getFirstName() {
@@ -49,12 +51,6 @@ public class Person extends AbstractEntity {
     public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
-    public boolean isImportant() {
-        return important;
-    }
-    public void setImportant(boolean important) {
-        this.important = important;
-    }
 	public int getAssociationId() {
 		return associationId;
 	}
@@ -78,6 +74,12 @@ public class Person extends AbstractEntity {
 	}
 	public void setDateOfHigherRole(LocalDate dateOfHigherRole) {
 		this.dateOfHigherRole = dateOfHigherRole;
+	}
+	public int getMemberNumber() {
+		return memberNumber;
+	}
+	public void setMemberNumber(int memberNumber) {
+		this.memberNumber = memberNumber;
 	}
 
 }

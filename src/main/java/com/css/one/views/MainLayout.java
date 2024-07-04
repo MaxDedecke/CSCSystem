@@ -80,8 +80,8 @@ public class MainLayout extends AppLayout {
         Span appName = new Span("Ceres");
         appName.addClassNames(LumoUtility.FontWeight.SEMIBOLD, LumoUtility.FontSize.LARGE);
 
-        StreamResource imageResource = new StreamResource("logoCSCSystemWhite.png",
-                () -> getClass().getResourceAsStream("/logoCSCSystemWhite.png"));
+        StreamResource imageResource = new StreamResource("NewLogo040724.png",
+                () -> getClass().getResourceAsStream("/NewLogo040724.png"));
 
         Image logoImage = new Image(imageResource, "");
         logoImage.setHeight(250, Unit.PIXELS);

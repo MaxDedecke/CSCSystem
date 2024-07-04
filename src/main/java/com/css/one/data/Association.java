@@ -1,5 +1,7 @@
 package com.css.one.data;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Entity;
 
 @Entity
@@ -12,6 +14,7 @@ public class Association extends AbstractEntity {
 	    private String streetNumber;
 	    private int postalCode;
 	    private double amountMemberSubscription;
+	    private LocalDate registrationDate;
 	    
 		public String getName() {
 			return name;
@@ -54,6 +57,12 @@ public class Association extends AbstractEntity {
 		}
 		public void setAmountMemberSubscription(double amountMemberSubscription) {
 			this.amountMemberSubscription = amountMemberSubscription;
+		}
+		public LocalDate getRegistrationDate() {
+			return registrationDate;
+		}
+		public void setRegistrationDate(LocalDate registrationDate) {
+			this.registrationDate = registrationDate;
 		}
 
 }

@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Bean;
  *
  */
 @SpringBootApplication
-@Theme(value = "css-system-one", variant = Lumo.DARK)
+@Theme(value = "css-system-one", variant = Lumo.LIGHT)
 public class Application implements AppShellConfigurator {
 
     private static final long serialVersionUID = 3173515292498804205L;

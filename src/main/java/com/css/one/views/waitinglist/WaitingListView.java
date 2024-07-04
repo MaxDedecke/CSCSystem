@@ -275,7 +275,6 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 				person.setPhone(waitingPerson.getPhone());
 				person.setFirstName(waitingPerson.getFirstName());
 				person.setLastName(waitingPerson.getLastName());
-				person.setImportant(false);
 
 				person = personService.update(person);
 

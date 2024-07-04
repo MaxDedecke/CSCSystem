@@ -55,6 +55,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import com.vaadin.flow.theme.lumo.LumoUtility.Height;
 
 @PageTitle("Finanzen")
 @Route(value = "finanzen", layout = MainLayout.class)
@@ -194,9 +195,8 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 
 	private void createGridLayout(SplitLayout splitLayout) {
 		
-//		tabSheet.addThemeVariants(TabSheetVariant.LUMO_TABS_CENTERED);
+//		tabSheet.addThemeVariants(TabSheetVariant.MATERIAL_BORDERED);
 		tabSheet.setSizeFull();
-	
 		tabSheet.add("Allgemein", createGeneralTab());
 		tabSheet.add("Regelmäßige Zahlungen", createRecurringPaymentsTab());
 		tabSheet.add("Mitgliedsbeiträge", createMemberPaymentTab());
@@ -243,6 +243,8 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	}
 
 	private Component createMemberPaymentTab() {
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.addClassNames(Height.FULL, LumoUtility.Padding.NONE);
 		Div wrapper = new Div();
 		wrapper.setClassName("grid-wrapper");
 		wrapper.setHeight("100%");
@@ -266,7 +268,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		 
 		gridMemberSubscription.addColumn(isPayedRenderer).setAutoWidth(true).setHeader("Bezahlt");
 		gridMemberSubscription.addColumn(e -> resolveTransaction(e.getTransactionId())).setAutoWidth(true).setHeader("Bezahlt am");
-		gridMemberSubscription.addComponentColumn(item -> new Button("Aktualisieren", click -> {
+		gridMemberSubscription.addComponentColumn(item -> new Button("Beitrag verbuchen", click -> {
 			if (item.isPayed()) {
 				Notification.show("Das Mitglied hat seinen Monatsbeitrag bereits gezahlt.");
 			} else {
@@ -277,10 +279,12 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
         }));
 
 		gridMemberSubscription.setItems(memberSubscriptionService.findByMonthAndYear(now.getMonthValue(), now.getYear(), associationId));
+		gridMemberSubscription.addClassNames(LumoUtility.Height.FULL, LumoUtility.Border.ALL);
 		
-		wrapper.add(layoutMonthSelection);
 		wrapper.add(gridMemberSubscription);
-		return wrapper;
+		mainLayout.add(layoutMonthSelection);
+		mainLayout.add(wrapper);
+		return mainLayout;
 	}
 
 	private void buildConfirmDialog() {
@@ -315,7 +319,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	private Component createMonthSelectionComponent(LocalDate now) {
 		
 		HorizontalLayout innerLayout = new HorizontalLayout();
-		innerLayout.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50, LumoUtility.BorderRadius.LARGE, LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.MEDIUM);
+		innerLayout.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.CONTRAST_10, LumoUtility.BorderRadius.LARGE, LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.MEDIUM);
 		
 		innerLayout.setWidth("100%");
 		
@@ -327,30 +331,41 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		monthLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.Top.SMALL);
 		
 		Button buttonLeft = new Button("<");
-		
+		LocalDate registrationDate = associationService.get(Integer.toUnsignedLong(associationId)).get().getRegistrationDate();
+	
 		buttonLeft.addClickListener(e -> {
-			if(this.monthValue == 1) {
-				this.monthValue = 12;
-				this.year = this.year - 1;
-			} else {				
-				this.monthValue = this.monthValue - 1;
+
+			if (registrationDate.getYear() < this.year || registrationDate.getMonthValue() < this.monthValue) {
+				if (this.monthValue == 1) {
+					this.monthValue = 12;
+					this.year = this.year - 1;
+				} else {
+					this.monthValue = this.monthValue - 1;
+				}
+				refreshGrid();
+				month.setText(renderTime(this.monthValue, this.year));
+			} else {
+				Notification.show("Der Verein wurde erst zum " + registrationDate.getDayOfMonth() + "." + registrationDate.getMonthValue() + "." + registrationDate.getYear() + " registriert.");
 			}
-			refreshGrid();
-			month.setText(renderTime(this.monthValue, this.year));
 		});
 		
 		Button buttonRight = new Button(">");
 		
 		buttonRight.addClickListener(e -> {
-			if(this.monthValue == 12) {
-				this.monthValue = 1;
-				this.year = this.year + 1;
-			} else {				
-				this.monthValue = this.monthValue + 1;
-			}
 			
-			refreshGrid();
-			month.setText(renderTime(this.monthValue, this.year));
+			if (now.getYear() > this.year || this.monthValue < now.getMonthValue()) {
+				if (this.monthValue == 12) {
+					this.monthValue = 1;
+					this.year = this.year + 1;
+				} else {
+					this.monthValue = this.monthValue + 1;
+				}
+
+				refreshGrid();
+				month.setText(renderTime(this.monthValue, this.year));
+			} else {
+				Notification.show("Die Übersicht ist erst ab dem 01. des Monats verfügbar");
+			}
 		});
 		
 		innerLayout.add(buttonLeft, monthLayout, buttonRight);
@@ -464,6 +479,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		layout.add(LineAwesomeIcon.MONEY_CHECK_SOLID.create());
 		layout.add(new H2("Alle"));
 		layout.setAlignItems(Alignment.CENTER);
+		
 		allTransactionsButton = new Button(layout);
 		allTransactionsButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		allTransactionsButton.setHeight(100, Unit.PIXELS);

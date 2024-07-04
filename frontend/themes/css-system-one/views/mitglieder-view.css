@@ -9,10 +9,6 @@
   height: 100%;
 }
 
-.mitglieder-view vaadin-grid {
-  height: 100%;
-}
-
 .mitglieder-view .editor-layout {
   display: flex;
   flex-direction: column;

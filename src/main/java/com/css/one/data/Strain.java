@@ -15,6 +15,7 @@ public class Strain extends AbstractEntity {
 	 	private LocalDate datePlanted;
 	 	private int associationId;
 	 	private GrowStatus status;
+	 	private int amountOfPlants;
 	 	
 	 	@Nullable
 	 	private LocalDate dateFinished;
@@ -66,5 +67,11 @@ public class Strain extends AbstractEntity {
 		}
 		public void setAmountPerMember(double amountPerMember) {
 			this.amountPerMember = amountPerMember;
+		}
+		public int getAmountOfPlants() {
+			return amountOfPlants;
+		}
+		public void setAmountOfPlants(int amountOfPlants) {
+			this.amountOfPlants = amountOfPlants;
 		}	 	
 }
