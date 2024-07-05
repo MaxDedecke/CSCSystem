@@ -3,9 +3,12 @@ package com.css.one.views;
 import com.css.one.data.User;
 import com.css.one.security.AuthenticatedUser;
 import com.css.one.views.arbeitsplanung.ArbeitsplanungView;
+import com.css.one.views.diary.DiaryView;
 import com.css.one.views.finanzen.FinanzenView;
 import com.css.one.views.mitglieder.MitgliederView;
+import com.css.one.views.output.OutputView;
 import com.css.one.views.rechtliches.RechtlichesView;
+import com.css.one.views.settings.SettingsView;
 import com.css.one.views.verein.VereinView;
 import com.css.one.views.waitinglist.WaitingListView;
 import com.css.one.views.warenlager.WarenlagerView;
@@ -87,6 +90,7 @@ public class MainLayout extends AppLayout {
         logoImage.setHeight(250, Unit.PIXELS);
         
         layout.setAlignItems(Alignment.CENTER);
+        layout.addClassNames(LumoUtility.Padding.XSMALL);
         layout.add(logoImage, appName, new Hr());
         
         Header header = new Header(layout);
@@ -96,7 +100,7 @@ public class MainLayout extends AppLayout {
 
         HorizontalLayout versionLayout = new HorizontalLayout();
         versionLayout.setWidth("100%");
-        versionLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.SMALL);
+        versionLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.NONE);
         versionLayout.add(new Text("Ceres - v.0.0.1"));
         layout.add(versionLayout);
         
@@ -118,6 +122,11 @@ public class MainLayout extends AppLayout {
                     new SideNavItem("Finanzen", FinanzenView.class, LineAwesomeIcon.MONEY_BILL_WAVE_SOLID.create()));
 
         }
+        if (accessChecker.hasAccess(DiaryView.class)) {
+            nav.addItem(new SideNavItem("Tagebuch", DiaryView.class,
+                    LineAwesomeIcon.BOOK_OPEN_SOLID.create()));
+
+        }
         if (accessChecker.hasAccess(ArbeitsplanungView.class)) {
             nav.addItem(new SideNavItem("Arbeitsplanung", ArbeitsplanungView.class,
                     LineAwesomeIcon.BUSINESS_TIME_SOLID.create()));
@@ -129,7 +138,11 @@ public class MainLayout extends AppLayout {
 
         }
         if (accessChecker.hasAccess(WarenlagerView.class)) {
-            nav.addItem(new SideNavItem("Ware | Abgabe", WarenlagerView.class, LineAwesomeIcon.CANNABIS_SOLID.create()));
+            nav.addItem(new SideNavItem("Bestand", WarenlagerView.class, LineAwesomeIcon.CANNABIS_SOLID.create()));
+
+        }
+        if (accessChecker.hasAccess(OutputView.class)) {
+            nav.addItem(new SideNavItem("Abgabe", OutputView.class, LineAwesomeIcon.HANDSHAKE.create()));
 
         }
         if (accessChecker.hasAccess(MitgliederView.class)) {
@@ -142,6 +155,10 @@ public class MainLayout extends AppLayout {
         }
         if (accessChecker.hasAccess(VereinView.class)) {
             nav.addItem(new SideNavItem("Verein", VereinView.class, LineAwesomeIcon.STORE_ALT_SOLID.create()));
+
+        }
+        if (accessChecker.hasAccess(SettingsView.class)) {
+            nav.addItem(new SideNavItem("Einstellungen", SettingsView.class, LineAwesomeIcon.COG_SOLID.create()));
 
         }
 

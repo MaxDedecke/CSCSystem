@@ -4,6 +4,8 @@ import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -27,11 +29,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -48,6 +53,7 @@ import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -75,10 +81,15 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 
 	private final Grid<Transaction> grid = new Grid<>(Transaction.class, false);
 	private final Grid<MemberSubscription> gridMemberSubscription = new Grid<>(MemberSubscription.class, false);
-
+	private Grid<Transaction> memberTransactionGrid = new Grid<>(Transaction.class, false);
+	Optional<Person> optionalMember;
+	Transaction memberSubscriptionTransaction;
+	
 	private TextField note;
 	private DateTimePicker date;
 	private ComboBox<TransactionType> type;
+	private ComboBox<PaymentMethod> methodForSubscriptionTransaction;
+
 	private ComboBox<PaymentMethod> paymentMethodBox;
 	private ComboBox<Person> optionalPersonBox;
 	
@@ -185,11 +196,13 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		LocalDate now = LocalDate.now();
 		if(memberSubscriptionService.needToCreateNewSubscriptions(associationId, now.getYear(), now.getMonthValue())) {
 			memberSubscriptionService.createSubscriptionsForMonth(personService.findAllByAssociation(associationId), now.getYear(), now.getMonthValue(), associationId);
+			
+		
 		}
 	}
 
 	private String resolveMember(int memberId) {
-		Optional<Person> optionalMember = personService.get(Integer.toUnsignedLong(memberId));
+		optionalMember = personService.get(Integer.toUnsignedLong(memberId));
 		return optionalMember.isPresent() ? optionalMember.get().getFirstName() + " " + optionalMember.get().getLastName() : "-";
 	}
 
@@ -227,9 +240,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		
 		if (status == ViewStatus.GENERAL) {
 
-		} else if(status == ViewStatus.SUBSCRIPTIONS) {
-			
-		} else {
+		} else if(status == ViewStatus.RECURRING_PAYMENTS) {
 			
 		}
 	}
@@ -257,17 +268,17 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		layoutMonthSelection.add(createMonthSelectionComponent(now));
 		
 		gridMemberSubscription.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-
 		gridMemberSubscription.addColumn(e -> resolveMember(e.getPersonId())).setAutoWidth(true).setHeader("Mitglied");
-
+		
 		LitRenderer<MemberSubscription> isPayedRenderer = LitRenderer.<MemberSubscription>of(
 				"<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
 				.withProperty("icon", important -> important.isPayed() ? "check" : "minus")
 				.withProperty("color", important -> important.isPayed() ? "var(--lumo-success-color)"
 						: "var(--lumo-error-color)");
 		 
-		gridMemberSubscription.addColumn(isPayedRenderer).setAutoWidth(true).setHeader("Bezahlt");
+		gridMemberSubscription.addColumn(isPayedRenderer).setAutoWidth(true).setHeader("Bezahlt").setKey("payed").setComparator((sub1, sub2) -> Boolean.compare(sub1.isPayed(), sub2.isPayed()));
 		gridMemberSubscription.addColumn(e -> resolveTransaction(e.getTransactionId())).setAutoWidth(true).setHeader("Bezahlt am");
+		
 		gridMemberSubscription.addComponentColumn(item -> new Button("Beitrag verbuchen", click -> {
 			if (item.isPayed()) {
 				Notification.show("Das Mitglied hat seinen Monatsbeitrag bereits gezahlt.");
@@ -287,29 +298,116 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		return mainLayout;
 	}
 
+	private void refreshMemberTransactionsGrid() {
+		if(optionalMember.isPresent()) {
+			
+			List<Transaction> listMemberTransactions = transactionService.findAllByAssociation(associationId).stream().filter(e -> e.getMemberId() == optionalMember.get().getId().intValue()).toList();
+			memberTransactionGrid.setItems(listMemberTransactions.stream()
+					.filter(e -> (e.getDateOfTransaction().getMonthValue() == monthValue
+							&& e.getDateOfTransaction().getYear() == year))
+					.toList().stream()
+					.filter(e -> e.getType() == TransactionType.INCOME).toList());
+		}
+	}
+
 	private void buildConfirmDialog() {
+		
 		this.confirmMonthlyPaymentDialog = new Dialog();
+		double amountMemberSubscription = associationService.get(Integer.toUnsignedLong(associationId)).get().getAmountMemberSubscription();
 		
 		FormLayout layout = new FormLayout();
+		layout.setMinWidth("50%");
+		layout.setMaxWidth("100%");
 		
 		nameFieldMember = new TextField("Name");
 		nameFieldMember.setEnabled(false);
 		TextField fieldAmount = new TextField("Mitgliedsbeitrag");
-		fieldAmount.setValue(String.valueOf(associationService.get(Integer.toUnsignedLong(associationId)).get().getAmountMemberSubscription()) + "€");
+		fieldAmount.setValue(String.valueOf(amountMemberSubscription) + "€");
 		fieldAmount.setEnabled(false);
 		
-		layout.add(nameFieldMember, fieldAmount);
+		HorizontalLayout checkboxLayout = new HorizontalLayout();
+		checkboxLayout.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Width.AUTO, LumoUtility.Padding.NONE);
 		
-		this.confirmMonthlyPaymentDialog.add(layout);
+		Checkbox createTransactionBox = new Checkbox("Buchung erstellen");
+		createTransactionBox.addClassNames(LumoUtility.Margin.Top.SMALL);
+		createTransactionBox.setValue(true);
+		
+		Checkbox linkTransactionBox = new Checkbox("Buchung verknüpfen");
+		linkTransactionBox.addClassNames(LumoUtility.Margin.SMALL);
+		
+		checkboxLayout.add(createTransactionBox, linkTransactionBox);
+		
+		layout.add(nameFieldMember, fieldAmount, checkboxLayout);
+		layout.setColspan(checkboxLayout, 2);
+		
+		methodForSubscriptionTransaction = new ComboBox<PaymentMethod>("Zahlungsart");
+		methodForSubscriptionTransaction.setItems(PaymentMethod.values());
+		methodForSubscriptionTransaction.setItemLabelGenerator(e -> e.getLabel());
+		methodForSubscriptionTransaction.setValue(methodForSubscriptionTransaction.getListDataView().getItem(0));
+		methodForSubscriptionTransaction.addClassNames(LumoUtility.Margin.Bottom.MEDIUM);
+		
+		memberTransactionGrid.setMinHeight(100, Unit.PIXELS);
+		memberTransactionGrid.addColumn(t -> t.getDateOfTransaction()).setAutoWidth(true).setHeader("Datum");
+		memberTransactionGrid.addColumn(t -> t.getAmount()).setAutoWidth(true).setHeader("Betrag");
+		memberTransactionGrid.addColumn(t -> t.getNote()).setAutoWidth(true).setHeader("Notiz");
+		memberTransactionGrid.setSelectionMode(SelectionMode.SINGLE);
+		memberTransactionGrid.addSelectionListener(e -> this.memberSubscriptionTransaction = e.getAllSelectedItems().iterator().next());
+		memberTransactionGrid.setEnabled(false);
+		
+		this.confirmMonthlyPaymentDialog.add(layout, methodForSubscriptionTransaction, memberTransactionGrid);
+		
+		createTransactionBox.addValueChangeListener(e -> {
+			if (e.getValue()) {
+				linkTransactionBox.setValue(false);
+				methodForSubscriptionTransaction.setEnabled(true);
+				methodForSubscriptionTransaction.setValue(methodForSubscriptionTransaction.getListDataView().getItem(0));
+			}
+		});
+		
+		linkTransactionBox.addValueChangeListener(e -> {
+			if (e.getValue()) {
+				createTransactionBox.setValue(false);
+				refreshMemberTransactionsGrid();
+				methodForSubscriptionTransaction.setEnabled(false);
+				methodForSubscriptionTransaction.setValue(methodForSubscriptionTransaction.getEmptyValue());
+			}
+			memberTransactionGrid.setEnabled(e.getValue());
+		});
+		
 		Button cancelButton = new Button("Zurück", e -> confirmMonthlyPaymentDialog.close());
 		
-		Button confirmButton = new Button("Bestätigen",e -> {	
-			this.selectedSubscription.setPayed(true);
-			memberSubscriptionService.update(this.selectedSubscription);
-			refreshGrid();
-			this.selectedSubscription = null;
-			this.confirmMonthlyPaymentDialog.close();
-			Notification.show("Mitgliedsbeitrag gebucht!");
+		Button confirmButton = new Button("Bestätigen", e -> {
+			if (createTransactionBox.getValue() || linkTransactionBox.getValue()) {
+				this.selectedSubscription.setPayed(true);
+				if (linkTransactionBox.getValue()) {
+					if (memberSubscriptionTransaction != null) {
+						this.selectedSubscription.setTransactionId(memberSubscriptionTransaction.getId().intValue());
+					} else {
+						Notification.show("Es muss eine Transaktion hinterlegt sein!");
+					}
+				} else {
+					memberSubscriptionTransaction = new Transaction();
+					memberSubscriptionTransaction.setAmount(amountMemberSubscription);
+					memberSubscriptionTransaction.setAssociationId(associationId);
+					memberSubscriptionTransaction.setDateOfTransaction(LocalDate.now());
+					memberSubscriptionTransaction.setNote("Mitgliedsbeitrag");
+					memberSubscriptionTransaction.setType(TransactionType.INCOME);
+					memberSubscriptionTransaction.setPaymentMethod(methodForSubscriptionTransaction.getValue());
+					if(optionalMember.isPresent()) {						
+						memberSubscriptionTransaction.setMemberId(optionalMember.get().getId().intValue());
+					}
+					Transaction update = this.transactionService.update(memberSubscriptionTransaction);
+					this.selectedSubscription.setTransactionId(update.getId().intValue());
+				}
+				
+				memberSubscriptionService.update(this.selectedSubscription);
+				refreshGrid();
+				this.selectedSubscription = null;
+				this.confirmMonthlyPaymentDialog.close();
+				Notification.show("Mitgliedsbeitrag gebucht!");
+			} else {
+				Notification.show("Es muss eine Transaktion hinterlegt sein!");
+			}
 		});
 		
 		this.confirmMonthlyPaymentDialog.getFooter().add(cancelButton, confirmButton);
@@ -512,7 +610,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 
 		layout = new VerticalLayout();
 		layout.add(LineAwesomeIcon.PLUS_CIRCLE_SOLID.create());
-		layout.add(new H2(TransactionType.INCOME.getLabel()));
+		layout.add(new H2(TransactionType.INCOME.getLabel() + "n"));
 		layout.setAlignItems(Alignment.CENTER);
 		incomeButton = new Button(layout);
 		incomeButton.setHeight(100, Unit.PIXELS);
@@ -544,6 +642,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		allTransactionsButton.removeClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 	}
 
+	
 	private void refreshGridWithType(TransactionType type) {
 
 		NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("de", "DE"));
@@ -559,7 +658,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 
 	}
 	
-
+	
 	private void createEditorLayout(SplitLayout splitLayout) {
 		Div editorLayoutDiv = new Div();
 		editorLayoutDiv.setClassName("editor-layout");
@@ -603,6 +702,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	}
 
 	
+	
 	private void createButtonLayout(Div editorLayoutDiv) {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setClassName("button-layout");
@@ -613,6 +713,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	}
 
 	
+	
 	private void clearForm() {
 		type.setValue(type.getListDataView().getItem(0));
 		amount.setValue(amount.getEmptyValue());
@@ -622,6 +723,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	}
 	
 
+	
 	private void refreshGrid() {
 		
 		if (status == ViewStatus.GENERAL) {
@@ -636,11 +738,15 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 			}
 		} else if(status == ViewStatus.SUBSCRIPTIONS) {
 			gridMemberSubscription.setItems(memberSubscriptionService.findByMonthAndYear(this.monthValue, this.year, associationId));
+			List<GridSortOrder<MemberSubscription>> sortOrder = new ArrayList<>();	
+			sortOrder.add(new GridSortOrder<MemberSubscription>(gridMemberSubscription.getColumnByKey("payed"),SortDirection.DESCENDING));
+			gridMemberSubscription.sort(sortOrder);
 		} else {
 			
 		}
 	}
 
+	
 	
 	@Override
 	public void beforeEnter(BeforeEnterEvent event) {

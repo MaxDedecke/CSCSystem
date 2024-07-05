@@ -4,12 +4,15 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import com.css.one.data.AssociationRole;
+import com.css.one.data.MemberSubscription;
 import com.css.one.data.Person;
 import com.css.one.data.WaitingPerson;
+import com.css.one.services.MemberSubscriptionService;
 import com.css.one.services.PersonService;
 import com.css.one.services.WaitingPersonService;
 import com.css.one.views.MainLayout;
 import com.css.one.views.mitglieder.MitgliederView;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -34,6 +37,7 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @PageTitle("Warteliste")
 @Route(value = "waitinglist/:waitingPersonID?/:action?(edit)", layout = MainLayout.class)
@@ -62,17 +66,20 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 	private final Button levelup = new Button("Zu Mitglied machen");
 	
 	private Dialog newMemberDialog = new Dialog();
-
+	private Text memberCount;
+	
 	private final BeanValidationBinder<WaitingPerson> binder;
 
 	private WaitingPerson waitingPerson;
 	private PersonService personService;
-	
+    private MemberSubscriptionService subscriptionService;
+
 	private int associationId;
 
-	public WaitingListView(WaitingPersonService waitingPersonService, PersonService personService) {
+	public WaitingListView(WaitingPersonService waitingPersonService, PersonService personService, MemberSubscriptionService subscriptionService) {
 		this.waitingPersonService = waitingPersonService;
 		this.personService = personService;
+		this.subscriptionService = subscriptionService;
 		
 		addClassNames("waitinglist-view");
 
@@ -101,10 +108,12 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 
 		grid.setItems(waitingPersonService.findAllByAssociation(associationId));
 		grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+        grid.addClassNames(LumoUtility.Height.FULL);
 
 		// when a row is selected or deselected, populate form
 		grid.asSingleSelect().addValueChangeListener(event -> {
 			if (event.getValue() != null) {
+				this.waitingPerson = event.getValue();
 				UI.getCurrent().navigate(String.format(WAITINGPERSON_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
 			} else {
 				clearForm();
@@ -158,6 +167,19 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 				newMemberDialog.open();
 			}
 		});
+	}
+	
+private void createSingleSubscriptionForNewMember(Person member) {
+		
+    	LocalDate now = LocalDate.now();
+    	MemberSubscription subscription = new MemberSubscription();
+		subscription.setAssociationId(associationId);
+		subscription.setMonth(now.getMonthValue());
+		subscription.setYear(now.getYear());
+		subscription.setPersonId(member.getId().intValue());
+		subscription.setPayed(false);
+
+		subscriptionService.update(subscription);
 	}
 	
 	private boolean checkPersonDataForWaitingList() {
@@ -275,12 +297,14 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 				person.setPhone(waitingPerson.getPhone());
 				person.setFirstName(waitingPerson.getFirstName());
 				person.setLastName(waitingPerson.getLastName());
-
+				person.setMemberNumber(personService.getFreeMemberNumber(associationId));
 				person = personService.update(person);
 
 				waitingPersonService.delete(waitingPerson.getId());
 				this.waitingPerson = null;
-
+				
+				createSingleSubscriptionForNewMember(person);
+				
 				newMemberDialog.close();
 				clearForm();
 				refreshGrid();
@@ -365,10 +389,25 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 	}
 
 	private void createGridLayout(SplitLayout splitLayout) {
+		
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.addClassNames(LumoUtility.Padding.NONE);
+
 		Div wrapper = new Div();
 		wrapper.setClassName("grid-wrapper");
-		splitLayout.addToPrimary(wrapper);
 		wrapper.add(grid);
+        wrapper.setHeight("100%");
+
+		HorizontalLayout bottomLayout = new HorizontalLayout();
+		bottomLayout.setWidth("100%");
+		bottomLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Bottom.SMALL,
+				LumoUtility.Padding.Left.MEDIUM, LumoUtility.JustifyContent.CENTER);
+		memberCount = new Text("Wartendene Personen: " + waitingPersonService.count());
+
+		bottomLayout.add(memberCount);
+
+		mainLayout.add(wrapper, bottomLayout);
+		splitLayout.addToPrimary(mainLayout);
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package com.css.one;
 
 import com.css.one.data.PersonRepository;
+import com.css.one.services.MigrationService;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
@@ -25,7 +26,7 @@ public class Application implements AppShellConfigurator {
     private static final long serialVersionUID = 3173515292498804205L;
 
 	public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        SpringApplication.run(Application.class, args);        
     }
 
     @Bean
@@ -38,8 +39,16 @@ public class Application implements AppShellConfigurator {
                 if (repository.count() == 0L) {
                     return super.initializeDatabase();
                 }
-                return false;
+                else {
+                	checkMigrationStatus();
+                	return false;
+                }
             }
+
+			private void checkMigrationStatus() {
+				MigrationService migrationService = new MigrationService();
+				migrationService.startMigration();
+			}
         };
     }
 }

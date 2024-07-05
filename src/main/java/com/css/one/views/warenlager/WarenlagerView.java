@@ -7,11 +7,9 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import com.css.one.data.GrowStatus;
 import com.css.one.data.Output;
-import com.css.one.data.Person;
 import com.css.one.data.Strain;
 import com.css.one.services.OutputService;
 import com.css.one.services.PersonService;
@@ -83,13 +81,10 @@ public class WarenlagerView extends Div {
         createChangeStatusDialog();
         
         TabSheet tabSheet = new TabSheet();
-//        tabSheet.addThemeVariants(TabSheetVariant.LUMO_TABS_CENTERED);
-
         tabSheet.setSizeFull();
         
         createStrainsLayout(tabSheet);
         createCuttingsLayout(tabSheet);
-        createGiveawayLayout(tabSheet);
         
         add(tabSheet);
     }
@@ -119,7 +114,6 @@ public class WarenlagerView extends Div {
 		addStrainButton.addClickListener(e -> openAddStrainDialog());
 		
 		layoutButton.setAlignItems(Alignment.CENTER);
-	
 		layoutButton.add(addStrainButton);
 		
 		H2 balance = new H2("Kontingent:");
@@ -349,166 +343,4 @@ public class WarenlagerView extends Div {
 		this.amount.setText(String.valueOf(generalAmount) + " Gramm");
 		this.amount2.setText(String.valueOf(generalAmount) + " Gramm");
 	}
-	
-	private void createGiveawayLayout(TabSheet tabSheet) {
-		
-		Div wrapper = new Div();
-		wrapper.setClassName("grid-wrapper");
-			
-		HorizontalLayout horizontalLayout = new HorizontalLayout();
-		
-		VerticalLayout layoutButton = new VerticalLayout();
-		Button addOutputButton = new Button();
-		addOutputButton.setHeight(75, Unit.PIXELS);
-		addOutputButton.setWidth(175, Unit.PIXELS);
-		addOutputButton.setText("+ Abgabe");
-		
-		addOutputButton.addClickListener(e -> openAddOutput());
-		
-		layoutButton.setAlignItems(Alignment.CENTER);
-	
-		layoutButton.add(addOutputButton);
-		
-		H2 balance = new H2("Kontingent:");
-
-		VerticalLayout layout = new VerticalLayout();
-		layout.add(balance);
-		layout.add(amount2);
-		layout.setAlignItems(Alignment.CENTER);
-
-		horizontalLayout.add(layoutButton);
-		horizontalLayout.add(layout);
-		wrapper.add(horizontalLayout);
-		
-		outputGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-		outputGrid.addColumn(p -> renderDate(p.getDate())).setHeader("Datum").setAutoWidth(true).setSortable(true);
-		outputGrid.addColumn(p -> resolveStrain(p.getStrainId())).setHeader("Sorte").setAutoWidth(true).setSortable(true);
-		outputGrid.addColumn(p -> renderPersonName(personService.get(Integer.toUnsignedLong(p.getPersonId())))).setHeader("Mitglied").setAutoWidth(true).setSortable(true);
-		outputGrid.addColumn(p -> p.getAmount() + " Gramm").setHeader("Menge").setAutoWidth(true).setSortable(true);
-		outputGrid.addColumn(p -> p.getNote()).setHeader("Notiz").setAutoWidth(true).setSortable(true);
-		
-		outputGrid.addComponentColumn(item -> new Button("Löschen", click -> {
-			item.setOutdated(true);
-			outputService.update(item);
-			Optional<Strain> optionalStrain = strainService.get(Integer.toUnsignedLong(item.getStrainId()));
-			if(optionalStrain.isPresent()) {				
-				optionalStrain.get().setAmount(optionalStrain.get().getAmount() + item.getAmount());
-				strainService.update(optionalStrain.get());	
-			}
-			refreshGrid();
-        }));
-		
-		refreshGrid();
-		
-		wrapper.add(outputGrid);
-		tabSheet.add("Abgabe", wrapper);			
-	}
-	
-	private String resolveStrain(int strainId) {
-		Optional<Strain> optionalStrain = strainService.get(Integer.toUnsignedLong(strainId));
-		return optionalStrain.isPresent() ? optionalStrain.get().getName() : "-";
-	}
-
-	private void openAddOutput() {
-		addOutputDialog = new Dialog();
-		
-		VerticalLayout headerLayout = new VerticalLayout();
-		
-		H2 header = new H2("Abgabe");
-		Hr hr = new Hr();		
-		headerLayout.add(header, hr);
-		
-		FormLayout formLayout = new FormLayout();
-		formLayout.setWidth(400, Unit.PIXELS);
-		
-		DateTimePicker date = new DateTimePicker();
-		date.setLabel("Datum");
-		date.setStep(Duration.ofSeconds(1));
-		date.setValue(LocalDateTime.now());
-		
-		NumberField strainInfoAmount = new NumberField("Menge in Gramm");
-		
-		ComboBox<Person> memberBox = new ComboBox<Person>("Mitglied");
-		memberBox.setItems(personService.findAllByAssociation(associationId));
-		memberBox.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
-		
-		ComboBox<Strain> strainBox = new ComboBox<Strain>("Sorte");
-		strainBox.setItems(strainService.findAllByAssociation(associationId));
-		strainBox.setItemLabelGenerator(e -> e.getName() + " (" + e.getThc() + "% THC)");
-		
-		TextField noteField = new TextField("Notiz");
-		
-		formLayout.add(date, strainBox, strainInfoAmount, memberBox, noteField);
-		
-		addOutputDialog.add(headerLayout);
-		addOutputDialog.add(formLayout);
-		
-		Button saveButton = new Button("Hinzufügen", e -> {
-			
-			if(checkInput(strainInfoAmount, memberBox, strainBox)) {
-				addNewOutput(date.getValue(), strainBox.getValue(), strainInfoAmount.getValue(), memberBox.getValue(), noteField.getValue());
-				addOutputDialog.close();
-				refreshGrid();
-			}
-		});
-
-		Button cancelButton = new Button("Abbrechen", e -> addOutputDialog.close());
-
-		addOutputDialog.getFooter().add(cancelButton);
-		addOutputDialog.getFooter().add(saveButton);
-		addOutputDialog.open();
-	}
-
-	private void addNewOutput(LocalDateTime date, Strain strain, Double amount, Person person, String note) {
-		Output output = new Output();
-		
-		output.setDate(date.toLocalDate());
-		output.setStrainId(strain.getId().intValue());
-		output.setAmount(amount);
-		output.setAssociationId(associationId);
-		output.setPersonId(person.getId().intValue());
-		if(note != null) {			
-			output.setNote(note);
-		}
-		
-		outputService.update(output);
-		
-		strain.setAmount(strain.getAmount() - amount);
-		strainService.update(strain);		
-	}
-
-	private boolean checkInput(NumberField strainInfoAmount, ComboBox<Person> memberBox, ComboBox<Strain> strainBox) {
-		
-		if(strainInfoAmount.getValue() == null) {
-			Notification.show("Keine Menge angegeben !");
-			return false;
-		}
-		
-		if(memberBox.getValue() == null) {
-			Notification.show("Kein Mitglied ausgewählt !");
-			return false;
-		}
-		
-		if(strainBox.getValue() == null) {
-			Notification.show("Keine Sorte ausgewählt !");
-			return false;
-		}
-		
-		//TODO
-		//Hier überprüfen, ob mitglied ott haben darf
-		//Und prüfen, dass faire Aufteilung gewährleistet ist
-		
-		return true;
-	}
-
-	private String renderPersonName(Optional<Person> person) {
-		
-		if(person.isPresent()) {
-			Person p = person.get();
-			return p.getFirstName() + " " + p.getLastName();
-		} else {
-			return "-";			
-		}
-	}
-
 }
