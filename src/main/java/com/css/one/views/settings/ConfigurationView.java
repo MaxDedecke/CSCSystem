@@ -11,14 +11,14 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 
 
-@PageTitle("Einstellungen")
+@PageTitle("Konfiguration")
 @Route(value = "setting", layout = MainLayout.class)
 @AnonymousAllowed
-public class SettingsView extends VerticalLayout {
+public class ConfigurationView extends VerticalLayout {
 
 	private static final long serialVersionUID = 4433493049583669274L;
 
-	public SettingsView() {
+	public ConfigurationView() {
         setSpacing(false);
 
         Image img = new Image("images/empty-plant.png", "placeholder plant");

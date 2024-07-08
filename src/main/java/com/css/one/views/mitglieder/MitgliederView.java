@@ -3,6 +3,7 @@ package com.css.one.views.mitglieder;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
@@ -182,6 +183,15 @@ public class MitgliederView extends Div {
 		layout.add(numberField, firstName, lastName, email, phone, role, dateOfBirth);
 		
 		Button removeButton = new Button("Löschen", e -> {
+			LocalDate now = LocalDate.now();
+			Optional<MemberSubscription> any = subscriptionService
+					.findByMonthAndYear(now.getMonthValue(), now.getYear(), associationId).stream()
+					.filter(s -> s.getPersonId() == samplePerson.getId().intValue()).findAny();
+			
+			if(any.isPresent()) {
+				subscriptionService.delete(any.get().getId());
+			}
+			
 			samplePersonService.delete(this.samplePerson.getId());
 			memberDetailDialog.close();
 		});

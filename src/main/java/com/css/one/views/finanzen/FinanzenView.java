@@ -5,8 +5,10 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -16,11 +18,15 @@ import org.vaadin.lineawesome.LineAwesomeIcon;
 import com.css.one.data.MemberSubscription;
 import com.css.one.data.PaymentMethod;
 import com.css.one.data.Person;
+import com.css.one.data.RecurringPayment;
+import com.css.one.data.TimeDelcaration;
+import com.css.one.data.Timezone;
 import com.css.one.data.Transaction;
 import com.css.one.data.TransactionType;
 import com.css.one.services.AssociationService;
 import com.css.one.services.MemberSubscriptionService;
 import com.css.one.services.PersonService;
+import com.css.one.services.RecurringPaymentService;
 import com.css.one.services.TransactionService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
@@ -75,36 +81,57 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	private final MemberSubscriptionService memberSubscriptionService;
 	private final AssociationService associationService;
 	private final BeanValidationBinder<Transaction> binder;
-
+	private final RecurringPaymentService recurringPaymentService;
+	
 	private final String TRANSACTION_ID = "transactionID";
 //	private final String TRANSACTION_EDIT_ROUTE_TEMPLATE = "finanzen/%s/edit";
 
 	private final Grid<Transaction> grid = new Grid<>(Transaction.class, false);
+	private Grid<RecurringPayment> recurringPaymentsGrid;
 	private final Grid<MemberSubscription> gridMemberSubscription = new Grid<>(MemberSubscription.class, false);
+	
 	private Grid<Transaction> memberTransactionGrid = new Grid<>(Transaction.class, false);
+	private Grid<Transaction> recurringTransactionsGrid = new Grid<>(Transaction.class, false);
+
+	Div wrapperRecurrings = new Div();
+
 	Optional<Person> optionalMember;
 	Transaction memberSubscriptionTransaction;
-	
+
 	private TextField note;
+	private TextField title;
 	private DateTimePicker date;
+	private Checkbox isActiveBox;
 	private ComboBox<TransactionType> type;
 	private ComboBox<PaymentMethod> methodForSubscriptionTransaction;
-
+	private ComboBox<Timezone> rythmBox;
 	private ComboBox<PaymentMethod> paymentMethodBox;
 	private ComboBox<Person> optionalPersonBox;
+	private ComboBox<TimeDelcaration> timeBox;
 	
 	private MoneyField amount;
 	private Transaction transaction;
-
+	private RecurringPayment recurringPayment;
+	private TextField nameOfRecurringPayment;
+	
+	private SplitLayout splitLayout;
 	private TabSheet tabSheet = new TabSheet();
 	private final Button cancel = new Button("Abbrechen");
-	private final Button save = new Button("Buchen");
+	private final Button removeRecurringPayment = new Button("Löschen");
 
+	private final Button cancelRecurrings = new Button("Zurücksetzen");
+	private final Button saveTransactionButton = new Button("Buchen");
+	private final Button saveRecurringPaymentButton = new Button("Erstellen");
+
+	Div editorLayoutDivGeneral;
+	Div editorLayoutRecurrings;
+	
 	private Button costButton;
 	private Button incomeButton;
 	private Button allTransactionsButton;
 	
 	private Dialog confirmMonthlyPaymentDialog;
+	private Dialog recurringPaymentDetailsDialog;
 	private TextField nameFieldMember;
 
 	private Text month;
@@ -117,6 +144,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	private int associationId;
 	
 	private MemberSubscription selectedSubscription;
+	private Map<RecurringPayment, Boolean> updateRecurringsMap;
 	
 	private TransactionType currentType;
 	NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("de", "DE"));
@@ -127,11 +155,15 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	
 	public ViewStatus status = ViewStatus.GENERAL;
 	
-	public FinanzenView(TransactionService transactionService, PersonService personService, MemberSubscriptionService memberSubscriptionService, AssociationService associationService) {
+	public FinanzenView(TransactionService transactionService, PersonService personService,
+			MemberSubscriptionService memberSubscriptionService, AssociationService associationService,
+			RecurringPaymentService recurringPaymentService) {
+		
 		this.transactionService = transactionService;
 		this.personService = personService;
 		this.memberSubscriptionService = memberSubscriptionService;
 		this.associationService = associationService;
+		this.recurringPaymentService = recurringPaymentService;
 		
 		addClassNames("finanzen-view");
 		
@@ -139,9 +171,15 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		startCheckingRoutines();
 		
 		// Create UI
-		SplitLayout splitLayout = new SplitLayout();
+		splitLayout = new SplitLayout();
 		createGridLayout(splitLayout);
-		createEditorLayout(splitLayout);
+		createEditorLayout();
+		createRecurringsLayout();
+		
+		createRecurringsDetailsDialog();
+		
+		splitLayout.addToSecondary(editorLayoutDivGeneral);
+		
 		refreshGrid();
 		add(splitLayout);
 
@@ -151,29 +189,82 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 			clearForm();
 			refreshGrid();
 		});
+		
+		removeRecurringPayment.addClickListener(e -> {
+			recurringPaymentService.delete(this.recurringPayment.getId());
+			this.recurringPaymentDetailsDialog.close();
+			Notification.show("Reguläre Zahlung gelöscht!");
+			refreshGrid();
+		});
 
-		save.addClickListener(e -> {
-			try {
-				this.transaction = new Transaction();
-				transaction.setNote(note.getValue());
-				transaction.setType(type.getValue());
-				transaction.setDateOfTransaction(date.getValue().toLocalDate());
-				transaction.setAssociationId(associationId);
-				transaction.setPaymentMethod(paymentMethodBox.getValue());
-				
-				if(optionalPersonBox.getValue() != null) {
-					transaction.setMemberId(optionalPersonBox.getValue().getId().intValue());
+		saveTransactionButton.addClickListener(e -> {
+			
+				try {
+					this.transaction = new Transaction();
+					transaction.setNote(note.getValue());
+					transaction.setType(type.getValue());
+					transaction.setDateOfTransaction(date.getValue().toLocalDate());
+					transaction.setAssociationId(associationId);
+					transaction.setPaymentMethod(paymentMethodBox.getValue());
+
+					if (optionalPersonBox.getValue() != null) {
+						transaction.setMemberId(optionalPersonBox.getValue().getId().intValue());
+					}
+
+					if (amount.getValue() == null || amount.getValue().toString().equals("0,00")) {
+						Notification.show("Ohne Betrag kann keine Ausgabe/Einnahme gebucht werden !");
+					} else {
+						transaction.setAmount(amount.getValue().getNumber().doubleValue());
+						binder.writeBean(this.transaction);
+						transactionService.update(this.transaction);
+						clearForm();
+						refreshGrid();
+						Notification.show("Neue Transaktion hinzugefügt");
+
+						UI.getCurrent().navigate(FinanzenView.class);
+						
+					}
+				} catch (ObjectOptimisticLockingFailureException exception) {
+					Notification n = Notification.show(
+							"Error updating the data. Somebody else has updated the record while you were making changes.");
+					n.setPosition(Position.MIDDLE);
+					n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+				} catch (ValidationException validationException) {
+					Notification.show("Failed to update the data. Check again that all values are valid");
 				}
+
+				clearForm();
+		});
+		
+		saveRecurringPaymentButton.addClickListener(e -> {
+			try {
 				
-				if (amount.getValue() == null || amount.getValue().toString().equals("0,00")) {
-					Notification.show("Ohne Betrag kann keine Ausgabe/Einnahme gebucht werden !");
-				} else {
-					transaction.setAmount(amount.getValue().getNumber().doubleValue());
-					binder.writeBean(this.transaction);
-					transactionService.update(this.transaction);
+				if (recurringPaymentDataIsValid()) {
+
+					this.recurringPayment = new RecurringPayment();
+					recurringPayment.setActive(true);
+					recurringPayment.setAssociationId(associationId);
+					recurringPayment.setNote(this.note.getValue());
+					recurringPayment.setTitle(this.title.getValue());
+					recurringPayment.setTimezone(this.rythmBox.getValue());
+					recurringPayment.setTimeDeclaration(this.timeBox.getValue());
+					recurringPayment.setDayOfPayment(resolveDateOfPayment(this.timeBox.getValue()));
+					recurringPayment.setAmount(amount.getValue().getNumber().doubleValue());
+					recurringPayment.setType(this.type.getValue());
+					
+					if(paymentMethodBox.getValue() != null) {
+						recurringPayment.setPaymentMethod(this.paymentMethodBox.getValue());						
+					}
+					
+					if (optionalPersonBox.getValue() != null) {						
+						recurringPayment.setPersonId(optionalPersonBox.getValue().getId().intValue());
+					}
+					
+					recurringPaymentService.update(this.recurringPayment);
+
 					clearForm();
 					refreshGrid();
-					Notification.show("Data updated");
+					Notification.show("Neue regelmäßige Zahlung hinzugefügt");
 					UI.getCurrent().navigate(FinanzenView.class);
 				}
 			} catch (ObjectOptimisticLockingFailureException exception) {
@@ -181,24 +272,120 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 						"Error updating the data. Somebody else has updated the record while you were making changes.");
 				n.setPosition(Position.MIDDLE);
 				n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-			} 
-			catch (ValidationException validationException) {
-				Notification.show("Failed to update the data. Check again that all values are valid");
 			}
-
-			clearForm();
+			
+			updateRecurringsMap = recurringPaymentService.createUpdateMap(associationId);
 		});
-
+		
+		cancelRecurrings.addClickListener(e -> {
+			clearForm();
+			refreshGrid();
+		});
+		
 		sum.setText(formatter.format(transactionService.getBalanceForType(null, associationId).getAmount()));
+	}
+
+	private boolean recurringPaymentDataIsValid() {
+		
+		if(title.getValue() == null || title.getValue().equals("")) {
+			Notification.show("Es muss ein Titel hinzugefügt werden!");
+			return false;
+		}
+
+		if (amount.getValue() == null || amount.getValue().toString().equals("0,00")) {
+			Notification.show("Ohne Betrag kann keine Ausgabe/Einnahme gebucht werden !");
+			return false;
+		}
+		
+		if(note.getValue() == null) {
+			Notification.show("Es muss eine Notiz hinzugefügt werden!");
+			return false;
+		}
+		
+		return true;
+	}
+
+	private void createRecurringsDetailsDialog() {
+		this.recurringPaymentDetailsDialog = new Dialog();
+		
+		H2 text = new H2("Details");
+		Hr hr = new Hr();
+		hr.addClassNames(LumoUtility.Margin.Bottom.NONE);
+		
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.setMinWidth(500, Unit.PIXELS);
+		
+		FormLayout infoLayout = new FormLayout();
+		infoLayout.addClassNames(LumoUtility.Margin.Top.NONE);
+		
+		nameOfRecurringPayment = new TextField();
+		nameOfRecurringPayment.setEnabled(false);
+		
+		isActiveBox = new Checkbox("aktiv");
+		isActiveBox.addClassName(LumoUtility.Margin.Top.MEDIUM);
+		
+		infoLayout.add(nameOfRecurringPayment, isActiveBox);
+		
+		H3 textPayments = new H3("Zahlungen");
+		textPayments.addClassNames(LumoUtility.Margin.Top.LARGE);
+		
+		recurringTransactionsGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+		recurringTransactionsGrid.addColumn(e -> formatter.format(e.getAmount())).setAutoWidth(true).setHeader("Betrag");
+		recurringTransactionsGrid.addColumn(e -> e.getDateOfTransaction()).setAutoWidth(true).setHeader("Datum");
+		recurringTransactionsGrid.addColumn(e -> e.getNote()).setAutoWidth(true).setHeader("Notiz");
+		
+		mainLayout.add(text, hr, infoLayout, textPayments, recurringTransactionsGrid);
+		this.recurringPaymentDetailsDialog.add(mainLayout);
+		
+		Button backButton = new Button("Zurück");
+		backButton.addClickListener(e -> recurringPaymentDetailsDialog.close());
+		
+		removeRecurringPayment.addThemeVariants(ButtonVariant.LUMO_ERROR);
+		
+		Button confirmButton = new Button("Update");
+		confirmButton.addClickListener(e -> {
+			this.recurringPayment.setActive(isActiveBox.getValue());
+			this.recurringPayment = recurringPaymentService.update(recurringPayment);
+			recurringPaymentDetailsDialog.close();
+			
+			if(isActiveBox.getValue()) {
+				Notification.show("Regelmäßige Zahlung aktiviert");
+			} else {				
+				Notification.show("Regelmäßige Zahlung deaktiviert");
+			}
+			refreshGrid();
+			
+		});
+		
+		
+		this.recurringPaymentDetailsDialog.getFooter().add(removeRecurringPayment, backButton, confirmButton);
+	}
+
+	private int resolveDateOfPayment(TimeDelcaration timeDelcaration) {
+		
+		switch (timeDelcaration) {
+		case BEGIN_OF_MONTH: {
+			return 1;
+		}
+		case MIDDEL_OF_MONTH: {
+			return 15;
+		}
+		case END_OF_MONTH: {
+			return 30;
+		}
+		default:
+			break;
+		}
+		return 1;
 	}
 
 	private void startCheckingRoutines() {		
 		LocalDate now = LocalDate.now();
 		if(memberSubscriptionService.needToCreateNewSubscriptions(associationId, now.getYear(), now.getMonthValue())) {
 			memberSubscriptionService.createSubscriptionsForMonth(personService.findAllByAssociation(associationId), now.getYear(), now.getMonthValue(), associationId);
-			
-		
 		}
+		
+		updateRecurringsMap = recurringPaymentService.createUpdateMap(associationId);
 	}
 
 	private String resolveMember(int memberId) {
@@ -208,7 +395,6 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 
 	private void createGridLayout(SplitLayout splitLayout) {
 		
-//		tabSheet.addThemeVariants(TabSheetVariant.MATERIAL_BORDERED);
 		tabSheet.setSizeFull();
 		tabSheet.add("Allgemein", createGeneralTab());
 		tabSheet.add("Regelmäßige Zahlungen", createRecurringPaymentsTab());
@@ -219,6 +405,8 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 			if(e.getSelectedTab().getLabel().equals("Allgemein")) {
 				status = ViewStatus.GENERAL;
 				splitLayout.getSecondaryComponent().setVisible(true);
+				refreshButtonStyle();
+				allTransactionsButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 			} else if(e.getSelectedTab().getLabel().equals("Mitgliedsbeiträge")) {
 				status = ViewStatus.SUBSCRIPTIONS;
 				splitLayout.getSecondaryComponent().setVisible(false);
@@ -235,23 +423,116 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		splitLayout.addToPrimary(tabSheet);
 	}
 	
+	
 	private void refreshSecondary(String label) {
 		//refresh input on the right side according to selected tab
-		
 		if (status == ViewStatus.GENERAL) {
-
-		} else if(status == ViewStatus.RECURRING_PAYMENTS) {
-			
+			if (splitLayout.getSecondaryComponent() != null) {
+			}
+			splitLayout.addToSecondary(editorLayoutDivGeneral);
+		} else if (status == ViewStatus.RECURRING_PAYMENTS) {
+			if (splitLayout.getSecondaryComponent() != null) {
+			}
+			splitLayout.addToSecondary(editorLayoutRecurrings);
 		}
 	}
+	
 
 	private Component createRecurringPaymentsTab() {
-		Div wrapper = new Div();
-		wrapper.setClassName("grid-wrapper");
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.addClassNames(Height.FULL, LumoUtility.Padding.NONE);
+		wrapperRecurrings.setClassName("grid-wrapper");
+		wrapperRecurrings.setHeight("100%");
 		
-		
-		return wrapper;
+		createRecurringPaymentsGrid();
+		wrapperRecurrings.add(recurringPaymentsGrid);
+		return wrapperRecurrings;
 	}
+	
+	private void createRecurringPaymentsGrid() {
+
+		recurringPaymentsGrid = new Grid<>(RecurringPayment.class, false);
+		recurringPaymentsGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+		recurringPaymentsGrid.addColumn(e -> e.getTitle()).setAutoWidth(true).setHeader("Titel");
+		recurringPaymentsGrid.addColumn(e -> e.getTimezone().getLabel()).setAutoWidth(true).setHeader("Zyklus");
+		recurringPaymentsGrid.addColumn(e -> e.getTimeDeclaration().getLabel()).setAutoWidth(true).setHeader("Zeitpunkt");
+		
+		recurringPaymentsGrid.addColumn(e -> getDayOfPayment(e.getDayOfPayment())).setAutoWidth(true).setHeader("Tag");
+		recurringPaymentsGrid.addColumn(e -> formatter.format(e.getAmount())).setAutoWidth(true).setHeader("Betrag");
+		recurringPaymentsGrid.addColumn(e -> getPerson(e.getPersonId())).setAutoWidth(true).setHeader("Mitglied");		
+		
+		LitRenderer<RecurringPayment> isActiveRenderer = LitRenderer.<RecurringPayment>of(
+				"<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
+				.withProperty("icon", important -> important.isActive() ? "power-off" : "power-off")
+				.withProperty("color", important -> important.isActive() ? "var(--lumo-success-color)"
+						: "var(--lumo-error-color)");
+		 
+		recurringPaymentsGrid.addColumn(isActiveRenderer).setAutoWidth(true).setHeader("Aktiv").setComparator((sub1, sub2) -> Boolean.compare(sub1.isActive(), sub2.isActive()));
+
+		recurringPaymentsGrid.addComponentColumn(item -> new Button("Details", click -> {
+			this.recurringPayment = item;
+			refreshRecurringPaymentDialog(this.recurringPayment);			
+			this.recurringPaymentDetailsDialog.open();
+        }));
+		
+		recurringPaymentsGrid.addComponentColumn(item -> {
+			this.recurringPayment = item;
+
+			if (updateRecurringsMap.get(item) != null) {
+				if (updateRecurringsMap.get(item)) {
+					return new Button("buchen", click -> {
+						Transaction transactionOfRecurringPayment = new Transaction();
+						transactionOfRecurringPayment.setAmount(item.getAmount());
+						transactionOfRecurringPayment.setAssociationId(associationId);
+						transactionOfRecurringPayment.setDateOfTransaction(LocalDate.now());
+						transactionOfRecurringPayment.setMemberId(item.getPersonId());
+						transactionOfRecurringPayment.setNote(item.getNote());
+						transactionOfRecurringPayment.setPaymentMethod(item.getPaymentMethod());
+						transactionOfRecurringPayment.setType(item.getType());
+						
+						transactionOfRecurringPayment = transactionService.update(transactionOfRecurringPayment);
+						if(this.recurringPayment.getTransactions() != null) {							
+							this.recurringPayment.getTransactions().add(transactionOfRecurringPayment);
+						} else {
+							this.recurringPayment.setTransactions(Arrays.asList(transactionOfRecurringPayment));
+						}
+						recurringPaymentService.update(recurringPayment);
+						
+					});
+				} else {
+					return new Text("-");
+				}
+			} else {
+				return new Text("-");
+			}
+		});
+	}
+
+	private void refreshRecurringPaymentDialog(RecurringPayment recurringPayment) {
+		
+		this.isActiveBox.setValue(recurringPayment.isActive());
+		recurringTransactionsGrid.setItems(recurringPayment.getTransactions());
+		this.nameOfRecurringPayment.setValue(recurringPayment.getTitle());
+		
+	}
+	
+
+	private String getPerson(int personId) {
+		if(personId != 0) {
+			Optional<Person> anyPerson = personService.findAllByAssociation(associationId).stream().filter(e -> e.getId() == Integer.toUnsignedLong(personId)).findAny();
+			return anyPerson.isPresent() ? anyPerson.get().getFirstName() + " " + anyPerson.get().getLastName() : "-";
+		}
+		return "-";
+	}
+	
+
+	private String getDayOfPayment(int dayOfPayment) {
+		if(dayOfPayment != 0) {
+			return String.valueOf(dayOfPayment) + ".";
+		}
+		return "-";
+	}
+	
 
 	private Component createMemberPaymentTab() {
 		VerticalLayout mainLayout = new VerticalLayout();
@@ -529,7 +810,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		
 		return wrapperGeneralTab;
 	}
-
+	
 	private String renderDate(LocalDate date) {
 		String day = "";
 		String month = "";
@@ -635,13 +916,11 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		horizontalLayout.add(layout);
 	}
 
-	
 	private void refreshButtonStyle() {
 		incomeButton.removeClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		costButton.removeClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		allTransactionsButton.removeClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 	}
-
 	
 	private void refreshGridWithType(TransactionType type) {
 
@@ -658,14 +937,13 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 
 	}
 	
-	
-	private void createEditorLayout(SplitLayout splitLayout) {
-		Div editorLayoutDiv = new Div();
-		editorLayoutDiv.setClassName("editor-layout");
+	private void createEditorLayout() {
+		editorLayoutDivGeneral = new Div();
+		editorLayoutDivGeneral.setClassName("editor-layout");
 
 		Div editorDiv = new Div();
 		editorDiv.setClassName("editor");
-		editorLayoutDiv.add(editorDiv);
+		editorLayoutDivGeneral.add(editorDiv);
 
 		FormLayout formLayout = new FormLayout();
 
@@ -697,57 +975,154 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		formLayout.add(type, amount, date, note, paymentMethodBox, optionalPersonBox);
 
 		editorDiv.add(formLayout);
-		createButtonLayout(editorLayoutDiv);
-		splitLayout.addToSecondary(editorLayoutDiv);
+		createButtonLayout(editorLayoutDivGeneral, ViewStatus.GENERAL);
 	}
 
+	private void createRecurringsLayout() {
+		editorLayoutRecurrings = new Div();
+		editorLayoutRecurrings.setClassName("editor-layout");
+
+		Div editorDiv = new Div();
+		editorDiv.setClassName("editor");
+		editorLayoutRecurrings.add(editorDiv);
+
+		FormLayout formLayout = new FormLayout();
+		
+		rythmBox = new ComboBox<Timezone>("Zyklus");
+		rythmBox.setItems(Timezone.values());
+		rythmBox.setItemLabelGenerator(e -> e.getLabel());
+		rythmBox.setValue(Timezone.WEEKLY);
+		rythmBox.addValueChangeListener(e -> {
+			refreshItemsOfTimeBox(e.getValue());
+		});
+		
+		timeBox = new ComboBox<TimeDelcaration>("Zeitpunkt der Buchung");
+		refreshItemsOfTimeBox(Timezone.WEEKLY);
+		timeBox.setItemLabelGenerator(e -> e.getLabel());
+		
+		type = new ComboBox<TransactionType>("Typ");
+		type.setItems(TransactionType.values());
+		type.setItemLabelGenerator(e -> e.getDisplayName());
+		type.setValue(type.getListDataView().getItem(0));
+
+		amount = new MoneyField();
+		amount.setLabel("Betrag");
+		amount.setCurrency("EUR");		
+		
+		note = new TextField("Notiz");
+		title = new TextField("Name");
+		
+		optionalPersonBox = new ComboBox<Person>("Optional - Mitglied");
+		optionalPersonBox.setItems(personService.findAllByAssociation(associationId));
+		optionalPersonBox.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
+		
+		paymentMethodBox = new ComboBox<PaymentMethod>("Optional - Zahlungsmethode");
+		paymentMethodBox.setItems(PaymentMethod.values());
+		paymentMethodBox.setItemLabelGenerator(e -> e.getLabel());
+		paymentMethodBox.setValue(paymentMethodBox.getListDataView().getItem(0));
+		
+		formLayout.add(title, rythmBox, timeBox, type, amount, note, paymentMethodBox, optionalPersonBox);
+
+		editorDiv.add(formLayout);
+		createButtonLayout(editorLayoutRecurrings, ViewStatus.RECURRING_PAYMENTS);
+		splitLayout.addToSecondary(editorLayoutRecurrings);
+	}
 	
-	
-	private void createButtonLayout(Div editorLayoutDiv) {
+	private void refreshItemsOfTimeBox(Timezone zone) {
+				
+		switch (zone) {
+		
+		case WEEKLY: {
+			timeBox.setItems(Arrays.asList(TimeDelcaration.values()).stream().filter(e -> e.getType() == 1).toList());
+			break;
+		}
+		case MONTHLY: {
+			timeBox.setItems(Arrays.asList(TimeDelcaration.values()).stream().filter(e -> e.getType() == 2).toList());
+			break;
+		}
+		case EVERYFOURMONTHS: {
+			timeBox.setItems(Arrays.asList(TimeDelcaration.values()).stream().filter(e -> e.getType() == 3).toList());
+			break;
+		}
+		case HALFYEAR: {
+			timeBox.setItems(Arrays.asList(TimeDelcaration.values()).stream().filter(e -> e.getType() == 4).toList());
+			break;
+		}
+		case YEARLY: {
+			timeBox.setItems(Arrays.asList(TimeDelcaration.values()).stream().filter(e -> e.getType() == 3).toList());
+			break;
+		}
+
+		default:
+			throw new IllegalArgumentException("Unerwarteter Wert: " + zone);
+		}
+		
+		timeBox.setValue(timeBox.getListDataView().getItem(0));
+	}
+
+	private void createButtonLayout(Div editorLayoutDiv, ViewStatus status) {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setClassName("button-layout");
-		cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-		save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-		buttonLayout.add(save, cancel);
-		editorLayoutDiv.add(buttonLayout);
+		
+		if(status == ViewStatus.GENERAL) {			
+			cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+			saveTransactionButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+			buttonLayout.add(saveTransactionButton, cancel);
+			editorLayoutDiv.add(buttonLayout);
+		} else if(status == ViewStatus.RECURRING_PAYMENTS) {
+			cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+			saveRecurringPaymentButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+			buttonLayout.add(saveRecurringPaymentButton, cancelRecurrings);
+			editorLayoutRecurrings.add(buttonLayout);
+		}
 	}
 
-	
-	
 	private void clearForm() {
-		type.setValue(type.getListDataView().getItem(0));
-		amount.setValue(amount.getEmptyValue());
-		amount.setCurrency("EUR");
-		date.setValue(LocalDateTime.now());
-		note.setValue("");
+		if(status == ViewStatus.GENERAL) {
+			type.setValue(type.getListDataView().getItem(0));
+			amount.setValue(amount.getEmptyValue());
+			amount.setCurrency("EUR");
+			date.setValue(LocalDateTime.now());
+			note.setValue("");
+		}
+		
+		if(status == ViewStatus.RECURRING_PAYMENTS) {
+			rythmBox.setValue(Timezone.WEEKLY);
+			timeBox.setValue(timeBox.getListDataView().getItem(0));
+			
+		}
+		
 	}
-	
 
-	
 	private void refreshGrid() {
 		
 		if (status == ViewStatus.GENERAL) {
 			grid.select(null);
-			
+
 			refreshGridWithType(null);
-			
+
 			if (currentType == null) {
 				grid.setItems(transactionService.findAllByAssociation(associationId));
 			} else {
 				grid.setItems(transactionService.findByType(currentType, associationId));
 			}
-		} else if(status == ViewStatus.SUBSCRIPTIONS) {
-			gridMemberSubscription.setItems(memberSubscriptionService.findByMonthAndYear(this.monthValue, this.year, associationId));
-			List<GridSortOrder<MemberSubscription>> sortOrder = new ArrayList<>();	
-			sortOrder.add(new GridSortOrder<MemberSubscription>(gridMemberSubscription.getColumnByKey("payed"),SortDirection.DESCENDING));
+		} else if (status == ViewStatus.SUBSCRIPTIONS) {
+
+			gridMemberSubscription
+					.setItems(memberSubscriptionService.findByMonthAndYear(this.monthValue, this.year, associationId));
+			List<GridSortOrder<MemberSubscription>> sortOrder = new ArrayList<>();
+			sortOrder.add(new GridSortOrder<MemberSubscription>(gridMemberSubscription.getColumnByKey("payed"),
+					SortDirection.DESCENDING));
 			gridMemberSubscription.sort(sortOrder);
 		} else {
-			
+			updateRecurringsMap = recurringPaymentService.createUpdateMap(associationId);
+			wrapperRecurrings.remove(recurringPaymentsGrid);
+			createRecurringPaymentsGrid();
+			wrapperRecurrings.add(recurringPaymentsGrid);
+			recurringPaymentsGrid.setItems(recurringPaymentService.findAllByAssociation(associationId));
 		}
 	}
 
-	
-	
 	@Override
 	public void beforeEnter(BeforeEnterEvent event) {
 		Optional<Long> transactionId = event.getRouteParameters().get(TRANSACTION_ID).map(Long::parseLong);

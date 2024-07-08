@@ -8,7 +8,7 @@ import com.css.one.views.finanzen.FinanzenView;
 import com.css.one.views.mitglieder.MitgliederView;
 import com.css.one.views.output.OutputView;
 import com.css.one.views.rechtliches.RechtlichesView;
-import com.css.one.views.settings.SettingsView;
+import com.css.one.views.settings.ConfigurationView;
 import com.css.one.views.verein.VereinView;
 import com.css.one.views.waitinglist.WaitingListView;
 import com.css.one.views.warenlager.WarenlagerView;
@@ -157,8 +157,8 @@ public class MainLayout extends AppLayout {
             nav.addItem(new SideNavItem("Verein", VereinView.class, LineAwesomeIcon.STORE_ALT_SOLID.create()));
 
         }
-        if (accessChecker.hasAccess(SettingsView.class)) {
-            nav.addItem(new SideNavItem("Einstellungen", SettingsView.class, LineAwesomeIcon.COG_SOLID.create()));
+        if (accessChecker.hasAccess(ConfigurationView.class)) {
+            nav.addItem(new SideNavItem("Konfiguration", ConfigurationView.class, LineAwesomeIcon.COG_SOLID.create()));
 
         }
 
