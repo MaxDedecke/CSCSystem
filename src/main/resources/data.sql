@@ -1,5 +1,3 @@
--- Adminer 4.8.1 PostgreSQL 16.3 (Debian 16.3-1.pgdg120+1) dump
-
 DROP TABLE IF EXISTS "application_user" CASCADE;
 CREATE TABLE "public"."application_user" (
     "id" bigint NOT NULL,
@@ -49,6 +47,107 @@ CREATE TABLE "public"."member_subscription" (
     CONSTRAINT "member_subscription_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
+INSERT INTO "member_subscription" ("id", "version", "association_id", "month", "payed", "person_id", "transaction_id", "year") VALUES
+(1003,	0,	1,	7,	'f',	4,	0,	2024),
+(1005,	0,	1,	7,	'f',	6,	0,	2024),
+(1006,	0,	1,	7,	'f',	7,	0,	2024),
+(1007,	0,	1,	7,	'f',	8,	0,	2024),
+(1008,	0,	1,	7,	'f',	9,	0,	2024),
+(1009,	0,	1,	7,	'f',	10,	0,	2024),
+(1010,	0,	1,	7,	'f',	11,	0,	2024),
+(1011,	0,	1,	7,	'f',	12,	0,	2024),
+(1012,	0,	1,	7,	'f',	13,	0,	2024),
+(1013,	0,	1,	7,	'f',	14,	0,	2024),
+(1014,	0,	1,	7,	'f',	15,	0,	2024),
+(1015,	0,	1,	7,	'f',	16,	0,	2024),
+(1016,	0,	1,	7,	'f',	17,	0,	2024),
+(1017,	0,	1,	7,	'f',	18,	0,	2024),
+(1018,	0,	1,	7,	'f',	19,	0,	2024),
+(1019,	0,	1,	7,	'f',	20,	0,	2024),
+(1020,	0,	1,	7,	'f',	21,	0,	2024),
+(1021,	0,	1,	7,	'f',	22,	0,	2024),
+(1022,	0,	1,	7,	'f',	23,	0,	2024),
+(1023,	0,	1,	7,	'f',	24,	0,	2024),
+(1024,	0,	1,	7,	'f',	25,	0,	2024),
+(1025,	0,	1,	7,	'f',	26,	0,	2024),
+(1026,	0,	1,	7,	'f',	27,	0,	2024),
+(1027,	0,	1,	7,	'f',	28,	0,	2024),
+(1028,	0,	1,	7,	'f',	29,	0,	2024),
+(1029,	0,	1,	7,	'f',	30,	0,	2024),
+(1031,	0,	1,	7,	'f',	32,	0,	2024),
+(1032,	0,	1,	7,	'f',	33,	0,	2024),
+(1033,	0,	1,	7,	'f',	34,	0,	2024),
+(1034,	0,	1,	7,	'f',	35,	0,	2024),
+(1035,	0,	1,	7,	'f',	36,	0,	2024),
+(1036,	0,	1,	7,	'f',	37,	0,	2024),
+(1037,	0,	1,	7,	'f',	38,	0,	2024),
+(1038,	0,	1,	7,	'f',	39,	0,	2024),
+(1039,	0,	1,	7,	'f',	40,	0,	2024),
+(1040,	0,	1,	7,	'f',	41,	0,	2024),
+(1041,	0,	1,	7,	'f',	42,	0,	2024),
+(1042,	0,	1,	7,	'f',	43,	0,	2024),
+(1043,	0,	1,	7,	'f',	44,	0,	2024),
+(1044,	0,	1,	7,	'f',	45,	0,	2024),
+(1045,	0,	1,	7,	'f',	46,	0,	2024),
+(1046,	0,	1,	7,	'f',	47,	0,	2024),
+(1047,	0,	1,	7,	'f',	48,	0,	2024),
+(1048,	0,	1,	7,	'f',	49,	0,	2024),
+(1049,	0,	1,	7,	'f',	50,	0,	2024),
+(1050,	0,	1,	7,	'f',	51,	0,	2024),
+(1051,	0,	1,	7,	'f',	52,	0,	2024),
+(1052,	0,	1,	7,	'f',	53,	0,	2024),
+(1053,	0,	1,	7,	'f',	54,	0,	2024),
+(1054,	0,	1,	7,	'f',	55,	0,	2024),
+(1055,	0,	1,	7,	'f',	56,	0,	2024),
+(1056,	0,	1,	7,	'f',	57,	0,	2024),
+(1057,	0,	1,	7,	'f',	58,	0,	2024),
+(1058,	0,	1,	7,	'f',	59,	0,	2024),
+(1059,	0,	1,	7,	'f',	60,	0,	2024),
+(1060,	0,	1,	7,	'f',	61,	0,	2024),
+(1061,	0,	1,	7,	'f',	62,	0,	2024),
+(1062,	0,	1,	7,	'f',	63,	0,	2024),
+(1063,	0,	1,	7,	'f',	64,	0,	2024),
+(1064,	0,	1,	7,	'f',	65,	0,	2024),
+(1065,	0,	1,	7,	'f',	66,	0,	2024),
+(1066,	0,	1,	7,	'f',	67,	0,	2024),
+(1067,	0,	1,	7,	'f',	68,	0,	2024),
+(1068,	0,	1,	7,	'f',	69,	0,	2024),
+(1069,	0,	1,	7,	'f',	70,	0,	2024),
+(1070,	0,	1,	7,	'f',	71,	0,	2024),
+(1071,	0,	1,	7,	'f',	72,	0,	2024),
+(1072,	0,	1,	7,	'f',	73,	0,	2024),
+(1073,	0,	1,	7,	'f',	74,	0,	2024),
+(1074,	0,	1,	7,	'f',	75,	0,	2024),
+(1075,	0,	1,	7,	'f',	76,	0,	2024),
+(1076,	0,	1,	7,	'f',	77,	0,	2024),
+(1077,	0,	1,	7,	'f',	78,	0,	2024),
+(1078,	0,	1,	7,	'f',	79,	0,	2024),
+(1079,	0,	1,	7,	'f',	80,	0,	2024),
+(1080,	0,	1,	7,	'f',	81,	0,	2024),
+(1081,	0,	1,	7,	'f',	82,	0,	2024),
+(1082,	0,	1,	7,	'f',	83,	0,	2024),
+(1083,	0,	1,	7,	'f',	84,	0,	2024),
+(1084,	0,	1,	7,	'f',	85,	0,	2024),
+(1085,	0,	1,	7,	'f',	86,	0,	2024),
+(1086,	0,	1,	7,	'f',	87,	0,	2024),
+(1087,	0,	1,	7,	'f',	88,	0,	2024),
+(1088,	0,	1,	7,	'f',	89,	0,	2024),
+(1089,	0,	1,	7,	'f',	90,	0,	2024),
+(1090,	0,	1,	7,	'f',	91,	0,	2024),
+(1091,	0,	1,	7,	'f',	92,	0,	2024),
+(1092,	0,	1,	7,	'f',	93,	0,	2024),
+(1093,	0,	1,	7,	'f',	94,	0,	2024),
+(1094,	0,	1,	7,	'f',	95,	0,	2024),
+(1095,	0,	1,	7,	'f',	96,	0,	2024),
+(1096,	0,	1,	7,	'f',	97,	0,	2024),
+(1097,	0,	1,	7,	'f',	98,	0,	2024),
+(1098,	0,	1,	7,	'f',	99,	0,	2024),
+(1099,	0,	1,	7,	'f',	100,	0,	2024),
+(1000,	1,	1,	7,	't',	1,	0,	2024),
+(1001,	1,	1,	7,	't',	2,	0,	2024),
+(1030,	1,	1,	7,	't',	31,	0,	2024),
+(1002,	1,	1,	7,	't',	3,	1451,	2024),
+(1004,	1,	1,	7,	't',	5,	1452,	2024);
 
 DROP TABLE IF EXISTS "output";
 CREATE TABLE "public"."output" (
@@ -63,6 +162,11 @@ CREATE TABLE "public"."output" (
     "strain_id" integer NOT NULL,
     CONSTRAINT "output_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
+
+INSERT INTO "output" ("id", "version", "amount", "association_id", "date", "note", "outdated", "person_id", "strain_id") VALUES
+(1351,	0,	1,	1,	'2024-07-04',	'',	'f',	1,	1103),
+(1551,	0,	2,	1,	'2024-07-06',	'Erste Charge',	'f',	5,	1101),
+(1552,	0,	2,	1,	'2024-07-08',	'',	'f',	4,	1103);
 
 
 DROP TABLE IF EXISTS "person";
@@ -185,6 +289,37 @@ INSERT INTO "person" ("version", "association_id", "id", "first_name", "last_nam
 (1, 1, 99,'Helen','Zanieri','helen.zanieri@ukve.tn','(619) 506-4452','1969-10-06',0,false, '2024-06-10',69664),
 (1, 1, 100,'Agnes','Toccafondi','agnes.toccafondi@viipo.ae','(616) 688-6883','1971-10-26',0,false, '2024-06-21', 15372);
 
+DROP TABLE IF EXISTS "recurring_payment";
+CREATE TABLE "public"."recurring_payment" (
+    "id" bigint NOT NULL,
+    "version" integer NOT NULL,
+    "amount" double precision NOT NULL,
+    "association_id" integer NOT NULL,
+    "day_of_payment" integer NOT NULL,
+    "is_active" boolean NOT NULL,
+    "note" character varying(255),
+    "payment_method" smallint,
+    "person_id" integer NOT NULL,
+    "time_declaration" smallint,
+    "timezone" smallint,
+    "title" character varying(255),
+    "type" smallint,
+    CONSTRAINT "recurring_payment_pkey" PRIMARY KEY ("id")
+) WITH (oids = false);
+
+INSERT INTO "recurring_payment" ("id", "version", "amount", "association_id", "day_of_payment", "is_active", "note", "payment_method", "person_id", "time_declaration", "timezone", "title", "type") VALUES
+(1601,	1,	20,	1,	1,	't',	'',	2,	0,	7,	1,	'Internetvertrag',	0);
+
+DROP TABLE IF EXISTS "recurring_payment_transactions";
+CREATE TABLE "public"."recurring_payment_transactions" (
+    "recurring_payment_id" bigint NOT NULL,
+    "transactions_id" bigint NOT NULL,
+    CONSTRAINT "uk_s60e3rw3kq10b9ergen0pvu7t" UNIQUE ("transactions_id")
+) WITH (oids = false);
+
+INSERT INTO "recurring_payment_transactions" ("recurring_payment_id", "transactions_id") VALUES
+(1601,	1651);
+
 DROP TABLE IF EXISTS "strain";
 CREATE TABLE "public"."strain" (
     "id" bigint NOT NULL,
@@ -201,6 +336,11 @@ CREATE TABLE "public"."strain" (
     CONSTRAINT "strain_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
+INSERT INTO "strain" ("id", "version", "amount", "amount_per_member", "association_id", "date_finished", "date_planted", "name", "status", "thc", "amount_of_plants") VALUES
+(1102,	1,	400,	4,	1,	'2024-07-04',	'2024-07-04',	'White Widow',	4,	20,	0),
+(1101,	1,	198,	2,	1,	'2024-07-04',	'2024-07-04',	'Silver Haze',	3,	15,	0),
+(1103,	2,	97,	1,	1,	NULL,	'2024-07-04',	'Jack Herer',	1,	10,	0);
+
 
 DROP TABLE IF EXISTS "transaction";
 CREATE TABLE "public"."transaction" (
@@ -216,6 +356,10 @@ CREATE TABLE "public"."transaction" (
     CONSTRAINT "transaction_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
+INSERT INTO "transaction" ("id", "amount", "association_id", "date_of_transaction", "member_id", "note", "payment_method", "type", "version") VALUES
+(1251,	12,	1,	'2024-07-04',	1,	'',	0,	1,	0),
+(1451,	30,	1,	'2024-07-06',	3,	'Mitgliedsbeitrag',	0,	1,	0),
+(1651,	20,	1,	'2024-07-10',	0,	'',	2,	0,	0);
 
 DROP TABLE IF EXISTS "user_roles";
 CREATE TABLE "public"."user_roles" (
@@ -241,6 +385,9 @@ CREATE TABLE "public"."waiting_person" (
     CONSTRAINT "waiting_person_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
+INSERT INTO "waiting_person" ("id", "version", "association_id", "date_of_birth", "date_of_registration", "email", "first_name", "last_name", "phone") VALUES
+(1151,	0,	1,	'2000-08-16',	'2024-07-04',	'max.mustermann@mustermail.de',	'Max',	'Mustermann',	'+49123456789');
+
 
 DROP TABLE IF EXISTS "working_unit";
 CREATE TABLE "public"."working_unit" (
@@ -257,7 +404,12 @@ CREATE TABLE "public"."working_unit" (
     CONSTRAINT "working_unit_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
+INSERT INTO "working_unit" ("id", "version", "association_id", "category", "date_begin", "date_end", "note", "person_id", "person_name", "working_hours") VALUES
+(1301,	0,	1,	'Gärtnereiarbeiten',	'2024-07-04',	'2024-07-04',	'',	2,	'Barry Rodriquez',	60),
+(1302,	0,	1,	'Verwaltungsdienst',	'2024-07-04',	'2024-07-04',	'',	4,	'Alejandro Miles',	120),
+(1501,	0,	1,	'Gärtnereiarbeiten',	'2024-07-06',	'2024-07-06',	'test',	5,	'Cora Tesi',	119);
+
+ALTER TABLE ONLY "public"."recurring_payment_transactions" ADD CONSTRAINT "fk1coqhk280spvwr82x2lv8i2n7" FOREIGN KEY (transactions_id) REFERENCES transaction(id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."recurring_payment_transactions" ADD CONSTRAINT "fk9nxklv5gicy3hl7vnwo0fb49e" FOREIGN KEY (recurring_payment_id) REFERENCES recurring_payment(id) NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."user_roles" ADD CONSTRAINT "fkq0h6vpf3crn504yyep1hdv0vc" FOREIGN KEY (user_id) REFERENCES application_user(id) NOT DEFERRABLE;
-
--- 2024-06-27 13:23:20.35023+00

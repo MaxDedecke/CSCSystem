@@ -5,6 +5,8 @@ services:
         restart: always
         shm_size: 128mb
         env_file: ~/docker_data/cscs/postgres.env
+        volumes:
+            - ./docker/postgres/:/docker-entrypoint-initdb.d/
 
 #    adminer:
 #        image: adminer
@@ -24,3 +26,44 @@ services:
             - postgresql
         volumes:
             - ~/docker_data/cscs/application.properties:/application.properties
+
+    joomla:
+        image: joomla
+        hostname: joomla.local
+        restart: always
+        ports:
+          - 19080:80
+        env_file: ~/docker_data/cscs/joomla.env
+        volumes:
+          - joomla_data:/var/www/html
+    
+    portainer:
+        image: portainer/portainer-ce:latest
+        hostname: portainer.local:
+        restart: always
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - portainer_data:/data
+
+    nginx:
+        image: nginx
+        restart: always
+        ports:
+          - 80:80
+          - 443:443
+        volumes:
+          - ./nginx/conf.d:/etc/nginx/conf.d:ro
+          - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            #certbot
+          - ./certbot/www:/var/www/certbot/:ro
+          - ~/docker_data/certbot/:/etc/nginx/ssl/:ro
+    
+    certbot:
+        image: certbot/certbot:latest
+        volumes:
+          - ./certbot/www/:/var/www/certbot/:rw
+          - ~/docker_data/certbot/:/etc/letsencrypt/:rw
+
+volumes:
+    joomla_data:
+    portainer_data:
