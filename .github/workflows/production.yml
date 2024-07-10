@@ -15,7 +15,7 @@ jobs:
         run: ./mvnw -Pproduction clean package
       
       - name: build
-        uses: docker/build-push-action@v6_
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: false
