@@ -22,7 +22,7 @@ jobs:
           tags: cgs/cscs:latest
       - name: update production
         run: |
-          docker run -d --run-once \
+          docker run -d \
             --name cscs-updater \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            containrrr/watchtower cscsystem-cscs-1
+            containrrr/watchtower --run-once cscsystem-cscs-1
