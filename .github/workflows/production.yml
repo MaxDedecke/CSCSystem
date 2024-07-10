@@ -1,0 +1,18 @@
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Deploy
+        run: |
+          ./mvnw -Pproduction clean package
+          docker compose rm -f cscs
+          docker compose up -d --build
+        
