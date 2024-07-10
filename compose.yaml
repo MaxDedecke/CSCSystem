@@ -17,6 +17,7 @@ services:
 #            - 17080:8080
 
     cscs:
+        image: cgs/cscs:latest
         build: .
         hostname: cscs.local
         restart: always
