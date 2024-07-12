@@ -1,9 +1,8 @@
 on:
   push:
     branches:
-      #- develop
-      #- main
-      - github-actions
+      - develop
+      - main
 
 jobs:
   deploy:
@@ -20,6 +19,7 @@ jobs:
           context: .
           push: false
           tags: cgs/cscs:latest
+          labels: com.centurylinklabs.watchtower.enable=false
       - name: update production
         run: |
           docker run -d --rm \

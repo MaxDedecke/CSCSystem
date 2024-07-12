@@ -1,20 +1,21 @@
 services:
     postgresql:
-        image: postgres
+        image: postgres:latest
         hostname: postgres.local
         restart: always
         shm_size: 128mb
         env_file: ~/docker_data/postgres/postgres.env
         volumes:
             - ./docker/postgres/:/docker-entrypoint-initdb.d/
+            - postgres_data:/var/lib/postgresql/data/
 
-#    adminer:
-#        image: adminer
-#        restart: always
-#        depends_on:
-#            - postgresql
-#        ports:
-#            - 17080:8080
+    adminer:
+        image: adminer:latest
+        restart: no
+        depends_on:
+            - postgresql
+        ports:
+            - 17080:8080
 
     cscs:
         image: cgs/cscs:latest
@@ -27,7 +28,7 @@ services:
             - ~/docker_data/cscs/application.properties:/application.properties
 
     joomla:
-        image: joomla
+        image: joomla:latest
         hostname: joomla.local
         restart: always
         env_file: ~/docker_data/joomla/joomla.env
@@ -41,9 +42,32 @@ services:
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
           - portainer_data:/data
+    
+    watchtower:
+        image: containrrr/watchtower:latest
+        restart: always
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+        env_file: ~/docker_data/watchtower/notifications.env
+        environment:
+          - WATCHTOWER_CLEANUP=true
+          - WATCHTOWER_SCHEDULE=0 0 3 * * *
+            # Every Day 3:00 in the night
+    
+            #    borgbackup:
+            #image: epicdocker/borgbackup:stable
+            #restart: always
+            #volumes:
+            #- joomla_data:/sources/joomla/:ro
+            #- portainer_data:/sources/portainer/:ro
+            #- postgres_data:/sources/postgres/:ro
+            #- ~/docker_data/:/sources/docker_data/:ro
+            #- /mnt/cgs-backup/:/cgs-backup
+            #env_file: ~/docker_data/borgbackup/backup.env
+
 
     nginx:
-        image: nginx
+        image: nginx:latest
         restart: always
         ports:
           - 80:80
@@ -64,3 +88,4 @@ services:
 volumes:
     joomla_data:
     portainer_data:
+    postgres_data:
