@@ -99,17 +99,27 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	Transaction memberSubscriptionTransaction;
 
 	private TextField note;
-	private TextField title;
+	private TextField noteRecurrings;
+	private TextField titleRecurrings;
 	private DateTimePicker date;
+
 	private Checkbox isActiveBox;
 	private ComboBox<TransactionType> type;
+	private ComboBox<TransactionType> typeRecurrings;
+
 	private ComboBox<PaymentMethod> methodForSubscriptionTransaction;
 	private ComboBox<Timezone> rythmBox;
 	private ComboBox<PaymentMethod> paymentMethodBox;
+	private ComboBox<PaymentMethod> paymentMethodBoxRecurrings;
+
 	private ComboBox<Person> optionalPersonBox;
+	private ComboBox<Person> optionalPersonBoxRecurrings;
+
 	private ComboBox<TimeDelcaration> timeBox;
-	
+
 	private MoneyField amount;
+	private MoneyField amountRecurrings;
+	
 	private Transaction transaction;
 	private RecurringPayment recurringPayment;
 	private TextField nameOfRecurringPayment;
@@ -244,20 +254,20 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 					this.recurringPayment = new RecurringPayment();
 					recurringPayment.setActive(true);
 					recurringPayment.setAssociationId(associationId);
-					recurringPayment.setNote(this.note.getValue());
-					recurringPayment.setTitle(this.title.getValue());
+					recurringPayment.setNote(this.noteRecurrings.getValue());
+					recurringPayment.setTitle(this.titleRecurrings.getValue());
 					recurringPayment.setTimezone(this.rythmBox.getValue());
 					recurringPayment.setTimeDeclaration(this.timeBox.getValue());
 					recurringPayment.setDayOfPayment(resolveDateOfPayment(this.timeBox.getValue()));
-					recurringPayment.setAmount(amount.getValue().getNumber().doubleValue());
-					recurringPayment.setType(this.type.getValue());
+					recurringPayment.setAmount(amountRecurrings.getValue().getNumber().doubleValue());
+					recurringPayment.setType(this.typeRecurrings.getValue());
 					
 					if(paymentMethodBox.getValue() != null) {
-						recurringPayment.setPaymentMethod(this.paymentMethodBox.getValue());						
+						recurringPayment.setPaymentMethod(this.paymentMethodBoxRecurrings.getValue());						
 					}
 					
 					if (optionalPersonBox.getValue() != null) {						
-						recurringPayment.setPersonId(optionalPersonBox.getValue().getId().intValue());
+						recurringPayment.setPersonId(optionalPersonBoxRecurrings.getValue().getId().intValue());
 					}
 					
 					recurringPaymentService.update(this.recurringPayment);
@@ -287,17 +297,17 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 
 	private boolean recurringPaymentDataIsValid() {
 		
-		if(title.getValue() == null || title.getValue().equals("")) {
+		if(titleRecurrings.getValue() == null || titleRecurrings.getValue().equals("")) {
 			Notification.show("Es muss ein Titel hinzugefügt werden!");
 			return false;
 		}
 
-		if (amount.getValue() == null || amount.getValue().toString().equals("0,00")) {
+		if (amountRecurrings.getValue() == null || amountRecurrings.getValue().toString().equals("0,00")) {
 			Notification.show("Ohne Betrag kann keine Ausgabe/Einnahme gebucht werden !");
 			return false;
 		}
 		
-		if(note.getValue() == null) {
+		if(noteRecurrings.getValue() == null) {
 			Notification.show("Es muss eine Notiz hinzugefügt werden!");
 			return false;
 		}
@@ -480,7 +490,9 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 
 			if (updateRecurringsMap.get(item) != null) {
 				if (updateRecurringsMap.get(item)) {
-					return new Button("buchen", click -> {
+					Button bookButton = new Button("buchen");
+					bookButton.addClickListener(
+							click -> {
 						Transaction transactionOfRecurringPayment = new Transaction();
 						transactionOfRecurringPayment.setAmount(item.getAmount());
 						transactionOfRecurringPayment.setAssociationId(associationId);
@@ -498,7 +510,9 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 						}
 						recurringPaymentService.update(recurringPayment);
 						
+						bookButton.setEnabled(false);
 					});
+					return bookButton;
 				} else {
 					return new Text("-");
 				}
@@ -1000,30 +1014,30 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		refreshItemsOfTimeBox(Timezone.WEEKLY);
 		timeBox.setItemLabelGenerator(e -> e.getLabel());
 		
-		type = new ComboBox<TransactionType>("Typ");
-		type.setItems(TransactionType.values());
-		type.setItemLabelGenerator(e -> e.getDisplayName());
-		type.setValue(type.getListDataView().getItem(0));
+		typeRecurrings = new ComboBox<TransactionType>("Typ");
+		typeRecurrings.setItems(TransactionType.values());
+		typeRecurrings.setItemLabelGenerator(e -> e.getDisplayName());
+		typeRecurrings.setValue(typeRecurrings.getListDataView().getItem(0));
 
-		amount = new MoneyField();
-		amount.setLabel("Betrag");
-		amount.setCurrency("EUR");		
+		amountRecurrings = new MoneyField();
+		amountRecurrings.setLabel("Betrag");
+		amountRecurrings.setCurrency("EUR");		
 		
-		note = new TextField("Notiz");
-		title = new TextField("Name");
+		noteRecurrings = new TextField("Notiz");
+		titleRecurrings = new TextField("Name");
 		
-		optionalPersonBox = new ComboBox<Person>("Optional - Mitglied");
-		optionalPersonBox.setItems(personService.findAllByAssociation(associationId));
-		optionalPersonBox.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
+		optionalPersonBoxRecurrings = new ComboBox<Person>("Optional - Mitglied");
+		optionalPersonBoxRecurrings.setItems(personService.findAllByAssociation(associationId));
+		optionalPersonBoxRecurrings.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
 		
-		paymentMethodBox = new ComboBox<PaymentMethod>("Optional - Zahlungsmethode");
-		paymentMethodBox.setItems(PaymentMethod.values());
-		paymentMethodBox.setItemLabelGenerator(e -> e.getLabel());
-		paymentMethodBox.setValue(paymentMethodBox.getListDataView().getItem(0));
+		paymentMethodBoxRecurrings = new ComboBox<PaymentMethod>("Optional - Zahlungsmethode");
+		paymentMethodBoxRecurrings.setItems(PaymentMethod.values());
+		paymentMethodBoxRecurrings.setItemLabelGenerator(e -> e.getLabel());
+		paymentMethodBoxRecurrings.setValue(paymentMethodBox.getListDataView().getItem(0));
 		
-		formLayout.add(title, rythmBox, timeBox, type, amount, note, paymentMethodBox, optionalPersonBox);
+		formLayout.add(titleRecurrings, rythmBox, timeBox, typeRecurrings, amountRecurrings, noteRecurrings, paymentMethodBoxRecurrings, optionalPersonBoxRecurrings);
 
-		editorDiv.add(formLayout);
+		editorDiv.add(formLayout); 
 		createButtonLayout(editorLayoutRecurrings, ViewStatus.RECURRING_PAYMENTS);
 		splitLayout.addToSecondary(editorLayoutRecurrings);
 	}
@@ -1089,6 +1103,10 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		if(status == ViewStatus.RECURRING_PAYMENTS) {
 			rythmBox.setValue(Timezone.WEEKLY);
 			timeBox.setValue(timeBox.getListDataView().getItem(0));
+			titleRecurrings.setValue("");
+			amountRecurrings.setValue(amount.getEmptyValue());
+			noteRecurrings.setValue("");
+			paymentMethodBoxRecurrings.setValue(paymentMethodBox.getListDataView().getItem(0));
 			
 		}
 		

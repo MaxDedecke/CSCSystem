@@ -39,15 +39,13 @@ public class Application implements AppShellConfigurator {
                 if (repository.count() == 0L) {
                     return super.initializeDatabase();
                 }
-                else {
-                	checkMigrationStatus();
-                	return false;
-                }
+                
+                checkMigrationStatus();
+                return false;
             }
 
 			private void checkMigrationStatus() {
-				MigrationService migrationService = new MigrationService();
-				migrationService.startMigration();
+				new MigrationService();
 			}
         };
     }

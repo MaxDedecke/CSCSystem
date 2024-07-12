@@ -1,0 +1,72 @@
+@keyframes slide-in {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes change-background {
+    from {
+        background-color: #66DA9D;
+    }
+    to {
+        background-color: #573F27;
+    }
+}
+
+[part="overlay"] {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  animation: slide-in 0.5s ease-out forwards, change-background 1s 1s forwards;
+}
+
+[part="content"] {
+  animation: slide-in 1s ease-out forwards; 
+}
+
+[part="backdrop"]::before {
+  animation: slide-in 1s ease-out forwards;  
+}	
+
+.login-view vaadin-login-form {
+  align-items: center;
+  display: flex;
+  max-width: 500px;
+  height: 100%;
+  animation: slide-in 1s ease-out forwards; 
+}
+
+.login-view vaadin-login-form-wrapper {
+  background-image: none;
+}
+
+.animation-container {
+  position: relative;
+  width: 200px;
+  height: 300px;
+  border: 1px solid #000;
+  overflow: hidden;
+}
+
+.plant {
+  position: absolute;
+  left: 50%;
+  width: 20px;
+  height: 0;
+  animation: grow 5s forwards;
+}
+
+.butterfly {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 30px;
+  background-size: contain;
+  animation: fly 5s 5s forwards;
+}

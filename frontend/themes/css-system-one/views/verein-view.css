@@ -1,9 +1,7 @@
 .verein-view {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  padding: var(--lumo-space-m);
-  
+  height: 100%;  
 }
 
 .verein-view vaadin-split-layout {
@@ -62,5 +60,4 @@
 
 .verein-view .grid-wrapper {
   width: 100%;
-  padding: var(--lumo-space-m);
 }

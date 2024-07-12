@@ -368,6 +368,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		lastName = new TextField("Nachname");
 		email = new TextField("Email");
 		phone = new TextField("Telefonnummer");
+        phone.setAllowedCharPattern("[0-9/]");
 		dateOfBirth = new DatePicker("Geburtstag");
 
 		formLayout.add(firstName, lastName, email, phone, dateOfBirth);

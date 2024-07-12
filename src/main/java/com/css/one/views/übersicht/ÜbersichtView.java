@@ -2,17 +2,26 @@ package com.css.one.views.übersicht;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import com.css.one.data.Output;
 import com.css.one.data.Person;
 import com.css.one.data.Strain;
 import com.css.one.data.WorkingUnit;
+import com.css.one.data.WorkingUnitCategory;
 import com.css.one.services.OutputService;
 import com.css.one.services.PersonService;
 import com.css.one.services.StrainService;
+import com.css.one.services.TransactionService;
+import com.css.one.services.WorkingUnitCategoryService;
 import com.css.one.services.WorkingUnitService;
 import com.css.one.views.MainLayout;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
@@ -23,7 +32,9 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -46,6 +57,8 @@ public class ÜbersichtView extends Div {
     
     private VerticalLayout layoutSearchMembers = new VerticalLayout();
     private VerticalLayout layoutSearchStrains = new VerticalLayout();
+    private VerticalLayout layoutNews = new VerticalLayout();
+
     private HorizontalLayout layoutCurrentDate = new HorizontalLayout();
 
     private ComboBox<Person> searchMemberBox = new ComboBox<>();
@@ -53,53 +66,94 @@ public class ÜbersichtView extends Div {
 
     private PersonService personService;
     private StrainService strainService;
-    private OutputService outputService;
+    private OutputService outputService; 
     private WorkingUnitService workingUnitService;
+    private TransactionService transactionService;
+    private WorkingUnitCategoryService workingUnitCategoryService;
+    private ComboBox<WorkingUnitCategory> box;
     
     private Button buttonOpenPersonInfo = new Button("Info");
     private Button buttonOpenStrainInfo = new Button("Info");
+    private Button buttonBookOutput = new Button("Abgabe");
+    private Button buttonWorkingUnit = new Button("Zeit stempeln");
+    
+    Button buttonStopWorkingUnit = new Button("ausstempeln");
+    Button buttonStartWorkingUnit = new Button("einstempeln");
+    
+    private Text durationWorkingUnit = new Text("-");
     
     private Person selectedMember; 
     private Dialog memberInfoDialog = new Dialog();
     private TextField memberNameField = new TextField("Name");
     Grid<Strain> outputMemberGrid = new Grid<>();
+    Grid<String> newsGrid = new Grid<>();
+    
     Text workloudMember = new Text("");
     
     private Dialog strainInfoDialog = new Dialog();
+    private Dialog bookOutputDialog = new Dialog();
+    private Dialog startWorkingUnitDialog = new Dialog();
+
     private TextField strainNameField = new TextField("Name");
     private TextField strainStatusField = new TextField("Status");
     private TextField strainAmountField = new TextField("Verbleibende Menge");
     private TextField strainIngrediensThcField = new TextField("THC in %");
     
 	private int associationId;
+
+	private WorkingUnit workingUnit;
     
-    public ÜbersichtView(PersonService personService, StrainService strainService, OutputService outputService, WorkingUnitService workingUnitService) {    	
+    public ÜbersichtView(PersonService personService, StrainService strainService, OutputService outputService, WorkingUnitService workingUnitService,
+    				TransactionService transactionService, WorkingUnitCategoryService workingUnitCategoryService) {    	
     	this.personService = personService;
     	this.strainService = strainService;
     	this.outputService = outputService;
     	this.workingUnitService = workingUnitService;
+    	this.transactionService = transactionService;
+    	this.workingUnitCategoryService = workingUnitCategoryService;
     	
-    	addClassNames("uebersicht-view", LumoUtility.AlignContent.CENTER);
+    	addClassNames("uebersicht-view");
     	
 		associationId = MainLayout.getAssociationId();
 		createCurrentDateLayout();
+		
 		createSearchMemberLayout();
 		createSearchStrainLayout();
+		createNewsLayout();
 		
 		Hr hr1 = new Hr();
-		hr1.addClassName( LumoUtility.Margin.LARGE);
-		Hr hr2 = new Hr();
-		hr2.addClassName( LumoUtility.Margin.LARGE);
+		hr1.addClassName(LumoUtility.Margin.SMALL);
 		
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.setWidth("100%");
 		HorizontalLayout firstLayerLayout = new HorizontalLayout();
 		firstLayerLayout.add(layoutSearchMembers, layoutSearchStrains);
-        add(layoutCurrentDate, hr1, firstLayerLayout, hr2);
+		firstLayerLayout.setWidth("100%");
+		
+		mainLayout.add(firstLayerLayout);
+		
+		HorizontalLayout secondLayerLayout = new HorizontalLayout(); 
+		secondLayerLayout.add(layoutNews);
+		secondLayerLayout.setWidth("100%");
+		
+		mainLayout.add(secondLayerLayout);
+        add(layoutCurrentDate, hr1, mainLayout);
     }
-    
-    private void createCurrentDateLayout() {
+
+	private void createNewsLayout() {		
+		newsGrid.addColumn(e -> e).setAutoWidth(true);
+		newsGrid.setItems(Arrays.asList("Keine Neuigkeiten."));
+		newsGrid.setHeight(200, Unit.PIXELS);
+		newsGrid.addClassNames(LumoUtility.Border.ALL ,LumoUtility.BorderRadius.LARGE, LumoUtility.BorderColor.PRIMARY_10, LumoUtility.Padding.NONE);
+		layoutNews.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		
+		layoutNews.add(newsGrid);
+	}
+
+	private void createCurrentDateLayout() {
     	
     	layoutCurrentDate.addClassNames(LumoUtility.AlignContent.CENTER,
-    			LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.Top.LARGE, LumoUtility.Margin.LARGE, LumoUtility.BorderRadius.LARGE); 
+    			LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.Top.LARGE, LumoUtility.Margin.Bottom.SMALL, LumoUtility.BorderRadius.LARGE); 
     	
 		LocalDate now = LocalDate.now();
 		currentDateText = new H1(convertDayOfWeek(now.getDayOfWeek()) + ", der " + 
@@ -113,7 +167,7 @@ public class ÜbersichtView extends Div {
     	layoutSearchMembers.addClassNames("vaadin-horizontal-layout", LumoUtility.AlignContent.CENTER,
     			LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_10, 
     			LumoUtility.JustifyContent.CENTER, 
-    			LumoUtility.Margin.Top.LARGE, LumoUtility.Margin.LARGE, LumoUtility.BorderRadius.LARGE); 
+    			LumoUtility.Margin.Top.SMALL, LumoUtility.BorderRadius.LARGE); 
     	 
     	HorizontalLayout headerLayout = new HorizontalLayout();
     	H1 headerSearch = new H1("Mitgliedersuche");
@@ -123,57 +177,107 @@ public class ÜbersichtView extends Div {
     	headerLayout.setWidth("100%");
     	
     	buttonOpenPersonInfo.setEnabled(false);
-    	
+    	buttonWorkingUnit.setEnabled(false);
+		buttonBookOutput.setEnabled(false);
+		
+		buttonOpenPersonInfo.setMinWidth("20%");
+    	buttonWorkingUnit.setMinWidth("20%");
+		buttonBookOutput.setMinWidth("20%");
+		
+    	VerticalLayout mainLayout = new VerticalLayout();
     	HorizontalLayout boxLayout = new HorizontalLayout();
+    	
     	boxLayout.setWidth("100%");
-
+    	boxLayout.addClassNames(LumoUtility.JustifyContent.CENTER);
+    	
     	this.searchMemberBox.setItems(personService.findAllByAssociation(associationId));
     	this.searchMemberBox.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
     	this.searchMemberBox.setHeight(75, Unit.PIXELS);
     	this.searchMemberBox.setWidth("100%");
     	
     	createMemberInfoDialogContent();
-
+    	createStartWorkingDialogContent();
+    	createBookOutputDialogContent();
+    	
     	this.searchMemberBox.addValueChangeListener(e -> {
     		if(e.getValue() == null) {
     			buttonOpenPersonInfo.setEnabled(false);
+    			buttonWorkingUnit.setEnabled(false);
+    			buttonBookOutput.setEnabled(false);
     		} else {    			
     			buttonOpenPersonInfo.setEnabled(true);
+    			buttonWorkingUnit.setEnabled(true);
+    			buttonBookOutput.setEnabled(true);
     		}
     	});
+    	
     	
     	buttonOpenPersonInfo.addClickListener(e -> {
     		initMemberInfoDialog(searchMemberBox.getValue());
     		memberInfoDialog.open();
     	});
     	
+    	buttonWorkingUnit.addClickListener(e -> {
+    		initStartWorkDialog(searchMemberBox.getValue());
+    		startWorkingUnitDialog.open();
+    	});
+    	
+    	buttonBookOutput.addClickListener(e -> {
+    		initOutputDialog(searchMemberBox.getValue());
+    		bookOutputDialog.open();
+    	});
+    	
     	this.searchMemberBox.setClearButtonVisible(true);	
-    	boxLayout.add(searchMemberBox, buttonOpenPersonInfo);
+    	boxLayout.add(buttonOpenPersonInfo, buttonBookOutput, buttonWorkingUnit);
+    	mainLayout.add(this.searchMemberBox, boxLayout);
     	
     	//Add margin top
     	headerSearch.addClassNames(LumoUtility.Margin.Top.LARGE);
     	searchMemberBox.addClassNames(LumoUtility.Padding.SMALL, LumoUtility.Margin.Top.LARGE);
     	buttonOpenPersonInfo.addClassNames(LumoUtility.Padding.LARGE,LumoUtility.Margin.Top.LARGE);
-
-		layoutSearchMembers.add(headerLayout, new Hr(), boxLayout);
+    	buttonWorkingUnit.addClassNames(LumoUtility.Padding.LARGE,LumoUtility.Margin.Top.LARGE);
+		buttonBookOutput.addClassNames(LumoUtility.Padding.LARGE,LumoUtility.Margin.Top.LARGE);
+		
+		layoutSearchMembers.add(headerLayout, new Hr(), mainLayout);
 
     }
 
-    private void createSearchStrainLayout() {
-    	layoutSearchStrains.addClassNames(LumoUtility.AlignContent.CENTER,
-    			LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_10, 
-    			LumoUtility.Margin.Top.LARGE, LumoUtility.Margin.LARGE, LumoUtility.BorderRadius.LARGE);
+    private void createBookOutputDialogContent() {
+    	bookOutputDialog.add(addBookOutputLayoutForDialog());
+    	Button cancelButton = new Button("Zurück", e -> bookOutputDialog.close());
+    	bookOutputDialog.getFooter().add(cancelButton);	
+	}
+
+	private Component addBookOutputLayoutForDialog() {
+		VerticalLayout mainDialogLayout = new VerticalLayout();
+    	mainDialogLayout.setWidth("100%");
+    	mainDialogLayout.setMinWidth(400, Unit.PIXELS);
+    	
+    	
+    	
+		return mainDialogLayout;
+	}
+
+	private void createSearchStrainLayout() {
+    	layoutSearchStrains.addClassNames("vaadin-horizontal-layout", LumoUtility.AlignContent.CENTER,
+    			LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_10, LumoUtility.Margin.Top.SMALL,  
+    			LumoUtility.BorderRadius.LARGE);
     	
     	HorizontalLayout headerLayout = new HorizontalLayout();
     	headerLayout.setWidth("100%");
     	H1 headerSearch = new H1("Bestandssuche");
-    	headerSearch.addClassNames(LumoUtility.Margin.MEDIUM);
-    	headerLayout.addClassNames(LumoUtility.JustifyContent.CENTER);
+    	headerLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.Top.LARGE);
     	headerLayout.add(headerSearch);
 
     	buttonOpenStrainInfo.setEnabled(false);
+    	buttonOpenStrainInfo.setMinWidth("40%");
+
+    	VerticalLayout mainLayout = new VerticalLayout();
     	HorizontalLayout boxLayout = new HorizontalLayout();
+    	
     	boxLayout.setWidth("100%");
+    	boxLayout.addClassNames(LumoUtility.Margin.Top.SMALL,LumoUtility.JustifyContent.CENTER);
+    	
     	this.searchStrainBox.setItems(strainService.findAllByAssociation(associationId));
     	this.searchStrainBox.setItemLabelGenerator(e -> e.getName() + " (" + e.getThc() + "% THC)");
     	this.searchStrainBox.setHeight(75, Unit.PIXELS);
@@ -196,18 +300,31 @@ public class ÜbersichtView extends Div {
     	
     	this.searchStrainBox.setClearButtonVisible(true);	
     	boxLayout.add(searchStrainBox, buttonOpenStrainInfo);
+    	mainLayout.add(this.searchStrainBox, boxLayout);
     	
     	//Add margin top
     	headerSearch.addClassNames(LumoUtility.Margin.Top.LARGE);
     	searchStrainBox.addClassNames(LumoUtility.Padding.SMALL, LumoUtility.Margin.Top.LARGE);
     	buttonOpenStrainInfo.addClassNames(LumoUtility.Padding.LARGE,LumoUtility.Margin.Top.LARGE);
     	
-		layoutSearchStrains.add(headerLayout, new Hr(), boxLayout);
+		layoutSearchStrains.add(headerLayout, new Hr(), mainLayout);
 
     }
     
-    private void createMemberInfoDialogContent() {
-    	    	
+    private void createMemberInfoDialogContent() {    	
+    	memberInfoDialog.add(addGeneralLayoutForDialog());
+    	Button cancelButton = new Button("Zurück", e -> memberInfoDialog.close());
+    	memberInfoDialog.getFooter().add(cancelButton);
+    }
+    
+    private void createStartWorkingDialogContent() {
+    	
+    	startWorkingUnitDialog.add(addWorkingUnitLayoutForDialog());
+    	Button cancelButton = new Button("Zurück", e -> startWorkingUnitDialog.close());
+    	startWorkingUnitDialog.getFooter().add(cancelButton);
+    }
+
+    private Component addGeneralLayoutForDialog() {
     	VerticalLayout mainDialogLayout = new VerticalLayout();
     	mainDialogLayout.setWidth("100%");
     	mainDialogLayout.setMinWidth(400, Unit.PIXELS);
@@ -221,7 +338,6 @@ public class ÜbersichtView extends Div {
     	    	
     	outputMemberGrid.setMinWidth(600, Unit.PIXELS);
     	outputMemberGrid.setMaxHeight(200, Unit.PIXELS);
-    	
     	outputMemberGrid.addColumn(o -> o.getName()).setAutoWidth(true).setHeader("Sorte");
     	outputMemberGrid.addColumn(o -> o.getDateFinished()).setAutoWidth(true).setHeader("Datum der Ernte");
     	outputMemberGrid.addColumn(o -> resolveOutputOfStrainPerMember(o)).setAutoWidth(true).setHeader("Kontigent");
@@ -229,12 +345,87 @@ public class ÜbersichtView extends Div {
     	H2 h2Work = new H2("Arbeitszeiten");
     	
     	mainDialogLayout.add(h1, memberInfoLayout, h2, new Hr(), outputMemberGrid, h2Work, workloudMember);
-    	
-    	memberInfoDialog.add(mainDialogLayout);
-    	Button cancelButton = new Button("Zurück", e -> memberInfoDialog.close());
-    	memberInfoDialog.getFooter().add(cancelButton);
+    	return mainDialogLayout;
     }
     
+    private Component addWorkingUnitLayoutForDialog() {
+    	
+    	VerticalLayout mainDialogLayout = new VerticalLayout();
+    	mainDialogLayout.setWidth("100%");
+    	mainDialogLayout.setMinWidth(400, Unit.PIXELS);
+    	
+    	H1 h1 = new H1("Zeiterfassung");
+    	
+    	H2 h2 = new H2("Aktuelle Schicht");
+    	h2.addClassNames(LumoUtility.Margin.Top.LARGE);
+    	
+    	HorizontalLayout currentWorkingUnitLayout = new HorizontalLayout();
+    	currentWorkingUnitLayout.setMinWidth(400, Unit.PIXELS);
+    	currentWorkingUnitLayout.addClassNames(LumoUtility.Margin.Top.LARGE, LumoUtility.JustifyContent.CENTER);
+    	
+    	H3 h3 = new H3("Läuft seit: ");
+    	HorizontalLayout textWrapper = new HorizontalLayout(durationWorkingUnit);
+    	
+	    currentWorkingUnitLayout.add(h3, textWrapper);
+	    
+	    buttonStopWorkingUnit.setWidthFull();
+	    buttonStopWorkingUnit.setEnabled(false);
+	    buttonStopWorkingUnit.addClickListener(e -> {
+	    	buttonStopWorkingUnit.setEnabled(false);
+	    	LocalDateTime now = LocalDateTime.now();
+	    	this.workingUnit.setEnd(now.toLocalDate());
+	    	this.workingUnit.setHourEnd(now.getHour());
+	    	this.workingUnit.setMinuteEnd(now.getMinute());
+	    	
+	    	LocalDateTime begin = LocalDateTime.of(workingUnit.getBegin(), LocalTime.of(workingUnit.getHourBegin(), workingUnit.getMinuteBegin()));
+    		this.workingUnit.setWorkingHours((int)ChronoUnit.MINUTES.between(begin, now));
+
+	    	workingUnitService.update(workingUnit);
+	    	Notification.show("Schicht beendet.");
+	    	
+	    	this.workingUnit = null;
+	    	startWorkingUnitDialog.close();
+	    });
+	    
+    	H2 h2StartUnit = new H2("Neue Schicht");
+    	FormLayout workingUnitInfoLayout = new FormLayout();
+    	box = new ComboBox<WorkingUnitCategory>();
+    	box.setItems(workingUnitCategoryService.findAllByAssociation(associationId));
+    	box.setItemLabelGenerator(e -> e.getName());
+    	workingUnitInfoLayout.add(box);
+
+    	buttonStartWorkingUnit.setWidthFull();
+    	buttonStartWorkingUnit.setEnabled(false);
+    	buttonStartWorkingUnit.addClickListener(e -> {
+    		
+    		if(box.getValue() != null) {
+    		LocalDateTime now = LocalDateTime.now();
+    		this.workingUnit = new WorkingUnit();
+    		this.workingUnit.setAssociationId(associationId);
+    		this.workingUnit.setBegin(now.toLocalDate());
+    		this.workingUnit.setHourBegin(now.getHour());
+    		this.workingUnit.setMinuteBegin(now.getMinute());
+    		this.workingUnit.setNote("Schicht vom " + now.getDayOfMonth() + "." + now.getMonthValue() + "." + now.getYear());
+    		this.workingUnit.setCategory(box.getValue());
+    		this.workingUnit.setPersonId(this.selectedMember.getId());
+    		this.workingUnit.setPersonName(this.selectedMember.getFirstName() + this.selectedMember.getLastName());
+    		this.workingUnit.setWorkingHours(0);
+    		
+    		this.workingUnit = workingUnitService.update(workingUnit);
+    		this.workingUnit = null;
+    		buttonStartWorkingUnit.setEnabled(false);
+    		startWorkingUnitDialog.close();
+	    	Notification.show("Schicht begonnen.");
+
+    		} else {
+    			Notification.show("Es muss noch eine Kategorie ausgewählt werden");
+    		}
+    	});
+	    
+    	mainDialogLayout.add(h1, h2, currentWorkingUnitLayout, buttonStopWorkingUnit, new Hr(), h2StartUnit, workingUnitInfoLayout, buttonStartWorkingUnit);
+    	return mainDialogLayout;
+    }
+      
     private String resolveOutputOfStrainPerMember(Strain s) {
     	List<Output> outputOfMember = outputService.findOutputByMember(selectedMember.getId().intValue());
     	List<Output> outputOfSpecificStrain = outputOfMember.stream().filter(e -> e.getStrainId() == s.getId().intValue()).toList();
@@ -265,6 +456,44 @@ public class ÜbersichtView extends Div {
     	}
     	
     	workloudMember.setText("Es wurden bereits " + resolveWorkingHours(workingTime) + " Minuten gearbeitet.");
+    }
+    
+    private void initStartWorkDialog(Person person) {
+    	this.selectedMember = person;
+    	
+    	if(workingUnitService.hasOpenWorkingUnit(person.getId().intValue())) {
+    		Optional<WorkingUnit> openUnitByMember = workingUnitService.findOpenUnitByMember(person.getId().intValue());
+    		
+    		if(openUnitByMember.isPresent()) {
+    			this.workingUnit = openUnitByMember.get();
+    			LocalDateTime now = LocalDateTime.now();
+				LocalDateTime begin = LocalDateTime.of(openUnitByMember.get().getBegin(),
+						LocalTime.of(openUnitByMember.get().getHourBegin(), openUnitByMember.get().getMinuteBegin()));
+    			
+    			int i = ((int)ChronoUnit.MINUTES.between(begin, now));
+    			
+    			int hours = i/60;
+    			int minutes = i%60;
+    			
+    			String time =  hours + " h " + minutes + " min";
+    			
+    			durationWorkingUnit.setText(time);
+    		}
+    		
+    		buttonStopWorkingUnit.setEnabled(true);
+    		buttonStartWorkingUnit.setEnabled(false);
+    		
+    	} else {
+			durationWorkingUnit.setText("-");
+    		buttonStopWorkingUnit.setEnabled(false);
+    		buttonStartWorkingUnit.setEnabled(true);
+    	}
+		box.setValue(box.getEmptyValue());
+
+    }
+    
+    private void initOutputDialog(Person person) {
+    	
     }
     
     private String resolveWorkingHours(int workingHours) {
