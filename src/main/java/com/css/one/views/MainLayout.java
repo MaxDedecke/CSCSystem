@@ -55,7 +55,7 @@ public class MainLayout extends AppLayout {
     private AuthenticatedUser authenticatedUser;
     private AccessAnnotationChecker accessChecker;
         
-    static int associationId;
+    static int associationId; 
 
     public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
@@ -63,7 +63,7 @@ public class MainLayout extends AppLayout {
 
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
-        addHeaderContent();
+        addHeaderContent(); 
     }
 
     private void addHeaderContent() {
@@ -78,30 +78,29 @@ public class MainLayout extends AppLayout {
 
     private void addDrawerContent() {
     	
-    	VerticalLayout layout = new VerticalLayout();
+    	VerticalLayout layout = new VerticalLayout(); 
     	
         Span appName = new Span("Ceres");
         appName.addClassNames(LumoUtility.FontWeight.SEMIBOLD, LumoUtility.FontSize.LARGE);
 
-        StreamResource imageResource = new StreamResource("NewLogo040724.png",
-                () -> getClass().getResourceAsStream("/NewLogo040724.png"));
+        StreamResource imageResource = new StreamResource("NewLogo050724_transparent.png",
+                () -> getClass().getResourceAsStream("/NewLogo050724_transparent.png"));
 
         Image logoImage = new Image(imageResource, "");
         logoImage.setHeight(250, Unit.PIXELS);
-        
+         
+         
         layout.setAlignItems(Alignment.CENTER);
         layout.addClassNames(LumoUtility.Padding.XSMALL);
         layout.add(logoImage, appName, new Hr());
-        
         Header header = new Header(layout);
         
-
         Scroller scroller = new Scroller(createNavigation());
 
         HorizontalLayout versionLayout = new HorizontalLayout();
         versionLayout.setWidth("100%");
         versionLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.NONE);
-        versionLayout.add(new Text("Ceres - v.0.0.1"));
+        versionLayout.add(new Text("Ceres - v.0.0.2"));
         layout.add(versionLayout);
         
         Hr hr2 = new Hr();
@@ -112,7 +111,8 @@ public class MainLayout extends AppLayout {
 
     private SideNav createNavigation() {
         SideNav nav = new SideNav();
-
+        nav.setWidth("100%");
+        
         if (accessChecker.hasAccess(ÜbersichtView.class)) {
             nav.addItem(new SideNavItem("Übersicht", ÜbersichtView.class, LineAwesomeIcon.GLOBE_SOLID.create()));
 

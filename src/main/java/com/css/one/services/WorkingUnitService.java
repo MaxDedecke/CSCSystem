@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.WorkingUnit;
+import com.css.one.data.WorkingUnitCategory;
 import com.css.one.data.WorkingUnitRepository;
 
 @Service
@@ -47,11 +48,19 @@ public class WorkingUnitService {
 	    	return repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).toList(); 
 	    }
 	    
-	    public List<WorkingUnit> findByCategory(String category, int associationId) {
-	    	return findAllByAssociation(associationId).stream().filter(e -> e.getCategory().equals(category)).toList();
+	    public List<WorkingUnit> findByCategory(WorkingUnitCategory category, int associationId) {
+	    	return findAllByAssociation(associationId).stream().filter(e -> e.getCategory().getName().equals(category.getName())).toList();
 	    }
 	    
 	    public List<WorkingUnit> findByMember(int personId) {
 	    	return repository.findAll().stream().filter(e -> e.getPersonId().intValue() == personId).toList();
+	    }
+	    
+	    public Optional<WorkingUnit> findOpenUnitByMember(int personId) {
+	    	return repository.findAll().stream().filter(e -> e.getPersonId().intValue() == personId && e.getEnd() == null).findAny();
+	    }
+	    
+	    public boolean hasOpenWorkingUnit(int personId) {
+	    	return findByMember(personId).stream().filter(e -> e.getEnd() == null).findAny().isPresent();
 	    }
 }

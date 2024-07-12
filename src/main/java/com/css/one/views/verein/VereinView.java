@@ -30,6 +30,7 @@ import com.css.one.services.PersonService;
 import com.css.one.services.TransactionService;
 import com.css.one.services.WorkingUnitService;
 import com.css.one.views.MainLayout;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
@@ -44,13 +45,12 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
@@ -60,13 +60,16 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 @PageTitle("Verein")
 @Route(value = "verein", layout = MainLayout.class)
 @AnonymousAllowed
-public class VereinView extends Div implements BeforeEnterObserver {
+public class VereinView extends Div {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1953468178819136512L;
 
 	private int associationId;
+	
+	private TabSheet tabSheet = new TabSheet();
+
 	private AssociationService associationService;
 	private PersonService samplePersonService;
 	private WorkingUnitService workingUnitService;
@@ -91,8 +94,6 @@ public class VereinView extends Div implements BeforeEnterObserver {
 
 	private File exportFile;
 
-//	private final BeanValidationBinder<Association> binder;
-
 	public VereinView(AssociationService associationService, PersonService samplePersonService,
 			WorkingUnitService workingUnitService, TransactionService transactionService) {
 		this.associationService = associationService;
@@ -104,13 +105,144 @@ public class VereinView extends Div implements BeforeEnterObserver {
 		associationId = MainLayout.getAssociationId();
 
 		SplitLayout splitLayout = new SplitLayout();
+		
+		tabSheet.setSizeFull();
+		tabSheet.add("Verantwortliche", createResponsiblesTab());
+		tabSheet.add("Downloads", createDownloadsTab());
+		tabSheet.add("Allgemeine Infos", createGeneralInfoTab());
 
-//    	binder = new BeanValidationBinder<>(Association.class);
-
-		createMainLayout(splitLayout);
 		createSideLayout(splitLayout);
 
-		add(splitLayout);
+		add(tabSheet);
+	}
+
+	private Component createGeneralInfoTab() {
+		
+		Div wrapper = new Div();
+		wrapper.addClassName("grid-wrapper");
+		wrapper.setHeight("100%");
+		
+		FormLayout formLayout = new FormLayout();
+
+		TextField fieldAssociationName = new TextField("Name des Vereins");
+		TextField fieldAssociationNumber = new TextField("Vereinsnummer");
+		TextField fieldStreetName = new TextField("Straße");
+		TextField fieldHouseNumber = new TextField("Hausnummer");
+		TextField fieldPostalCode = new TextField("PLZ");
+		TextField fieldCity = new TextField("Ort");
+
+		fieldAssociationName.setEnabled(false);
+		fieldAssociationNumber.setEnabled(false);
+		fieldStreetName.setEnabled(false);
+		fieldHouseNumber.setEnabled(false);
+		fieldPostalCode.setEnabled(false);
+		fieldCity.setEnabled(false);
+		
+		Optional<Association> optionalAssociation = associationService.get(Integer.toUnsignedLong(associationId));
+		
+		if (optionalAssociation.isPresent()) {
+			fieldAssociationName.setValue(optionalAssociation.get().getName());
+			fieldAssociationNumber.setValue(String.valueOf(optionalAssociation.get().getNumber()));
+			fieldStreetName.setValue(optionalAssociation.get().getStreet());
+			fieldHouseNumber.setValue(optionalAssociation.get().getStreetNumber());
+			fieldPostalCode.setValue(String.valueOf(optionalAssociation.get().getPostalCode()));
+			fieldCity.setValue(optionalAssociation.get().getCity());
+		} else {
+			fieldAssociationName.setValue("");
+			fieldAssociationNumber.setValue("");
+			fieldStreetName.setValue("");
+			fieldHouseNumber.setValue("");
+			fieldPostalCode.setValue("");
+		}
+
+		formLayout.add(fieldAssociationName, fieldAssociationNumber, fieldStreetName, fieldHouseNumber,
+				fieldPostalCode, fieldCity);
+		
+		formLayout.setColspan(fieldAssociationName, 2);
+		formLayout.setColspan(fieldAssociationNumber, 2);
+		formLayout.setColspan(fieldStreetName, 2);
+		formLayout.setColspan(fieldHouseNumber, 2);
+		formLayout.setColspan(fieldPostalCode, 2);
+		formLayout.setColspan(fieldCity, 2);
+
+//		horizontalWrapperFormLayout.setSpacing(true);
+//		horizontalWrapperFormLayout.setMargin(true);
+//		horizontalWrapperFormLayout.add(formLayout);
+		
+		wrapper.add(formLayout);
+		
+		return wrapper;
+	}
+
+	private Component createDownloadsTab() {
+		Div wrapper = new Div();
+		wrapper.addClassName("grid-wrapper");
+
+		VerticalLayout mainLayout = new VerticalLayout();
+
+		mainLayout.add(new H3("Mitglieder"));
+		Hr hr1 = new Hr();
+		hr1.setWidth(420, Unit.PIXELS);
+		mainLayout.add(hr1);
+
+		HorizontalLayout layerOne = new HorizontalLayout();
+		setFirstLayer(layerOne);
+		setSecondLayer(layerOne);
+		mainLayout.add(layerOne);
+
+		mainLayout.add(new H3("Waren"));
+		Hr hr2 = new Hr();
+		hr2.setWidth(420, Unit.PIXELS);
+		mainLayout.add(hr2);
+
+		HorizontalLayout layerThree = new HorizontalLayout();
+		setThirdLayer(layerThree);
+		mainLayout.add(layerThree);
+
+		mainLayout.add(new H3("Finanzen"));
+		Hr hr3 = new Hr();
+		hr3.setWidth(420, Unit.PIXELS);
+		mainLayout.add(hr3);
+
+		HorizontalLayout layerFour = new HorizontalLayout();
+		createFourthLayer(layerFour);
+		mainLayout.add(layerFour);
+
+		mainLayout.add(new H3("Allgemein"));
+		Hr hr4 = new Hr();
+		hr4.setWidth(420, Unit.PIXELS);
+		mainLayout.add(hr4);
+
+		HorizontalLayout layerGeneral = new HorizontalLayout();
+		setGeneralLayer(layerGeneral);
+		mainLayout.add(layerGeneral);
+
+		wrapper.add(mainLayout);
+		return wrapper;
+	}
+
+	private Component createResponsiblesTab() {
+		Div wrapper = new Div();
+		wrapper.addClassName("grid-wrapper");
+		wrapper.setHeight("100%");
+		wrapper.addClassNames(LumoUtility.Padding.NONE);
+		
+		VerticalLayout wrapperGrid = new VerticalLayout();
+		wrapperGrid.addClassNames(LumoUtility.Padding.NONE);
+		
+		importantPeople = samplePersonService.findAllByAssociation(associationId).stream()
+				.filter(e -> e.getAssociationRole() != AssociationRole.MEMBER).collect(Collectors.toList());
+		
+		Grid<Person> responsiblesGrid = new Grid<>(Person.class, false);
+		responsiblesGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+		responsiblesGrid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
+		responsiblesGrid.addColumn(p -> p.getAssociationRole().getLabel()).setAutoWidth(true).setHeader("Rolle");
+		responsiblesGrid.addColumn(p -> renderDate(p.getDateOfHigherRole())).setAutoWidth(true).setHeader("In der Funktion seit");
+		responsiblesGrid.setItems(importantPeople);
+		
+		wrapperGrid.add(responsiblesGrid);
+		wrapper.add(wrapperGrid);
+		return wrapper;
 	}
 
 	private void createSideLayout(SplitLayout splitLayout) {
@@ -733,94 +865,9 @@ public class VereinView extends Div implements BeforeEnterObserver {
 		layerFour.add(buttonPrintCosts);
 	}
 
-	private void createMainLayout(SplitLayout splitLayout) {
-		Div wrapper = new Div();
-		wrapper.addClassName("grid-wrapper");
-		HorizontalLayout horizontalWrapperFormLayout = new HorizontalLayout();
-		HorizontalLayout horizontalWrapperGrid = new HorizontalLayout();
-
-		FormLayout formLayout = new FormLayout();
-
-		TextField fieldAssociationName = new TextField("Name des Vereins");
-		TextField fieldAssociationNumber = new TextField("Vereinsnummer");
-		TextField fieldStreetName = new TextField("Straße");
-		TextField fieldHouseNumber = new TextField("Hausnummer");
-		TextField fieldPostalCode = new TextField("PLZ");
-		TextField fieldCity = new TextField("Ort");
-
-		fieldAssociationName.setEnabled(false);
-		fieldAssociationNumber.setEnabled(false);
-		fieldStreetName.setEnabled(false);
-		fieldHouseNumber.setEnabled(false);
-		fieldPostalCode.setEnabled(false);
-		fieldCity.setEnabled(false);
-
-		H2 associationInfo = new H2("Vereinsinformationen");
-		H2 responsibles = new H2("Verantwortliche");
-
-		Grid<Person> responsiblesGrid = new Grid<>(Person.class, false);
-		responsiblesGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-		responsiblesGrid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
-		responsiblesGrid.addColumn(p -> p.getAssociationRole().getLabel()).setAutoWidth(true).setHeader("Rolle");
-		responsiblesGrid.addColumn(p -> renderDate(p.getDateOfHigherRole())).setAutoWidth(true).setHeader("In der Funktion seit");
-		responsiblesGrid.addClassNames(LumoUtility.Margin.MEDIUM);
-		
-		Optional<Association> optionalAssociation = associationService.get(Integer.toUnsignedLong(associationId));
-
-		if (optionalAssociation.isPresent()) {
-			importantPeople = samplePersonService.findAllByAssociation(associationId).stream()
-					.filter(e -> e.getAssociationRole() != AssociationRole.MEMBER).collect(Collectors.toList());
-			responsiblesGrid.setItems(importantPeople);
-			fieldAssociationName.setValue(optionalAssociation.get().getName());
-			fieldAssociationNumber.setValue(String.valueOf(optionalAssociation.get().getNumber()));
-			fieldStreetName.setValue(optionalAssociation.get().getStreet());
-			fieldHouseNumber.setValue(optionalAssociation.get().getStreetNumber());
-			fieldPostalCode.setValue(String.valueOf(optionalAssociation.get().getPostalCode()));
-			fieldCity.setValue(optionalAssociation.get().getCity());
-		} else {
-			fieldAssociationName.setValue("");
-			fieldAssociationNumber.setValue("");
-			fieldStreetName.setValue("");
-			fieldHouseNumber.setValue("");
-			fieldPostalCode.setValue("");
-		}
-
-		formLayout.add(associationInfo, fieldAssociationName, fieldAssociationNumber, fieldStreetName, fieldHouseNumber,
-				fieldPostalCode, fieldCity);
-
-		formLayout.setColspan(fieldAssociationName, 2);
-		formLayout.setColspan(fieldAssociationNumber, 2);
-		formLayout.setColspan(fieldStreetName, 2);
-		formLayout.setColspan(fieldHouseNumber, 2);
-		formLayout.setColspan(fieldPostalCode, 2);
-		formLayout.setColspan(fieldCity, 2);
-
-		horizontalWrapperFormLayout.setSpacing(true);
-		horizontalWrapperFormLayout.setMargin(true);
-		horizontalWrapperFormLayout.add(formLayout);
-
-		horizontalWrapperGrid.setSpacing(true);
-		horizontalWrapperGrid.setMargin(true);
-		horizontalWrapperGrid.add(responsibles);
-
-		Hr hr = new Hr();
-		hr.addClassNames(LumoUtility.Margin.MEDIUM);
-		
-		wrapper.add(horizontalWrapperFormLayout);
-		wrapper.add(hr, horizontalWrapperGrid);
-		wrapper.add(responsiblesGrid);
-		splitLayout.addToPrimary(wrapper);
-		splitLayout.setSplitterPosition(72);
-	}
-
 	private void refreshDialogs() {
 		textFieldsNameOfDocument.forEach(e -> e.setValue(""));
 		formatComboBoxes.forEach(e -> e.setValue(formatTypes.iterator().next()));
 	}
 
-	@Override
-	public void beforeEnter(BeforeEnterEvent event) {
-		// TODO Auto-generated method stub
-
-	}
 }
