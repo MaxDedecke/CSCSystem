@@ -52,6 +52,7 @@ services:
         environment:
           - WATCHTOWER_CLEANUP=true
           - WATCHTOWER_SCHEDULE=0 0 3 * * *
+          - WATCHTOWER_DISABLE_CONTAINERS=cscsystem-cscs-1
             # Every Day 3:00 in the night
     
             #    borgbackup:
