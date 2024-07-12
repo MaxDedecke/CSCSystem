@@ -20,10 +20,10 @@ jobs:
           context: .
           push: false
           tags: cgs/cscs:latest
-          #labels: com.centurylinklabs.watchtower.enable=false
+          labels: com.centurylinklabs.watchtower.enable=true
       - name: update production
         run: |
           docker run -d \
             --name cscs-updater \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            containrrr/watchtower --run-once --no-pull cscsystem-cscs-1
+            containrrr/watchtower --run-once --no-pull --label-enable=true
