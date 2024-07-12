@@ -23,7 +23,7 @@ jobs:
           #labels: com.centurylinklabs.watchtower.enable=false
       - name: update production
         run: |
-          docker run -d \ #--rm \
+          docker run -d \
             --name cscs-updater \
             -v /var/run/docker.sock:/var/run/docker.sock \
             containrrr/watchtower --run-once --no-pull cscsystem-cscs-1
