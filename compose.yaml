@@ -65,8 +65,7 @@ services:
             #- ~/docker_data/:/sources/docker_data/:ro
             #- /mnt/cgs-backup/:/cgs-backup
             #env_file: ~/docker_data/borgbackup/backup.env
-
-
+  
     nginx:
         image: nginx:latest
         restart: always
