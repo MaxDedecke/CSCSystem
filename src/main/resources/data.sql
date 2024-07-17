@@ -289,7 +289,7 @@ INSERT INTO "person" ("version", "association_id", "id", "first_name", "last_nam
 (1, 1, 99,'Helen','Zanieri','helen.zanieri@ukve.tn','(619) 506-4452','1969-10-06',0,false, '2024-06-10',69664),
 (1, 1, 100,'Agnes','Toccafondi','agnes.toccafondi@viipo.ae','(616) 688-6883','1971-10-26',0,false, '2024-06-21', 15372);
 
-DROP TABLE IF EXISTS "recurring_payment";
+DROP TABLE IF EXISTS "recurring_payment" CASCADE;
 CREATE TABLE "public"."recurring_payment" (
     "id" bigint NOT NULL,
     "version" integer NOT NULL,

@@ -1,0 +1,29 @@
+on:
+  push:
+    branches:
+      - github-actions  
+      - develop
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: compile
+        run: ./mvnw -Pproduction clean package
+      
+      - name: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: cgs/cscs:latest
+          labels: com.centurylinklabs.watchtower.enable=true
+      - name: update production
+        run: |
+          docker run --rm\
+            --name cscs-updater \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            containrrr/watchtower --run-once -S --no-pull --label-enable=true
