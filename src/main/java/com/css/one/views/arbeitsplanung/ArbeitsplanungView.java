@@ -99,20 +99,23 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
         grid.addColumn(w -> w.getPersonName()).setAutoWidth(true).setHeader("Name");
         grid.addColumn(w -> w.getCategory().getName()).setAutoWidth(true).setHeader("Arbeitsbereich");
         grid.addColumn(w -> resolveWorkingHours(w.getWorkingHours())).setAutoWidth(true).setHeader("Arbeitszeit");
-        grid.addColumn(w -> w.getNote()).setAutoWidth(true).setHeader("Notiz");
+        grid.addColumn(w -> w.getNote()).setHeader("Notiz");
         grid.addColumn(w -> renderDate(w.getBegin())).setAutoWidth(true).setHeader("Datum");
         grid.addColumn(w -> w.getHourBegin() + ":" + w.getMinuteBegin()).setAutoWidth(true).setHeader("Start");
         grid.addColumn(w -> resolveEndTime(w)).setAutoWidth(true).setHeader("Ende");
 
-        grid.addComponentColumn(item -> new Button("Löschen", click -> {
-        	workingUnitService.delete(item.getId());
-            refreshGrid();
-        }));
+        grid.addComponentColumn(item -> {
+        	Button button = new Button("Löschen");
+        	button.addClassNames("button-grid-red");
+        	button.addClickListener(click -> {
+            	workingUnitService.delete(item.getId());
+            	refreshGrid();
+            });
+        	return button;
+        }).setAutoWidth(true);
         
-
         grid.setItems(workingUnitService.findAllByAssociation(associationId));
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-                        
         // when a row is selected or deselected, populate form
         grid.asSingleSelect().addValueChangeListener(event -> {
             if (event.getValue() != null) {
@@ -221,20 +224,18 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
 	private void createGridLayout(SplitLayout splitLayout) {
 		
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
-		horizontalLayout.setMargin(true);
 		horizontalLayout.setAlignItems(Alignment.CENTER);
 		addComponentsForWorkingCategories(horizontalLayout);
-		horizontalLayout.setWidth(1000, Unit.PIXELS);
 		
-		Div wrapper = new Div();
-		wrapper.setClassName("grid-wrapper");
-		
-		splitLayout.setSplitterPosition(75);
-		splitLayout.addToPrimary(wrapper);
-		
+		VerticalLayout wrapper = new VerticalLayout();
+		wrapper.addClassName("primary-div");
 		wrapper.add(horizontalLayout);
-		wrapper.add(new Hr());
+		Hr hr = new Hr();
+		wrapper.add(hr);
 		wrapper.add(grid);
+		
+	    splitLayout.setSplitterPosition(75);
+		splitLayout.addToPrimary(wrapper);
 	}
 
 	private void addComponentsForWorkingCategories(HorizontalLayout horizontalLayout) {
@@ -248,6 +249,7 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
 			layout.add(new Text(category.getName()));
 			layout.setAlignItems(Alignment.CENTER);
 			Button buttonCategory = new Button(layout);
+			buttonCategory.addClassName("button-category");
 			buttonCategory.setHeight(100, Unit.PIXELS);
 			buttonCategory.setMinWidth(150, Unit.PIXELS); 
 			buttonCategory.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
@@ -316,7 +318,9 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setClassName("button-layout");
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        cancel.addClassName("cancel-button");
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        save.addClassNames("save-button");
         buttonLayout.add(save, cancel);
         editorLayoutDiv.add(buttonLayout);
     }
@@ -327,6 +331,7 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
 		startWork.setValue(LocalDateTime.now());
         stopWork.setValue(LocalDateTime.now());
         note.setValue("");
+        optionalEndBox.setValue(false);
 	}
 
 	private void refreshGrid() {

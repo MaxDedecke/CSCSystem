@@ -11,7 +11,7 @@ public class MigrationService {
 
 	private int MAJOR = 0;
 	private int MINOR1 = 0;
-	private int MINOR2 = 2;
+	private int MINOR2 = 3;
 	
 	public String VERSION_STRING = MAJOR + "." + MINOR1 + "." + MINOR2;
 	
@@ -34,7 +34,6 @@ public class MigrationService {
 					new AddWorkingCategoriesMigration(connection);
 					new UpdateWorkingUnitWithExactTime(connection);
 				}
-				
 			}
 		}
 	}

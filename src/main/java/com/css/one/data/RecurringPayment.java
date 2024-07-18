@@ -23,7 +23,7 @@ public class RecurringPayment extends AbstractEntity {
 	boolean isActive;
 	
 	@Nullable   
-	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL) 
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true) 
 	List<Transaction> transactions;
 	
 	@Nullable

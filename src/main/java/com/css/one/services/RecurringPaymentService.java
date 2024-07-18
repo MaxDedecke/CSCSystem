@@ -2,6 +2,7 @@ package com.css.one.services;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,28 @@ public class RecurringPaymentService {
 
 	public void delete(Long id) {
 		repository.deleteById(id);
+	}
+	
+	public boolean deleteConnectedTransaktion(int associationId, Long transactionId) {
+		List<Boolean> returnValue = new ArrayList<>();
+		
+		findAllByAssociation(associationId).forEach(e -> {
+			Transaction transactionToDelete = null;
+			
+			for(Transaction transaction : e.getTransactions()) {
+				if(transaction.getId().equals(transactionId)) {
+					transactionToDelete = transaction;
+				}
+			}
+			
+			if(transactionToDelete != null) {
+				e.getTransactions().remove(transactionToDelete);
+				update(e);
+				returnValue.add(true);
+			}
+		});
+
+		return (!returnValue.isEmpty());
 	}
 
 	public int count() {

@@ -1,6 +1,7 @@
 package com.css.one.views;
 
 import com.css.one.data.User;
+import com.css.one.migrations.DB;
 import com.css.one.security.AuthenticatedUser;
 import com.css.one.views.arbeitsplanung.ArbeitsplanungView;
 import com.css.one.views.diary.DiaryView;
@@ -40,7 +41,10 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import java.io.ByteArrayInputStream;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Optional;
+
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 /**
@@ -56,14 +60,17 @@ public class MainLayout extends AppLayout {
     private AccessAnnotationChecker accessChecker;
         
     static int associationId; 
+    
+    Span appName;
 
     public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
         this.accessChecker = accessChecker;
-
+        addClassName("main-layout");
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
         addHeaderContent(); 
+        
     }
 
     private void addHeaderContent() {
@@ -80,7 +87,7 @@ public class MainLayout extends AppLayout {
     	
     	VerticalLayout layout = new VerticalLayout(); 
     	
-        Span appName = new Span("Ceres");
+    	appName = new Span("Ceres");
         appName.addClassNames(LumoUtility.FontWeight.SEMIBOLD, LumoUtility.FontSize.LARGE);
 
         StreamResource imageResource = new StreamResource("NewLogo050724_transparent.png",
@@ -99,18 +106,19 @@ public class MainLayout extends AppLayout {
 
         HorizontalLayout versionLayout = new HorizontalLayout();
         versionLayout.setWidth("100%");
-        versionLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.NONE);
-        versionLayout.add(new Text("Ceres - v.0.0.2"));
+        versionLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.NONE, "main");
+        versionLayout.add(new Text("ClubOS - v.0.0.3"));
         layout.add(versionLayout);
         
         Hr hr2 = new Hr();
         hr2.addClassNames(LumoUtility.Margin.SMALL);
         
-        addToDrawer(header, scroller,createFooter(), hr2, versionLayout);
+        addToDrawer(header, scroller,createFooter(), versionLayout);
     }
 
     private SideNav createNavigation() {
         SideNav nav = new SideNav();
+        nav.addClassNames("vaadin-app-layout");
         nav.setWidth("100%");
         
         if (accessChecker.hasAccess(ÜbersichtView.class)) {
@@ -173,6 +181,18 @@ public class MainLayout extends AppLayout {
             User user = maybeUser.get();
             
             associationId = user.getAssociationId();
+            
+			try (var connection = DB.connect()) {
+				var sql = "SELECT name FROM association WHERE id = " + associationId;
+				var statement = connection.createStatement();
+				ResultSet executedQuery = statement.executeQuery(sql);
+				 while (executedQuery.next()) {
+					 appName.setText(executedQuery.getString(1));		               
+		            }	
+			} catch (SQLException e) {
+				System.err.println(e.getMessage());
+			}
+                        
             Avatar avatar = new Avatar(user.getName());
             StreamResource resource = new StreamResource("profile-pic",
                     () -> new ByteArrayInputStream(user.getProfilePicture()));

@@ -4,7 +4,6 @@ import com.css.one.data.PersonRepository;
 import com.css.one.services.MigrationService;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
 import javax.sql.DataSource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,16 +16,16 @@ import org.springframework.context.annotation.Bean;
  *
  * Use the @PWA annotation make the application installable on phones, tablets
  * and some desktop browsers.
- *
+ *  
  */
 @SpringBootApplication
-@Theme(value = "css-system-one", variant = Lumo.LIGHT)
-public class Application implements AppShellConfigurator {
+@Theme("css-system-one")
+public class Application implements AppShellConfigurator { 
 
     private static final long serialVersionUID = 3173515292498804205L;
 
 	public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);        
+        SpringApplication.run(Application.class, args);            
     }
 
     @Bean
@@ -35,7 +34,7 @@ public class Application implements AppShellConfigurator {
         // This bean ensures the database is only initialized when empty
         return new SqlDataSourceScriptDatabaseInitializer(dataSource, properties) {
             @Override
-            public boolean initializeDatabase() {
+            public boolean initializeDatabase() { 
                 if (repository.count() == 0L) {
                     return super.initializeDatabase();
                 }

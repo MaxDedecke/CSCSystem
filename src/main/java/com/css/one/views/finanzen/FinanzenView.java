@@ -150,7 +150,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	
 	private H2 sum;
 	private H2 balance;
-	
+	double amountDouble;
 	private int associationId;
 	
 	private MemberSubscription selectedSubscription;
@@ -228,7 +228,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 						binder.writeBean(this.transaction);
 						transactionService.update(this.transaction);
 						clearForm();
-						refreshGrid();
+						refreshGridWithType(currentType);
 						Notification.show("Neue Transaktion hinzugefügt");
 
 						UI.getCurrent().navigate(FinanzenView.class);
@@ -328,7 +328,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		FormLayout infoLayout = new FormLayout();
 		infoLayout.addClassNames(LumoUtility.Margin.Top.NONE);
 		
-		nameOfRecurringPayment = new TextField();
+		nameOfRecurringPayment = new TextField("Name");
 		nameOfRecurringPayment.setEnabled(false);
 		
 		isActiveBox = new Checkbox("aktiv");
@@ -343,16 +343,21 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		recurringTransactionsGrid.addColumn(e -> formatter.format(e.getAmount())).setAutoWidth(true).setHeader("Betrag");
 		recurringTransactionsGrid.addColumn(e -> e.getDateOfTransaction()).setAutoWidth(true).setHeader("Datum");
 		recurringTransactionsGrid.addColumn(e -> e.getNote()).setAutoWidth(true).setHeader("Notiz");
-		
+		recurringTransactionsGrid.setMinWidth(600, Unit.PIXELS);
+		recurringTransactionsGrid.setMinHeight(200, Unit.PIXELS);
+    	
 		mainLayout.add(text, hr, infoLayout, textPayments, recurringTransactionsGrid);
 		this.recurringPaymentDetailsDialog.add(mainLayout);
 		
 		Button backButton = new Button("Zurück");
+		backButton.addClassName("cancel-button");
 		backButton.addClickListener(e -> recurringPaymentDetailsDialog.close());
 		
 		removeRecurringPayment.addThemeVariants(ButtonVariant.LUMO_ERROR);
+		removeRecurringPayment.addClassName("delete-button");
 		
 		Button confirmButton = new Button("Update");
+		confirmButton.addClassName("save-button");
 		confirmButton.addClickListener(e -> {
 			this.recurringPayment.setActive(isActiveBox.getValue());
 			this.recurringPayment = recurringPaymentService.update(recurringPayment);
@@ -409,6 +414,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		tabSheet.add("Allgemein", createGeneralTab());
 		tabSheet.add("Regelmäßige Zahlungen", createRecurringPaymentsTab());
 		tabSheet.add("Mitgliedsbeiträge", createMemberPaymentTab());
+		tabSheet.addClassNames("vaadin-tabsheet");
 		
 		tabSheet.addSelectedChangeListener(e -> {
 			
@@ -479,11 +485,17 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		 
 		recurringPaymentsGrid.addColumn(isActiveRenderer).setAutoWidth(true).setHeader("Aktiv").setComparator((sub1, sub2) -> Boolean.compare(sub1.isActive(), sub2.isActive()));
 
-		recurringPaymentsGrid.addComponentColumn(item -> new Button("Details", click -> {
-			this.recurringPayment = item;
-			refreshRecurringPaymentDialog(this.recurringPayment);			
-			this.recurringPaymentDetailsDialog.open();
-        }));
+		recurringPaymentsGrid.addComponentColumn(item -> {
+			Button button = new Button("Details");
+			button.addClickListener(click -> {
+				this.recurringPayment = item;
+				refreshRecurringPaymentDialog(this.recurringPayment);			
+				this.recurringPaymentDetailsDialog.open();
+	        });	
+			
+			button.addClassNames("button-grid-green");
+			return button;
+		});
 		
 		recurringPaymentsGrid.addComponentColumn(item -> {
 			this.recurringPayment = item;
@@ -574,15 +586,21 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		gridMemberSubscription.addColumn(isPayedRenderer).setAutoWidth(true).setHeader("Bezahlt").setKey("payed").setComparator((sub1, sub2) -> Boolean.compare(sub1.isPayed(), sub2.isPayed()));
 		gridMemberSubscription.addColumn(e -> resolveTransaction(e.getTransactionId())).setAutoWidth(true).setHeader("Bezahlt am");
 		
-		gridMemberSubscription.addComponentColumn(item -> new Button("Beitrag verbuchen", click -> {
-			if (item.isPayed()) {
-				Notification.show("Das Mitglied hat seinen Monatsbeitrag bereits gezahlt.");
-			} else {
-				this.selectedSubscription = item;
-				this.nameFieldMember.setValue(resolveMember(this.selectedSubscription.getPersonId()));
-				confirmMonthlyPaymentDialog.open();
-			}
-        }));
+		gridMemberSubscription.addComponentColumn(item -> {
+			Button button = new Button("Beitrag verbuchen");
+			button.addClickListener(click -> {
+				if (item.isPayed()) {
+					Notification.show("Das Mitglied hat seinen Monatsbeitrag bereits gezahlt.");
+				} else {
+					this.selectedSubscription = item;
+					this.nameFieldMember.setValue(resolveMember(this.selectedSubscription.getPersonId()));
+					confirmMonthlyPaymentDialog.open();
+				}
+	        });
+			button.addClassNames("button-grid-green");	
+			
+			return button;
+		});
 
 		gridMemberSubscription.setItems(memberSubscriptionService.findByMonthAndYear(now.getMonthValue(), now.getYear(), associationId));
 		gridMemberSubscription.addClassNames(LumoUtility.Height.FULL, LumoUtility.Border.ALL);
@@ -608,6 +626,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	private void buildConfirmDialog() {
 		
 		this.confirmMonthlyPaymentDialog = new Dialog();
+		this.confirmMonthlyPaymentDialog.setHeightFull();
 		double amountMemberSubscription = associationService.get(Integer.toUnsignedLong(associationId)).get().getAmountMemberSubscription();
 		
 		FormLayout layout = new FormLayout();
@@ -670,6 +689,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		});
 		
 		Button cancelButton = new Button("Zurück", e -> confirmMonthlyPaymentDialog.close());
+		cancelButton.addClassNames("cancel-button");
 		
 		Button confirmButton = new Button("Bestätigen", e -> {
 			if (createTransactionBox.getValue() || linkTransactionBox.getValue()) {
@@ -705,6 +725,8 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 			}
 		});
 		
+		confirmButton.addClassNames("save-button");
+		
 		this.confirmMonthlyPaymentDialog.getFooter().add(cancelButton, confirmButton);
 		
 	}
@@ -724,6 +746,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		monthLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.Top.SMALL);
 		
 		Button buttonLeft = new Button("<");
+		buttonLeft.addClassName("button-grid-green");
 		LocalDate registrationDate = associationService.get(Integer.toUnsignedLong(associationId)).get().getRegistrationDate();
 	
 		buttonLeft.addClickListener(e -> {
@@ -743,7 +766,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		});
 		
 		Button buttonRight = new Button(">");
-		
+		buttonRight.addClassName("button-grid-green");
 		buttonRight.addClickListener(e -> {
 			
 			if (now.getYear() > this.year || this.monthValue < now.getMonthValue()) {
@@ -779,14 +802,13 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 
 	private Div createGeneralTab() {
 		Div wrapperGeneralTab = new Div();
+		wrapperGeneralTab.setClassName("grid-wrapper");
 		wrapperGeneralTab.setHeight("100%");
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
-		horizontalLayout.setMargin(true);
 		horizontalLayout.setAlignItems(Alignment.CENTER);
 		addComponentsForTransactionTypes(horizontalLayout);
 		horizontalLayout.setWidth("100%");
 
-		wrapperGeneralTab.setClassName("grid-wrapper");
 		wrapperGeneralTab.add(horizontalLayout);
 		wrapperGeneralTab.add(new Hr());
 		
@@ -798,17 +820,30 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		grid.addColumn(t -> t.getPaymentMethod().getLabel()).setAutoWidth(true).setHeader("Zahlungsmethode");
 		grid.addColumn(t -> resolveMember(t.getMemberId())).setAutoWidth(true).setHeader("Mitglied");
 		
-		grid.addComponentColumn(item -> new Button("Löschen", click -> {
-			transactionService.delete(item.getId());
-			refreshGrid();
-		}));
+		grid.addComponentColumn(item -> {
+			Button button = new Button("Löschen");
+			button.addClassName("button-grid-red");
+			button.addClickListener(click -> {
+				Optional<MemberSubscription> subscriptionByTransaction = memberSubscriptionService.findSubscriptionByTransaction(associationId, item.getId().intValue());
+				if(subscriptionByTransaction.isPresent()) {
+					subscriptionByTransaction.get().setTransactionId(0);
+					subscriptionByTransaction.get().setPayed(false);
+					memberSubscriptionService.update(subscriptionByTransaction.get());
+				}
+				recurringPaymentService.deleteConnectedTransaktion(associationId, item.getId());
+				transactionService.delete(item.getId());
+				refreshGrid();
+
+			});
+
+			return button;
+		}).setAutoWidth(true);
 		
 		//		grid.setItems(query -> transactionService.list(
 		//		PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
 		//		.stream());
 		grid.setItems(transactionService.findAllByAssociation(associationId));
 		grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-		grid.setHeight("100%");
 
 		// when a row is selected or deselected, populate form
 		grid.asSingleSelect().addValueChangeListener(event -> {
@@ -874,14 +909,22 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		layout.setAlignItems(Alignment.CENTER);
 		
 		allTransactionsButton = new Button(layout);
-		allTransactionsButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		allTransactionsButton.addClassNames("button-layout-common", LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 		allTransactionsButton.setHeight(100, Unit.PIXELS);
 		allTransactionsButton.setWidth(250, Unit.PIXELS);
+		
 		allTransactionsButton.addClickListener(e -> {
 			refreshGridWithType(null);
 			this.currentType = null;
 			refreshButtonStyle();
-			allTransactionsButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+			allTransactionsButton.addClassNames("button-layout-common", LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+			if(amountDouble > 0) {
+				sum.removeClassNames("text-red");
+				sum.addClassNames("text-green");
+			} else {
+				sum.removeClassNames("text-green");
+				sum.addClassNames("text-red");
+			}
 		});
 		
 
@@ -894,11 +937,14 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		costButton = new Button(layout);
 		costButton.setHeight(100, Unit.PIXELS);
 		costButton.setWidth(200, Unit.PIXELS);
-
+		costButton.addClassName("button-layout-red");
+		
 		costButton.addClickListener(e -> {
 			refreshGridWithType(TransactionType.COST);
 			refreshButtonStyle();
-			costButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+			costButton.addClassNames("button-layout-red", LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+			sum.removeClassNames("text-green");
+			sum.addClassNames("text-red");
 		});
 
 		horizontalLayout.add(costButton);
@@ -910,11 +956,14 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		incomeButton = new Button(layout);
 		incomeButton.setHeight(100, Unit.PIXELS);
 		incomeButton.setWidth(200, Unit.PIXELS);
+		incomeButton.addClassName("button-category");
 
 		incomeButton.addClickListener(e -> {
 			refreshGridWithType(TransactionType.INCOME);
 			refreshButtonStyle();
-			incomeButton.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+			incomeButton.addClassNames("button-category",LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+			sum.removeClassNames("text-red");
+			sum.addClassNames("text-green");
 		});
 
 		horizontalLayout.add(incomeButton);
@@ -939,13 +988,27 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	private void refreshGridWithType(TransactionType type) {
 
 		NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("de", "DE"));
-		sum.setText(formatter.format(transactionService.getBalanceForType(type, associationId).getAmount()));
+		amountDouble = transactionService.getBalanceForType(type, associationId).getAmount();
+		
+		sum.setText(formatter.format(amountDouble));
 
 		if (type == null) {
+			if(amountDouble > 0) {
+				sum.addClassNames("text-green");
+			} else {
+				sum.addClassNames("text-red");
+			}
+			
 			balance.setText("Balance");
 			grid.setItems(transactionService.findAllByAssociation(associationId));
 		} else {
 			balance.setText("Summe");
+			
+			if(type == TransactionType.COST) {
+				sum.addClassNames("text-red");
+			} else {
+				sum.addClassNames("text-green");
+			}
 			grid.setItems(transactionService.findByType(type, associationId));
 		}
 
@@ -1077,6 +1140,10 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	private void createButtonLayout(Div editorLayoutDiv, ViewStatus status) {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setClassName("button-layout");
+		cancel.addClassName("cancel-button");
+		cancelRecurrings.addClassName("cancel-button");
+		saveTransactionButton.addClassName("save-button");
+		saveRecurringPaymentButton.addClassName("save-button");
 		
 		if(status == ViewStatus.GENERAL) {			
 			cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);

@@ -2,11 +2,12 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  background-color: #efefef;
 }
 
 .waitinglist-view vaadin-split-layout {
-  width: 100%;
   height: 100%;
+  background-color: #efefef;
 }
 
 .waitinglist-view .editor-layout {
@@ -19,6 +20,31 @@
   flex-grow: 1;
   padding: var(--lumo-space-l);
 }
+
+.waitinglist-view vaadin-vertical-layout {
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+  padding-left: var(--lumo-space-m);
+  padding-right: var(--lumo-space-m);
+  padding-top: var(--lumo-space-s);
+  
+}
+
+.waitinglist-view .cancel-button {
+  background-color: #808080;
+  color: white;
+}
+
+.waitinglist-view .cancel-button:hover {
+  background-color: rgb(192, 192, 192);
+  color: white;
+}
+
+.waitinglist-view .save-button {
+  background-color: #8ABD3E;
+  color: white;
+} 
 
 .waitinglist-view .editor vaadin-checkbox {
   padding-top: var(--lumo-space-m);

@@ -2,6 +2,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  background-color: #efefef;
+  
 }
 
 .warenlager-view vaadin-split-layout {
@@ -9,8 +11,11 @@
   height: 100%;
 }
 
-.warenlager-view vaadin-grid {
+vaadin-grid {
   height: 100%;
+  width: 100%;
+  display:flex;
+  flex-direction: column;
 }
 
 .warenlager-view .editor-layout {
@@ -18,6 +23,13 @@
   flex-direction: column;
   width: 400px;
 }
+
+vaadin-vertical-layout {
+  box-sizing: border-box;
+  padding: none;
+}
+
+
 
 .warenlager-view .editor {
   flex-grow: 1;
@@ -28,6 +40,22 @@
   padding-top: var(--lumo-space-m);
 }
 
+.warenlager-view .button-layout-common {
+   max-width: 100%;
+  min-width: 150px;
+  max-height: 100%;	
+  min-height: 75px;
+  flex-wrap: wrap;
+  display:flex;
+  justify-content: center;
+  background-color: var(--lumo-contrast-5pct);
+  padding-bottom: var(--lumo-space-s);
+  padding-left: var(--lumo-space-l);
+  padding-right: var(--lumo-space-l);
+  border-color: #8ABD3E;
+  color: #8ABD3E;
+} 
+
 .warenlager-view .button-layout {
   width: 100%;
   flex-wrap: wrap;
@@ -37,8 +65,148 @@
   padding-left: var(--lumo-space-l);
   padding-right: var(--lumo-space-l);
   gap: var(--lumo-space-m);
+  color:#8ABD3E;
 }
 
 .warenlager-view .grid-wrapper {
   width: 100%;
+}
+
+vaadin-tab {
+  color: #333;  /* Farbe des Textes auf den Tabs */
+  border-radius: 5px 5px 0 0; /* Abgerundete Ecken oben am Tab */
+}
+
+vaadin-tab::before, vaadin-tab::after {
+	content: '';
+      position: absolute;
+      display: var(--_lumo-tab-marker-display, block);
+      bottom: 0;
+      left: 50%;
+      width: var(--lumo-size-s);
+      height: 2px;
+      background-color: #282828;
+      border-radius: var(--lumo-border-radius-s) var(--lumo-border-radius-s) 0 0;
+      transform: translateX(-50%) scale(0);
+      transform-origin: 50% 100%;
+      transition: 0.14s transform cubic-bezier(0.12, 0.32, 0.54, 1);
+      will-change: transform;
+}
+
+vaadin-tab[active] {
+  color: #8ABD3E;  /* Dunklere Textfarbe für bessere Lesbarkeit */
+  background-color: #cccccc;
+}
+
+.warenlager-view vaadin-tab[selected] {
+  color:  #8ABD3E;  /* Dunklere Textfarbe für bessere Lesbarkeit */
+  background-color: #cccccc;
+}
+
+/* CSS für die Vaadin Upload Komponente */
+vaadin-upload {
+  --lumo-primary-color: #8ABD3E; /* Hauptfarbe ändern */
+  --lumo-primary-text-color:#8ABD3E; /* Textfarbe ändern */
+  --lumo-border-radius: 8px; /* Ecken abrunden */
+  display: flex;
+  flex-direction: column;
+}
+
+vaadin-upload-file {
+  background-color: #8ABD3E; /* Hintergrundfarbe für Datei-Items */
+  border-radius: 8px; /* Ecken der Datei-Items abrunden */
+  border: 1px solid #ffffff; /* Rahmen der Datei-Items */
+}
+
+vaadin-upload[dragover] {
+  border-color: #8ABD3E; /* Farbe des Rahmens beim Dragover */
+  background-color: #8ABD3E; /* Hintergrundfarbe beim Dragover */
+}
+
+vaadin-upload > vaadin-button::part(label) {
+	color:  #8ABD3E;
+}
+
+vaadin-upload > vaadin-button[disabled] {
+	color:  #efefef;
+	background: #efefef;
+	visibility: hidden;
+}
+
+vaadin-upload > vaadin-button[disabled]::part(label) {
+	color:  #efefef;
+}
+
+vaadin-upload::part(drop-label) {
+		color:  #8ABD3E;
+}
+
+/* Grundstil für den Dialog */
+vaadin-dialog-overlay::part(overlay) {
+  border-radius: 8px;
+  height:80%;
+  min-width: 30%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Stil für den Header des Dialogs */
+vaadin-dialog-overlay::part(header) {
+  background-color: var(--lumo-primary-color);
+  color: white;
+  padding: 1rem;
+  font-size: 1.25rem;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+/* Stil für den Content-Bereich des Dialogs */
+vaadin-dialog-overlay::part(content) {
+  padding: 1rem;
+  font-size: 1rem;
+}
+
+/* Stil für den Footer des Dialogs */
+vaadin-dialog-overlay::part(footer) {
+  background-color: var(--lumo-contrast-10pct);
+  padding: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+vaadin-dialog-overlay .delete-button {
+  background-color: #ff0000;
+  color: white;
+}
+
+vaadin-dialog-overlay .delete-button:hover {
+  background-color: #804040;
+  color: white;
+}
+
+vaadin-dialog-overlay .cancel-button {
+  background-color: #808080;
+  color: white;
+}
+
+vaadin-dialog-overlay .save-button {
+  background-color: #8ABD3E;
+  color: white;
+}
+
+vaadin-dialog-overlay .cancel-button:hover {
+  background-color: rgb(192, 192, 192);
+  color: white;
+}
+
+vaadin-dialog-overlay .save-button:hover {
+  background-color: #88b149;
+  color: white;
+}
+
+vaadin-dialog-overlay .save-button[disabled] {
+  background-color: rgb(192, 192, 192);
+  opacity: 0.5;
+  cursor: not-allowed;
 }

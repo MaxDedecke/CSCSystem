@@ -1,30 +1,70 @@
 package com.css.one.data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Strain extends AbstractEntity {
 	
+    	private int strainNumber;
 	 	private String name;
-	 	private double amount;
-	 	private double amountPerMember;
-	 	private double thc;
 	 	private LocalDate datePlanted;
 	 	private int associationId;
 	 	private GrowStatus status;
 	 	private int amountOfPlants;
 	 	
 	 	@Nullable
-	 	private LocalDate dateFinished;
+	 	private String pathOfCertificate;
 	 	
-		public double getAmount() {
-			return amount;
+		@Nullable
+	 	private double amountGramm;
+	 	
+	 	@Nullable
+	 	private double thc;
+	 	
+	 	@Nullable
+	 	private double pricePerGram;
+	 	
+	 	@Nullable
+	 	@ManyToMany
+	 	private List<Person> weighedByMembers;
+	 	
+		@Nullable
+	 	private LocalDate dateFinished;
+		
+		@Nullable
+		@ManyToOne
+		private Location growLocation;
+		
+		public String getPathOfCertificate() {
+			return pathOfCertificate;
 		}
-		public void setAmount(double amount) {
-			this.amount = amount;
+		public void setPathOfCertificate(String pathOfCertificate) {
+			this.pathOfCertificate = pathOfCertificate;
+		}
+		public Location getGrowLocation() {
+			return growLocation;
+		}
+		public void setGrowLocation(Location growLocation) {
+			this.growLocation = growLocation;
+		}
+		
+		public List<Person> getWeighedByMembers() {
+			return weighedByMembers;
+		}
+		public void setWeighedByMembers(List<Person> weighedByMembers) {
+			this.weighedByMembers = weighedByMembers;
+		}
+		public double getAmountGramm() {
+			return amountGramm;
+		}
+		public void setAmountGramm(double amount) {
+			this.amountGramm = amount;
 		}
 		public String getName() {
 			return name;
@@ -62,16 +102,22 @@ public class Strain extends AbstractEntity {
 		public void setStatus(GrowStatus status) {
 			this.status = status;
 		}
-		public double getAmountPerMember() {
-			return amountPerMember;
-		}
-		public void setAmountPerMember(double amountPerMember) {
-			this.amountPerMember = amountPerMember;
-		}
 		public int getAmountOfPlants() {
 			return amountOfPlants;
 		}
 		public void setAmountOfPlants(int amountOfPlants) {
 			this.amountOfPlants = amountOfPlants;
+		}
+		public double getPricePerGram() {
+			return pricePerGram;
+		}
+		public void setPricePerGram(double pricePerGram) {
+			this.pricePerGram = pricePerGram;
+		}
+		public int getStrainNumber() {
+			return strainNumber;
+		}
+		public void setStrainNumber(int strainNumber) {
+			this.strainNumber = strainNumber;
 		}	 	
 }

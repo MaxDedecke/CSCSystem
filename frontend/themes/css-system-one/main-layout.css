@@ -1,20 +1,146 @@
 vaadin-scroller[slot="drawer"] {
   padding: var(--lumo-space-s);
+  --lumo-base-color: #8ABD3E;
+  --lumo-primary-color: #8ABD3E;
+  --lumo-primary-text-color: #FFFFFF;
+  --lumo-header-text-color: #8ABD3E
+  --lumo-border-radius: 8px;
+  background-color: rgb(192, 192, 192);
 }
 
 vaadin-side-nav-item vaadin-icon {
   padding: 0;
+  color: #8ABD3E;
+  --lumo-base-color: #8ABD3E;
+  --lumo-border-radius: 14px;
+}
+
+vaadin-side-nav > [slot="label"] {
+	background-color: rgb(192, 192, 192);
+  --lumo-base-color: #8ABD3E;
+  --lumo-primary-color: #8ABD3E;
+  --lumo-primary-text-color: #8ABD3E;
+  --lumo-header-text-color: #8ABD3E;
+  --lumo-body-text-color: #8ABD3E;
+  --lumo-border-radius: 8px;
+}
+vaadin-side-nav-item[slot="children"] {
+	background-color: rgb(192, 192, 192);
+  --lumo-base-color: #8ABD3E;
+  --lumo-primary-color: #8ABD3E;
+  --lumo-primary-text-color: #8ABD3E;
+  --lumo-header-text-color: #8ABD3E;
+  --lumo-body-text-color: #8ABD3E;
+  --lumo-border-radius: 8px;
+}
+
+vaadin-side-nav-item {
+ background-color: rgb(192, 192, 192);
+  --lumo-base-color: #8ABD3E;
+  --lumo-primary-color: #8ABD3E;
+  --lumo-primary-text-color: #8ABD3E;
+  --lumo-header-text-color: #8ABD3E;
+  --lumo-body-text-color: #8ABD3E;
+  --lumo-border-radius: 8px;
+}
+
+vaadin-side-nav-item::part(content) {
+	 background-color: rgb(192, 192, 192);
+  --lumo-base-color: #8ABD3E;
+  --lumo-primary-color: #8ABD3E;
+  --lumo-primary-text-color: #FFFFFF;
+  --lumo-header-text-color: #FFFFFF;
+  --lumo-body-text-color: #8ABD3E;
+  --lumo-border-radius: 8px;
+}
+
+vaadin-drawer-toggle::part(icon) {	
+  color: #8ABD3E;
+  transition: box-shadow 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: var(--lumo-border-radius);
+  
+}
+
+vaadin-drawer-toggle::part(icon):active {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  color: #8ABD3E;
+}
+
+vaadin-drawer-toggle {
+	--lumo-base-color: #8ABD3E;
+  --lumo-primary-color: #8ABD3E;
+  --lumo-primary-text-color: #FFFFFF
+  --lumo-header-text-color: #FFFFFF;
+  --lumo-body-text-color: #FFFFFF;
+  --lumo-border-radius: 8px;
+  color: #FFFFFF;
+}
+
+vaadin-app-layout::part(navbar) {
+  background-color: #efefef;
+  color: #8ABD3E;
+  
 }
 
 [slot="drawer"]:is(header, footer) {
   display: flex;
   align-items: center;
   gap: var(--lumo-space-s);
-  padding: var(--lumo-space-s) var(--lumo-space-m);
   min-height: var(--lumo-size-xl);
   box-sizing: border-box;
+  background-color: rgb(192, 192, 192);
+  --lumo-base-color: #8ABD3E;
+  --lumo-primary-color: #8ABD3E;
+  --lumo-primary-text-color: #FFFFFF;
+  --lumo-header-text-color: #FFFFFF;
+  --lumo-body-text-color: #FFFFFF;
+  --lumo-border-radius: 8px;
 }
 
 [slot="drawer"]:is(header, footer):is(:empty) {
   display: none;
+  background-color: rgb(192, 192, 192);
+  background: rgb(192, 192, 192);
+}
+
+[slot="drawer"] a[active] {
+    background-color: #8ABD3E;
+    color: #8ABD3E;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.main-layout main {
+	background-color: rgb(192, 192, 192);
+  	background: rgb(192, 192, 192);
+}
+	
+[slot="drawer"] {
+    background-color: rgb(192, 192, 192);
+  	background: rgb(192, 192, 192);
+}
+
+[slot="drawer"] [current]{
+	background-color: rgb(192, 192, 192);
+    color: #8ABD3E;
+    font-weight: bold;
+    border-bottom: 2px solid var(--lumo-primary-contrast-color);
+    background: rgb(192, 192, 192);
+        
+}
+
+[slot="drawer"] a {
+    text-decoration: none;
+    padding: 10px;
+    display: block;
+    background-color: rgb(192, 192, 192);
+  	background: rgb(192, 192, 192);
+}
+
+vaadin-app-layout::part(navbar) a[active] {
+    font-weight: bold;
+    border-bottom: 2px solid var(--lumo-primary-contrast-color);
+    background-color: rgb(192, 192, 192);
+  	background: rgb(192, 192, 192);
 }

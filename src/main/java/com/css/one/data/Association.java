@@ -1,8 +1,10 @@
 package com.css.one.data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Association extends AbstractEntity {
@@ -15,6 +17,9 @@ public class Association extends AbstractEntity {
 	    private int postalCode;
 	    private double amountMemberSubscription;
 	    private LocalDate registrationDate;
+	    
+	    @OneToMany
+	    private List<Location> locations;
 	    
 		public String getName() {
 			return name;

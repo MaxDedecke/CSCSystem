@@ -26,10 +26,10 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
     private static final long serialVersionUID = 5891493543997686089L; 
 	private final AuthenticatedUser authenticatedUser;
 
-    public LoginView(AuthenticatedUser authenticatedUser) {  
+    public LoginView(AuthenticatedUser authenticatedUser) {   
         this.authenticatedUser = authenticatedUser;
         setAction(RouteUtil.getRoutePath(VaadinService.getCurrent().getContext(), getClass())); 
-        this.addClassNames("vaadin-login-form");
+        this.addClassNames("css-system-one");
         LoginI18n i18n = LoginI18n.createDefault(); 
         i18n.setHeader(new LoginI18n.Header());    
         i18n.getHeader().setTitle("Ceres"); 
@@ -39,22 +39,21 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         i18n.getForm().setPassword("Passwort");
         i18n.getForm().setUsername("Nutzername");
         i18n.getForm().setTitle("Einloggen");
-        setI18n(i18n);
+        setI18n(i18n); 
         
         Div plant = new Div(); 
         plant.addClassName("plant");
         
         StreamResource imageResource = new StreamResource("NewLogo050724_transparent.png",
                 () -> getClass().getResourceAsStream("/NewLogo050724_transparent.png"));
-
-        Image logoImage = new Image(imageResource, "");
+ 
+        Image logoImage = new Image(imageResource, ""); 
         logoImage.addClassNames(LumoUtility.Margin.Left.LARGE);
         
         logoImage.setHeight(250, Unit.PIXELS);
         plant.add(logoImage);
   
-        setTitle(plant);
-        
+        setTitle(plant); 
         i18n.getForm().setPassword("Passwort");
         
         setForgotPasswordButtonVisible(false);

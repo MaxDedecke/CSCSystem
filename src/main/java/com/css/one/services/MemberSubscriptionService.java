@@ -60,6 +60,10 @@ public class MemberSubscriptionService {
 	    	return true;	    	
 	    }
 	    
+	    public Optional<MemberSubscription> findSubscriptionByTransaction(int associationId, int transactionId) {	    	
+	    	return findAllByAssociation(associationId).stream().filter(e -> e.getTransactionId() == transactionId).findAny();
+	    }
+	    
 		public void createSubscriptionsForMonth(List<Person> members, int year, int month, int associationId) {
 
 			members.forEach(e -> {

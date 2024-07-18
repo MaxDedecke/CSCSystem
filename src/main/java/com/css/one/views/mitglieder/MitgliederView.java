@@ -33,7 +33,6 @@ import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -78,12 +77,10 @@ public class MitgliederView extends Div {
         addClassNames("mitglieder-view");
 
         // Create UI
-        SplitLayout splitLayout = new SplitLayout();
         
         associationId = MainLayout.getAssociationId();
 
-        createGridLayout(splitLayout);
-        add(splitLayout);
+        createGridLayout();
 
         // Configure Grid       
         createMemberDetailsDialog();
@@ -91,12 +88,18 @@ public class MitgliederView extends Div {
         grid.addColumn(p -> p.getMemberNumber()).setAutoWidth(true).setHeader("Mitgliedsnummer");
         grid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
         grid.addColumn(p -> p.getEmail()).setAutoWidth(true).setHeader("Email");      
-        grid.addComponentColumn(item -> new Button("Details", click -> {
-        	this.samplePerson = item;
-        	putValuesInDialog();
-        	memberDetailDialog.open();
-            refreshGrid();
-        }));
+        grid.addComponentColumn(item -> {
+        	Button button = new Button("Details");
+        	button.addClickListener(click -> {
+            	this.samplePerson = item;
+            	putValuesInDialog();
+            	memberDetailDialog.open();
+                refreshGrid();
+            });
+        	button.addClassName("button-grid-green");
+        	
+        	return button;
+        });
         
         grid.addClassNames(LumoUtility.Height.FULL);
         grid.setItems(samplePersonService.findAllByAssociation(associationId));
@@ -196,14 +199,17 @@ public class MitgliederView extends Div {
 			memberDetailDialog.close();
 		});
 		removeButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+		removeButton.addClassName("delete-button");
 		
 		Button cancelButton = new Button("Zurück", e -> memberDetailDialog.close());
+		cancelButton.addClassName("cancel-button");
 		
 		Button confirmButton = new Button("Aktualisieren",e -> {	
 			updatePerson();
 			this.memberDetailDialog.close();
 			Notification.show("Informationen aktualisiert!");
 		});
+		confirmButton.addClassName("save-button");
 		
 		memberDetailDialog.getFooter().add(removeButton, cancelButton, confirmButton);
 		memberDetailDialog.add(h1, hr, layout);
@@ -262,14 +268,10 @@ public class MitgliederView extends Div {
 		subscriptionService.update(subscription);
 	}
 
-    private void createGridLayout(SplitLayout splitLayout) {
+    private void createGridLayout() {
     	
     	VerticalLayout mainLayout = new VerticalLayout();
     	mainLayout.addClassNames(LumoUtility.Padding.NONE);
-        Div wrapper = new Div();
-        wrapper.setClassName("grid-wrapper");
-        wrapper.add(grid);
-        wrapper.setHeight("100%");
         
         HorizontalLayout bottomLayout = new HorizontalLayout();
         bottomLayout.setWidth("100%");
@@ -278,8 +280,8 @@ public class MitgliederView extends Div {
         
         bottomLayout.add(memberCount);
         
-        mainLayout.add(wrapper, bottomLayout);
-        splitLayout.addToPrimary(mainLayout);
+        mainLayout.add(grid, bottomLayout);
+        add(mainLayout);
     }
 
     private void refreshGrid() {

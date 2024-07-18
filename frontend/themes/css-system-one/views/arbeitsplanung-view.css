@@ -2,6 +2,10 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  width:100%;
+  background-color: #efefef;
+  padding-left: none;
+  margin-left: none;
 }
 
 .arbeitsplanung-view vaadin-split-layout {
@@ -16,7 +20,13 @@
 .arbeitsplanung-view .editor-layout {
   display: flex;
   flex-direction: column;
-  width: 200px;
+  
+}
+.arbeitsplanung-view vaadin-vertical-layout {
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+  padding: none;
 }
 
 .arbeitsplanung-view .editor {
@@ -37,8 +47,44 @@
   padding-left: var(--lumo-space-l);
   padding-right: var(--lumo-space-l);
   gap: var(--lumo-space-m);
+  border-color: #8ABD3E;
+  color: #8ABD3E;
 }
 
-.arbeitsplanung-view .grid-wrapper {
-  width: 100%;
+.arbeitsplanung-view .button-grid-red {
+  flex-wrap: wrap;
+  display:flex;
+  justify-content: center;
+  background-color: var(--lumo-contrast-5pct);
+  border-color: #ff0000;
+  color: #ff0000;
+}
+
+.arbeitsplanung-view .cancel-button {
+  background-color: #808080;
+  color: white;
+}
+
+.arbeitsplanung-view .cancel-button:hover {
+  background-color: rgb(192, 192, 192);
+  color: white;
+}
+
+.arbeitsplanung-view .save-button {
+  background-color: #8ABD3E;
+  color: white;
+} 
+
+.arbeitsplanung-view .button-category {
+  max-width: 20%;
+  max-width: 20%;	
+  flex-wrap: wrap;
+  background-color: var(--lumo-contrast-5pct);
+  padding-bottom: var(--lumo-space-s);
+  padding-top: var(--lumo-space-s);
+  padding-left: var(--lumo-space-l);
+  padding-right: var(--lumo-space-l);
+  gap: var(--lumo-space-m);
+  border-color: #8ABD3E;
+  color: #8ABD3E;
 }

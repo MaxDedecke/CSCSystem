@@ -14,7 +14,6 @@ import com.css.one.services.OutputService;
 import com.css.one.services.PersonService;
 import com.css.one.services.StrainService;
 import com.css.one.views.MainLayout;
-import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
@@ -26,14 +25,15 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @PageTitle("Abgabe")
 @Route(value = "abgabe", layout = MainLayout.class)
@@ -60,6 +60,8 @@ public class OutputView extends Div {
 		this.outputService = outputService;
 		this.personService = personService;
 		
+		addClassNames("output-view");
+		
         associationId = MainLayout.getAssociationId();
 
 		createMainLayout();
@@ -67,15 +69,13 @@ public class OutputView extends Div {
 
 	private void createMainLayout() {
 		
-		Div wrapper = new Div();
-		wrapper.setClassName("grid-wrapper");
-			
+		VerticalLayout wrapper = new VerticalLayout();
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
 		
 		VerticalLayout layoutButton = new VerticalLayout();
+		layoutButton.addClassNames(LumoUtility.Padding.Left.NONE);
 		Button addOutputButton = new Button();
-		addOutputButton.setHeight(75, Unit.PIXELS);
-		addOutputButton.setWidth(175, Unit.PIXELS);
+		addOutputButton.addClassName("button-layout-common");
 		addOutputButton.setText("+ Abgabe");
 		
 		addOutputButton.addClickListener(e -> openAddOutput());
@@ -93,6 +93,7 @@ public class OutputView extends Div {
 
 		horizontalLayout.add(layoutButton);
 		horizontalLayout.add(layout);
+		horizontalLayout.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		wrapper.add(horizontalLayout);
 		
 		outputGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
@@ -101,17 +102,23 @@ public class OutputView extends Div {
 		outputGrid.addColumn(p -> renderPersonName(personService.get(Integer.toUnsignedLong(p.getPersonId())))).setHeader("Mitglied").setAutoWidth(true).setSortable(true);
 		outputGrid.addColumn(p -> p.getAmount() + " Gramm").setHeader("Menge").setAutoWidth(true).setSortable(true);
 		outputGrid.addColumn(p -> p.getNote()).setHeader("Notiz").setAutoWidth(true).setSortable(true);
-		
-		outputGrid.addComponentColumn(item -> new Button("Löschen", click -> {
-			item.setOutdated(true);
-			outputService.update(item);
-			Optional<Strain> optionalStrain = strainService.get(Integer.toUnsignedLong(item.getStrainId()));
-			if(optionalStrain.isPresent()) {				
-				optionalStrain.get().setAmount(optionalStrain.get().getAmount() + item.getAmount());
-				strainService.update(optionalStrain.get());	
-			}
-			refreshGrid();
-        }));
+				
+		outputGrid.addComponentColumn(item ->{
+			Button button = new Button("Löschen");
+			button.addClickListener(click -> {
+				item.setOutdated(true);
+				outputService.update(item);
+				Optional<Strain> optionalStrain = strainService.get(Integer.toUnsignedLong(item.getStrainId()));
+				if(optionalStrain.isPresent()) {				
+					optionalStrain.get().setAmountGramm(optionalStrain.get().getAmountGramm() + item.getAmount());
+					strainService.update(optionalStrain.get());	
+				}
+				refreshGrid();
+	        });
+			button.addClassName("button-grid-red");
+			
+			return button;
+		});
 		
 		refreshGrid();
 		
@@ -121,7 +128,7 @@ public class OutputView extends Div {
 	
 	private void openAddOutput() {
 		addOutputDialog = new Dialog();
-		
+		VerticalLayout mainLayout = new VerticalLayout();
 		VerticalLayout headerLayout = new VerticalLayout();
 		
 		H2 header = new H2("Abgabe");
@@ -129,7 +136,7 @@ public class OutputView extends Div {
 		headerLayout.add(header, hr);
 		
 		FormLayout formLayout = new FormLayout();
-		formLayout.setWidth(400, Unit.PIXELS);
+		formLayout.addClassNames(LumoUtility.Margin.Left.MEDIUM);
 		
 		DateTimePicker date = new DateTimePicker();
 		date.setLabel("Datum");
@@ -150,8 +157,9 @@ public class OutputView extends Div {
 		
 		formLayout.add(date, strainBox, strainInfoAmount, memberBox, noteField);
 		
-		addOutputDialog.add(headerLayout);
-		addOutputDialog.add(formLayout);
+		mainLayout.add(headerLayout, formLayout);
+		
+		addOutputDialog.add(mainLayout);
 		
 		Button saveButton = new Button("Hinzufügen", e -> {
 			
@@ -161,9 +169,11 @@ public class OutputView extends Div {
 				refreshGrid();
 			}
 		});
+		saveButton.addClassName("save-button");
 
 		Button cancelButton = new Button("Abbrechen", e -> addOutputDialog.close());
-
+		cancelButton.addClassName("cancel-button");
+		
 		addOutputDialog.getFooter().add(cancelButton);
 		addOutputDialog.getFooter().add(saveButton);
 		addOutputDialog.open();
@@ -222,7 +232,7 @@ public class OutputView extends Div {
 		
 		outputService.update(output);
 		
-		strain.setAmount(strain.getAmount() - amount);
+		strain.setAmountGramm(strain.getAmountGramm() - amount);
 		strainService.update(strain);		
 	}
 	

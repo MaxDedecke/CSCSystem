@@ -108,7 +108,6 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 
 		grid.setItems(waitingPersonService.findAllByAssociation(associationId));
 		grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-        grid.addClassNames(LumoUtility.Height.FULL);
 
 		// when a row is selected or deselected, populate form
 		grid.asSingleSelect().addValueChangeListener(event -> {
@@ -383,8 +382,12 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setClassName("button-layout");
 		cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+		cancel.addClassName("cancel-button");
+		
 		save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		save.addClassName("save-button");
 		levelup.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		levelup.addClassName("save-button");
 		buttonLayout.add(save, levelup, cancel);
 		editorLayoutDiv.add(buttonLayout);
 	}
@@ -393,12 +396,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.addClassNames(LumoUtility.Padding.NONE);
-
-		Div wrapper = new Div();
-		wrapper.setClassName("grid-wrapper");
-		wrapper.add(grid);
-        wrapper.setHeight("100%");
-
+		
 		HorizontalLayout bottomLayout = new HorizontalLayout();
 		bottomLayout.setWidth("100%");
 		bottomLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Bottom.SMALL,
@@ -407,7 +405,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 		bottomLayout.add(memberCount);
 
-		mainLayout.add(wrapper, bottomLayout);
+		mainLayout.add(grid, bottomLayout);
 		splitLayout.addToPrimary(mainLayout);
 	}
 

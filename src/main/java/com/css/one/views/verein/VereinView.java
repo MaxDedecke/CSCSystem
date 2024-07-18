@@ -26,6 +26,7 @@ import com.css.one.data.Transaction;
 import com.css.one.data.TransactionType;
 import com.css.one.data.WorkingUnit;
 import com.css.one.services.AssociationService;
+import com.css.one.services.LocationService;
 import com.css.one.services.PersonService;
 import com.css.one.services.TransactionService;
 import com.css.one.services.WorkingUnitService;
@@ -74,7 +75,8 @@ public class VereinView extends Div {
 	private PersonService samplePersonService;
 	private WorkingUnitService workingUnitService;
 	private TransactionService transactionService;
-
+	private LocationService locationService;
+	
 	final String memberList = "Mitgliederliste";
 	final String workload = "Arbeitsaufwand";
 	final String general = "Montaliche Übersicht";
@@ -95,18 +97,20 @@ public class VereinView extends Div {
 	private File exportFile;
 
 	public VereinView(AssociationService associationService, PersonService samplePersonService,
-			WorkingUnitService workingUnitService, TransactionService transactionService) {
+			WorkingUnitService workingUnitService, TransactionService transactionService, LocationService locationService) {
 		this.associationService = associationService;
 		this.samplePersonService = samplePersonService;
 		this.workingUnitService = workingUnitService;
 		this.transactionService = transactionService;
-
+		this.locationService = locationService;
+		
 		addClassNames("verein-view");
 		associationId = MainLayout.getAssociationId();
 
 		SplitLayout splitLayout = new SplitLayout();
 		
 		tabSheet.setSizeFull();
+		tabSheet.addClassName(".content");
 		tabSheet.add("Verantwortliche", createResponsiblesTab());
 		tabSheet.add("Downloads", createDownloadsTab());
 		tabSheet.add("Allgemeine Infos", createGeneralInfoTab());
@@ -121,6 +125,9 @@ public class VereinView extends Div {
 		Div wrapper = new Div();
 		wrapper.addClassName("grid-wrapper");
 		wrapper.setHeight("100%");
+		
+		H2 h2General = new H2("Hauptsitz");
+		h2General.addClassNames(LumoUtility.Margin.Top.MEDIUM);
 		
 		FormLayout formLayout = new FormLayout();
 
@@ -164,14 +171,36 @@ public class VereinView extends Div {
 		formLayout.setColspan(fieldHouseNumber, 2);
 		formLayout.setColspan(fieldPostalCode, 2);
 		formLayout.setColspan(fieldCity, 2);
-
-//		horizontalWrapperFormLayout.setSpacing(true);
-//		horizontalWrapperFormLayout.setMargin(true);
-//		horizontalWrapperFormLayout.add(formLayout);
 		
-		wrapper.add(formLayout);
+		
+		wrapper.add(h2General, formLayout, new Hr(), createInnerTabsForLocations());
 		
 		return wrapper;
+	}
+
+	private TabSheet createInnerTabsForLocations() {
+		TabSheet innerTabSheet = new TabSheet();
+		innerTabSheet.addClassNames("vaadin-tabsheet");
+		
+		locationService.findAllByAssociation(associationId).forEach(e -> {
+			FormLayout tmpLayout = new FormLayout();
+			
+			TextField nameField = new TextField("Name");
+			nameField.setValue(e.getName());
+			nameField.setEnabled(false);
+			TextField addressField = new TextField("Adresse");
+			addressField.setEnabled(false);
+			addressField.setValue(e.getStreet() + " " + e.getStreetNumber() + ", " + e.getPostalCode() + " " + e.getCity());
+			TextField noteField = new TextField("Notiz");
+			noteField.setEnabled(false);
+			noteField.setValue(e.getNote());
+			
+			tmpLayout.add(nameField, addressField, noteField);
+			tmpLayout.setSizeFull();
+			innerTabSheet.add(e.getName(), tmpLayout);
+		});
+		
+		return innerTabSheet;
 	}
 
 	private Component createDownloadsTab() {
@@ -222,7 +251,7 @@ public class VereinView extends Div {
 	}
 
 	private Component createResponsiblesTab() {
-		Div wrapper = new Div();
+		VerticalLayout wrapper = new VerticalLayout();
 		wrapper.addClassName("grid-wrapper");
 		wrapper.setHeight("100%");
 		wrapper.addClassNames(LumoUtility.Padding.NONE);
@@ -235,12 +264,13 @@ public class VereinView extends Div {
 		
 		Grid<Person> responsiblesGrid = new Grid<>(Person.class, false);
 		responsiblesGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+		responsiblesGrid.setMinHeight(500, Unit.PIXELS);
 		responsiblesGrid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
 		responsiblesGrid.addColumn(p -> p.getAssociationRole().getLabel()).setAutoWidth(true).setHeader("Rolle");
 		responsiblesGrid.addColumn(p -> renderDate(p.getDateOfHigherRole())).setAutoWidth(true).setHeader("In der Funktion seit");
 		responsiblesGrid.setItems(importantPeople);
 		
-		wrapperGrid.add(responsiblesGrid);
+		wrapperGrid.add(responsiblesGrid); 
 		wrapper.add(wrapperGrid);
 		return wrapper;
 	}
@@ -304,12 +334,12 @@ public class VereinView extends Div {
 	private void setGeneralLayer(HorizontalLayout layerGeneral) {
 
 		VerticalLayout mainButtonLayoutOne = new VerticalLayout();
-		mainButtonLayoutOne.add(new Text(general));
+		mainButtonLayoutOne.add(new Text(general)); 
 		mainButtonLayoutOne.setAlignItems(Alignment.CENTER);
 		Button buttonPrintGeneral = new Button(mainButtonLayoutOne);
-		buttonPrintGeneral.setHeight(100, Unit.PIXELS);
-		buttonPrintGeneral.setWidth(420, Unit.PIXELS);
-
+		buttonPrintGeneral.addClassNames("button-category");
+		buttonPrintGeneral.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		
 		Dialog printDialogGeneral = new Dialog();
 		initDialog(printDialogGeneral, general);
 		buttonPrintGeneral.addClickListener(e -> {
@@ -325,9 +355,9 @@ public class VereinView extends Div {
 		mainButtonLayoutOne.add(new Text(memberList));
 		mainButtonLayoutOne.setAlignItems(Alignment.CENTER);
 		Button buttonPrintMemberList = new Button(mainButtonLayoutOne);
-		buttonPrintMemberList.setHeight(100, Unit.PIXELS);
-		buttonPrintMemberList.setWidth(200, Unit.PIXELS);
-
+		buttonPrintMemberList.addClassNames("button-category");
+		buttonPrintMemberList.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		
 		Dialog printDialogMemberList = new Dialog();
 		initDialog(printDialogMemberList, memberList);
 		buttonPrintMemberList.addClickListener(e -> {
@@ -339,9 +369,9 @@ public class VereinView extends Div {
 		mainButtonLayoutTwo.add(new Text(workload));
 		mainButtonLayoutTwo.setAlignItems(Alignment.CENTER);
 		Button buttonPrintWorkload = new Button(mainButtonLayoutTwo);
-		buttonPrintWorkload.setHeight(100, Unit.PIXELS);
-		buttonPrintWorkload.setWidth(200, Unit.PIXELS);
-
+		buttonPrintWorkload.addClassNames("button-category");
+		buttonPrintWorkload.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		
 		Dialog printDialogWorkload = new Dialog();
 		initDialog(printDialogWorkload, workload);
 		buttonPrintWorkload.addClickListener(e -> {
@@ -769,9 +799,9 @@ public class VereinView extends Div {
 		mainButtonLayoutOne.add(new Text(importantMembers));
 		mainButtonLayoutOne.setAlignItems(Alignment.CENTER);
 		Button buttonImportantMembers = new Button(mainButtonLayoutOne);
-		buttonImportantMembers.setHeight(100, Unit.PIXELS);
-		buttonImportantMembers.setWidth(200, Unit.PIXELS);
-
+		buttonImportantMembers.addClassNames("button-category");
+		buttonImportantMembers.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		
 		Dialog printDialogImportantMembers = new Dialog();
 		initDialog(printDialogImportantMembers, "Liste von " + importantMembers + "n");
 		buttonImportantMembers.addClickListener(e -> {
@@ -783,9 +813,9 @@ public class VereinView extends Div {
 		mainButtonLayoutTwo.add(new Text(waitingList));
 		mainButtonLayoutTwo.setAlignItems(Alignment.CENTER);
 		Button buttonPrintWaitingList = new Button(mainButtonLayoutTwo);
-		buttonPrintWaitingList.setHeight(100, Unit.PIXELS);
-		buttonPrintWaitingList.setWidth(200, Unit.PIXELS);
-
+		buttonPrintWaitingList.addClassNames("button-category");
+		buttonPrintWaitingList.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		
 		Dialog printDialogWaitingList = new Dialog();
 		initDialog(printDialogWaitingList, waitingList);
 		buttonPrintWaitingList.addClickListener(e -> {
@@ -803,9 +833,9 @@ public class VereinView extends Div {
 		mainButtonLayoutOne.add(new Text(wareInfo));
 		mainButtonLayoutOne.setAlignItems(Alignment.CENTER);
 		Button buttonPrintWareInfo = new Button(mainButtonLayoutOne);
-		buttonPrintWareInfo.setHeight(100, Unit.PIXELS);
-		buttonPrintWareInfo.setWidth(200, Unit.PIXELS);
-
+		buttonPrintWareInfo.addClassNames("button-category");
+		buttonPrintWareInfo.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		
 		Dialog printDialogWareInfo = new Dialog();
 		initDialog(printDialogWareInfo, wareInfo);
 		buttonPrintWareInfo.addClickListener(e -> {
@@ -817,9 +847,9 @@ public class VereinView extends Div {
 		mainButtonLayoutTwo.add(new Text(outputInfo));
 		mainButtonLayoutTwo.setAlignItems(Alignment.CENTER);
 		Button buttonPrintOutputInfo = new Button(mainButtonLayoutTwo);
-		buttonPrintOutputInfo.setHeight(100, Unit.PIXELS);
-		buttonPrintOutputInfo.setWidth(200, Unit.PIXELS);
-
+		buttonPrintOutputInfo.addClassNames("button-category");
+		buttonPrintOutputInfo.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		
 		Dialog printDialogOutputInfo = new Dialog();
 		initDialog(printDialogOutputInfo, outputInfo);
 		buttonPrintOutputInfo.addClickListener(e -> {
@@ -837,9 +867,9 @@ public class VereinView extends Div {
 		mainButtonLayoutOne.add(new Text(income));
 		mainButtonLayoutOne.setAlignItems(Alignment.CENTER);
 		Button buttonPrintIncome = new Button(mainButtonLayoutOne);
-		buttonPrintIncome.setHeight(100, Unit.PIXELS);
-		buttonPrintIncome.setWidth(200, Unit.PIXELS);
-
+		buttonPrintIncome.addClassNames("button-category");
+		buttonPrintIncome.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		
 		Dialog printDialogIncome = new Dialog();
 		initDialog(printDialogIncome, income);
 		buttonPrintIncome.addClickListener(e -> {
@@ -851,9 +881,9 @@ public class VereinView extends Div {
 		mainButtonLayoutTwo.add(new Text(costs));
 		mainButtonLayoutTwo.setAlignItems(Alignment.CENTER);
 		Button buttonPrintCosts = new Button(mainButtonLayoutTwo);
-		buttonPrintCosts.setHeight(100, Unit.PIXELS);
-		buttonPrintCosts.setWidth(200, Unit.PIXELS);
-
+		buttonPrintCosts.addClassNames("button-category");
+		buttonPrintCosts.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		
 		Dialog printDialogCosts = new Dialog();
 		initDialog(printDialogCosts, costs);
 		buttonPrintCosts.addClickListener(e -> {

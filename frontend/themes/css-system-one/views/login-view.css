@@ -11,10 +11,10 @@
 
 @keyframes change-background {
     from {
-        background-color: #66DA9D;
+        background-color: #FFFFFF;;
     }
     to {
-        background-color: #573F27;
+        background-color: rgb(192, 192, 192);
     }
 }
 
@@ -22,15 +22,30 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  animation: slide-in 0.5s ease-out forwards, change-background 1s 1s forwards;
+  animation: slide-in 0.5s ease-out forwards, change-background 5s 1s forwards;
+  color: #FFFFFF;
+  
 }
 
 [part="content"] {
-  animation: slide-in 1s ease-out forwards; 
+  animation: slide-in 1s ease-out forwards;
+  --lumo-base-color: #8ABD3E;
+  --lumo-primary-color: #8ABD3E;
+  --lumo-primary-text-color: #FFFFFF;
+  --lumo-header-text-color: #FFFFFF;
+  --lumo-body-text-color: #FFFFFF;
+  --lumo-border-radius: 8px;
+}
+
+[part="overlay"]::part(title) {
+    font-size: 2em;
+    color: #ffffff;
 }
 
 [part="backdrop"]::before {
-  animation: slide-in 1s ease-out forwards;  
+  animation: slide-in 1s ease-out forwards;
+  color: #FFFFFF;  
+  
 }	
 
 .login-view vaadin-login-form {
@@ -70,3 +85,80 @@
   background-size: contain;
   animation: fly 5s 5s forwards;
 }
+
+/* my-theme.css */
+:root {
+    /* Hintergrundfarben */
+    --main-background-color: #FFFFFF;
+    --secondary-background-color: #8ABD3E;
+    --tertiary-background-color: #66DA9D;
+    --header-background-color: #4A4A4A;
+    --footer-background-color: #333333;
+
+    /* Textfarben */
+    --text-color: #66DA9D;
+    --secondary-text-color: #CCCCCC;
+    --link-color: #8ABD3E;
+    --link-hover-color: #66DA9D;
+
+    /* Borderfarben */
+    --border-color: #CCCCCC;
+    --input-border-color: #8ABD3E;
+    --focus-border-color: #66DA9D;
+
+    /* Buttonfarben */
+    --button-background-color: #8ABD3E;
+    --button-hover-background-color: #66DA9D;
+    --button-text-color: #FFFFFF;
+    --button-border-color: #8ABD3E;
+
+    /* Schattenfarben */
+    --box-shadow-color: rgba(0, 0, 0, 0.1);
+
+    /* Akzentfarben */
+    --accent-color: #FF5722;
+    --error-color: #FF5252;
+    --success-color: #4CAF50;
+    --warning-color: #FFC107;
+    --info-color: #2196F3;
+
+    /* Placeholder Farben */
+    --placeholder-color: #BBBBBB;
+}
+
+body {
+    background-color: var(--main-background-color);
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+}
+
+.v-app {
+    background-color: var(--main-background-color);
+}
+
+.v-button {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.v-button:hover {
+    background-color: var(--secondary-color);
+}
+
+.v-label {
+    color: var(--text-color);
+}
+
+.v-textfield {
+    border: 1px solid var(--primary-color);
+    padding: 5px;
+    color: var(--main-background-color);
+}
+
+.v-textfield:focus {
+    border-color: var(--secondary-color);
+}
+

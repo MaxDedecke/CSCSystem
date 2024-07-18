@@ -11,9 +11,6 @@ public class DatabaseConfig {
  
 	 static {
 		try (InputStream input = new FileInputStream(new File("/application.properties"))) {
-			if (input == null) {
-				System.out.println("Unable to find global application.properties");
-			}
 
 			// Load the properties file
 			properties.load(input);
