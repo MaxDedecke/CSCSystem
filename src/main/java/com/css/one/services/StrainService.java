@@ -1,5 +1,6 @@
 package com.css.one.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -42,7 +43,9 @@ public class StrainService {
     }
     
     public List<Strain> findAllByAssociation(int associationId) {
-    	return repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).toList();
+    	List<Strain> list = new ArrayList<>();
+    	list.addAll(repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).toList());
+    	return list;
     }
     
     public List<Strain> findAllReadyForOutput(int associationId) {
@@ -57,12 +60,12 @@ public class StrainService {
     	return repository.findAll();
     }
     
- public int getFreeMemberNumber(int associationId) {
-    	
-    	Random rand = new Random();
-    	boolean isNotEqual = false;
-    	int n = 0;
-    	
+	public int getFreeStrainNumber(int associationId) {
+
+		Random rand = new Random();
+		boolean isNotEqual = false;
+		int n = 0;
+
 		while (!isNotEqual) {
 			n = rand.nextInt(1000000);
 			for (Strain s : findAllByAssociation(associationId)) {
@@ -72,7 +75,7 @@ public class StrainService {
 			}
 			isNotEqual = true;
 		}
-		
-    	return n;
-    }
+
+		return n;
+	}
 }

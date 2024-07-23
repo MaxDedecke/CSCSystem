@@ -56,6 +56,6 @@ public class OutputService {
     }
     
     public List<Output> findOutputByStrain(int strainId) {
-    	return repository.findAll().stream().filter(e -> e.getStrainId() == strainId).toList();
+    	return repository.findAll().stream().filter(e -> e.getEntityId() == strainId).toList();
     }
 }

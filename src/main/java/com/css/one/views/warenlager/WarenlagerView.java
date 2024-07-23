@@ -1,5 +1,13 @@
 package com.css.one.views.warenlager;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -7,17 +15,26 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
+
+import javax.money.CurrencyUnit;
+import javax.money.Monetary;
+import javax.money.MonetaryAmount;
 
 import org.vaadin.addons.MoneyField;
 
+import com.css.one.data.Cutting;
 import com.css.one.data.GrowStatus;
 import com.css.one.data.Location;
 import com.css.one.data.Output;
 import com.css.one.data.Person;
+import com.css.one.data.Seed;
 import com.css.one.data.Strain;
+import com.css.one.services.CuttingService;
 import com.css.one.services.LocationService;
 import com.css.one.services.OutputService;
 import com.css.one.services.PersonService;
+import com.css.one.services.SeedService;
 import com.css.one.services.StrainService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
@@ -42,6 +59,7 @@ import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.UploadI18N;
+import com.vaadin.flow.component.upload.receivers.FileBuffer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
@@ -57,7 +75,9 @@ public class WarenlagerView extends Div {
     private PersonService personService;
     private StrainService strainService;
     private LocationService locationService;
-    
+    private CuttingService cuttingService;
+    private SeedService seedService;
+    	
     private int associationId;
     
     Dialog addStrainDialog;
@@ -65,24 +85,45 @@ public class WarenlagerView extends Div {
     
 	Grid<Strain> strainGrid = new Grid<Strain>();
 	Grid<Output> outputGrid = new Grid<Output>();
+	Grid<Cutting> cuttingsGrid = new Grid<Cutting>();
+	Grid<Seed> seedsGrid = new Grid<Seed>();
 	
 	ComboBox<GrowStatus> statusBox = new ComboBox<GrowStatus>("Status");
 	Checkbox box;
+	Checkbox isFreshCuttingBox;
+	Checkbox isFreshSeedBox;
+
 	DateTimePicker dateHarvested;
 	ComboBox<Location> locationBox;
 	
 	ComboBox<Person> responsiblePersonOne;
 	ComboBox<Person> responsiblePersonTwo;
-	
-	H2 amount = new H2("0 Gramm");
-	H2 amount2 = new H2("0 Gramm");
+	ComboBox<Strain> comboboxCuttingsOrigins = new ComboBox<Strain>("Mutterpflanze");
+	ComboBox<Strain> comboboxSeedsOrigins = new ComboBox<Strain>("Mutterpflanze");
+	ComboBox<Person> comboBoxResponsibleForSeed = new ComboBox<Person>("Verantwortlicher");
 
-	List<Strain> allByAssociation = new ArrayList<>();
+	ComboBox<GrowStatus> comboxCuttingStatus = new ComboBox<GrowStatus>("Status");
+	ComboBox<Person> comboBoxResponsibleForCutting = new ComboBox<Person>("Verantwortlicher");
+	ComboBox<Location> comboBoxLocationCutting = new ComboBox<Location>("Ort");
+	ComboBox<Location> comboBoxLocationSeed = new ComboBox<Location>("Lagerort");
+
+	H2 amount = new H2("0 Gramm");
+	H2 amountCuttings = new H2("0 Stück");
+	H2 amountSeeds = new H2("0 Stück");
+	
+	List<Strain> allStrainsByAssociation = new ArrayList<>();
     List<Output> outputAssociation = new ArrayList<>();
     
     Dialog changeStrainStatusDialog = new Dialog();
+    Dialog addCuttingsDialog = new Dialog();
+    Dialog addSeedsDialog = new Dialog();
     
     Strain changeStrain;
+    Cutting changeCutting;
+    Seed changeSeed;
+    File pathToCertificate;
+    InputStream streamCertificate;
+    String directoryPath;
     
     private Upload uploadCertificate;
     
@@ -94,12 +135,34 @@ public class WarenlagerView extends Div {
     private TextField numberField;
     private TextField amountOfPlantsField;
     private MoneyField amountPerGramm;
-
-	public WarenlagerView(StrainService strainService, OutputService outputService, PersonService personService, LocationService locationService) {
+    
+    private TextField cuttingNumberField;
+    private TextField cuttingNameField;
+    private DateTimePicker cuttingPlantDate;
+    private TextField cuttingsAmountField;
+    private TextField cuttingsPriceField;
+    
+    private TextField seedNameField;
+    private TextField seedNumberField;
+    private TextField seedPriceField;
+    private TextField seedsAmountField;
+    
+    private Button deleteStrainButton;
+    private Button deleteCuttingButton;
+    private Button deleteSeedButton;
+    
+    public enum ViewStatus {
+		STRAIN, CUTTING, SEED
+	}
+    
+	public WarenlagerView(StrainService strainService, OutputService outputService, PersonService personService, LocationService locationService,
+			CuttingService cuttingService, SeedService seedService) {
 		this.strainService = strainService;
 		this.outputService = outputService;
 		this.personService = personService;
 		this.locationService = locationService;
+		this.cuttingService = cuttingService;
+		this.seedService = seedService;
 		
         addClassNames("warenlager-view");         
         associationId = MainLayout.getAssociationId();
@@ -111,21 +174,337 @@ public class WarenlagerView extends Div {
         tabSheet.setSizeFull();
         createStrainsLayout(tabSheet);
         createCuttingsLayout(tabSheet);
+        createSeedsLayout(tabSheet);
         
+        createAddStrainDialog();
+        createAddCuttingsDialog();
+        createAddSeedsDialog();
         add(tabSheet);
     }
 
-	private void createCuttingsLayout(TabSheet tabSheet) {
-		Div wrapper = new Div();
+	private void createSeedsLayout(TabSheet tabSheet) {
+		VerticalLayout wrapper = new VerticalLayout();
 		wrapper.setClassName("grid-wrapper");
+
+		wrapper.setHeightFull();	
+		
+		HorizontalLayout horizontalLayout = new HorizontalLayout();
+
+		VerticalLayout layoutButton = new VerticalLayout();
+		layoutButton.addClassNames(LumoUtility.Padding.Left.NONE);
+
+		Button addSeedsButton = new Button();
+		addSeedsButton.addClassNames("button-layout-common");
+		addSeedsButton.setText("+ Samen hinzufügen");
+
+		addSeedsButton.addClickListener(e -> addSeedsDialog.open());
+
+		layoutButton.setAlignItems(Alignment.CENTER);
+		layoutButton.add(addSeedsButton);
+
+		H2 balance = new H2("Samen:");
+
+		VerticalLayout layout = new VerticalLayout();
+		layout.add(balance);
+		layout.add(amountSeeds);
+		layout.setAlignItems(Alignment.CENTER);
+
+		horizontalLayout.add(layoutButton);
+		horizontalLayout.add(layout);
+		wrapper.add(horizontalLayout);
+		
+		seedsGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+		seedsGrid.addColumn(p -> p.getSeedNumber()).setHeader("Nummer");
+		seedsGrid.addColumn(p -> p.getName()).setHeader("Name").setAutoWidth(true).setSortable(true);
+		seedsGrid.addColumn(p -> p.getResponsiblePerson().getFirstName() + " " + p.getResponsiblePerson().getLastName())
+				.setHeader("Verantwortlicher").setAutoWidth(true).setSortable(true);
+		seedsGrid
+				.addColumn(p -> p.getMotherPlant() == null ? "-"
+						: p.getMotherPlant().getName() + " (" + p.getMotherPlant().getStrainNumber() + ")")
+				.setHeader("Mutterpflanze").setAutoWidth(true).setSortable(true);
+		seedsGrid.addColumn(p -> p.getAmountOfSeeds()).setHeader("Menge").setAutoWidth(true).setSortable(true);
+		seedsGrid.addColumn(p -> p.getPrice()).setHeader("Preis").setAutoWidth(true).setSortable(true);
+
+		seedsGrid.addComponentColumn(item ->  {
+			Button button = new Button("Details");
+			button.addClickListener(click -> {
+				changeSeed = item;
+				openSeedToEdit();
+			});
+			button.addClassNames("button-grid-green");
+			return button;
+		}).setAutoWidth(true);
 		
 		
+		refreshGrid(ViewStatus.SEED);
+		
+		wrapper.add(seedsGrid);
+		
+		tabSheet.add("Samen", wrapper);
+	}
+	
+	private void openSeedToEdit() {
+		
+		this.seedNumberField.setValue(String.valueOf(changeSeed.getSeedNumber()));
+		this.seedNameField.setValue(changeSeed.getName());
+		this.seedPriceField.setValue(String.valueOf(changeSeed.getPrice()));
+		this.seedsAmountField.setValue(String.valueOf(changeSeed.getAmountOfSeeds()));
+		this.comboBoxResponsibleForSeed.setValue(changeSeed.getResponsiblePerson());
+		this.comboBoxLocationSeed.setValue(changeSeed.getGrowLocation());
+		this.comboboxSeedsOrigins.setValue(changeSeed.getMotherPlant() != null ? changeSeed.getMotherPlant() : comboboxSeedsOrigins.getEmptyValue());
+		
+		if(changeSeed.getMotherPlant() == null) {
+			isFreshSeedBox.setValue(true);
+			this.comboboxSeedsOrigins.setEnabled(false);
+		} else {
+			isFreshSeedBox.setValue(false);
+			this.comboboxSeedsOrigins.setEnabled(true);
+		}
+		
+		addSeedsDialog.open();
+	}
+
+	private void createAddSeedsDialog() {
+		addSeedsDialog = new Dialog();
+		addSeedsDialog.addClassNames(LumoUtility.MaxWidth.SCREEN_MEDIUM);
+		
+		VerticalLayout headerLayout = new VerticalLayout();
+		HorizontalLayout headlineLayout = new HorizontalLayout();
+		
+		H2 header = new H2("Neue Samen hinzufügen");
+		isFreshSeedBox = new Checkbox("Ohne eigene Mutterpflanze");
+		isFreshSeedBox.addValueChangeListener(e -> {
+			comboboxSeedsOrigins.setEnabled(!e.getValue());
+		});
+		
+		isFreshSeedBox.addClassNames(LumoUtility.Padding.Top.XSMALL);
+		headlineLayout.add(header, isFreshSeedBox);
+
+		Hr hr = new Hr();		
+		headerLayout.add(headlineLayout, hr);
+		
+		HorizontalLayout layout = new HorizontalLayout();
+		layout.addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.MEDIUM);
+		FormLayout formLayout = createSeedDialogComponent();
+		
+		layout.add(formLayout);
+		addSeedsDialog.add(headerLayout);
+		addSeedsDialog.add(layout);
+		
+		
+		Button saveButton = new Button("Hinzufügen", e -> {
+
+			if (!seedNameField.isEmpty()) {
+				if (!comboboxSeedsOrigins.isEmpty() || isFreshSeedBox.getValue()) {
+					if (!seedsAmountField.isEmpty()) {
+						if (!seedPriceField.isEmpty()) {
+							addNewSeeds();
+							addSeedsDialog.close();
+							clearSeedsDialog();
+						} else {
+							Notification.show("Was soll ein Samen kosten ?");
+						}
+					} else {
+						Notification.show("Um wieviele Samen handelt es sich ?");
+					}
+				} else {
+					Notification.show("Die Samen brauchen eine Mutterpflanze !");
+				}
+			} else {
+				Notification.show("Die Stecklinge müssem einen Namen haben !");
+			}
+
+			deleteSeedButton.setEnabled(true);
+
+		});
+		saveButton.addClassName("save-button");
+		
+		Button cancelButton = new Button("Abbrechen", e -> {
+			clearSeedsDialog();
+			addSeedsDialog.close();	
+			deleteSeedButton.setEnabled(true);
+		});
+		cancelButton.addClassNames("cancel-button");
+		
+		deleteSeedButton = new Button("Löschen", e -> {
+			seedService.delete(changeSeed.getId());
+			addSeedsDialog.close();
+			Notification.show("Samen gelöscht.");
+			deleteSeedButton.setEnabled(true);
+			changeSeed = null;
+			refreshGrid(ViewStatus.SEED);
+		});
+		
+		addSeedsDialog.addDialogCloseActionListener(e -> {
+			clearSeedsDialog();
+		});
+		
+		deleteSeedButton.addClassNames("delete-button");
+		
+		addSeedsDialog.getFooter().add(deleteCuttingButton);
+		addSeedsDialog.getFooter().add(cancelButton);
+		addSeedsDialog.getFooter().add(saveButton);
+	}
+
+	private void addNewSeeds() {
+		Seed seed;
+    	
+		if(changeSeed == null) {
+			seed = new Seed();
+		} else {
+			seed = changeSeed;
+		}
+		
+		seed.setAssociationId(associationId);
+		seed.setAmountOfSeeds(Integer.valueOf(seedsAmountField.getValue()));
+		seed.setSeedNumber(Integer.valueOf(seedNumberField.getValue()));
+		seed.setMotherPlant(comboboxSeedsOrigins.getValue());
+		seed.setName(seedNameField.getValue());		
+		seed.setGrowLocation(comboBoxLocationSeed.getValue());
+		seed.setPrice(Double.valueOf(seedPriceField.getValue()));
+		seed.setResponsiblePerson(comboBoxResponsibleForSeed.getValue());
+		
+		seedService.update(seed);
+		
+		refreshGrid(ViewStatus.SEED);
+		
+	}
+
+	private void clearSeedsDialog() {
+
+		seedNumberField.setValue(String.valueOf(seedService.getFreeSeedNumber(associationId)));
+		comboboxSeedsOrigins.setValue(comboboxSeedsOrigins.getEmptyValue());
+		seedNameField.setValue("");
+		seedsAmountField.setValue("");
+		seedPriceField.setValue("");
+		comboBoxResponsibleForSeed.setValue(comboBoxResponsibleForSeed.getEmptyValue());
+		comboBoxLocationSeed.setValue(comboBoxLocationSeed.getEmptyValue());
+		
+		isFreshSeedBox.setValue(false);
+		changeSeed = null;
+	}
+
+	private FormLayout createSeedDialogComponent() {
+		FormLayout formLayout = new FormLayout();
+		
+		seedNumberField = new TextField("Eindeutige Nummer");
+		seedNumberField.setEnabled(false);
+		seedNumberField.setValue(String.valueOf(seedService.getFreeSeedNumber(associationId)));
+		comboboxSeedsOrigins.setItems(strainService.findAllByAssociation(associationId));
+		comboboxSeedsOrigins.setItemLabelGenerator(e -> e.getName() + " (" + e.getStrainNumber() + ")");
+		
+		seedNameField = new TextField("Name");
+		
+		seedsAmountField = new TextField("Anzahl Samen");
+		seedsAmountField.setAllowedCharPattern("[0-9/]");
+		
+		seedPriceField = new TextField("Preis pro Samen");
+		seedPriceField.setAllowedCharPattern("[0-9/]");
+		
+		comboBoxResponsibleForSeed.setItems(personService.findAllByAssociation(associationId));
+		comboBoxResponsibleForSeed.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
+		comboBoxResponsibleForSeed.setValue(comboBoxResponsibleForSeed.getListDataView().getItem(0));
+		
+		comboBoxLocationSeed.setItems(locationService.findAllByAssociation(associationId));
+		comboBoxLocationSeed.setItemLabelGenerator(e -> e.getName());
+		comboBoxLocationSeed.setValue(comboBoxLocationSeed.getListDataView().getItem(0));
+		
+		formLayout.add(seedNumberField, seedNameField, comboboxSeedsOrigins,
+				seedsAmountField, seedPriceField, comboBoxResponsibleForSeed, comboBoxLocationSeed);
+		return formLayout;
+	}
+
+	private void createCuttingsLayout(TabSheet tabSheet) {
+		VerticalLayout wrapper = new VerticalLayout();
+		wrapper.setClassName("grid-wrapper");
+		wrapper.setHeightFull();	
+		HorizontalLayout horizontalLayout = new HorizontalLayout();
+
+		VerticalLayout layoutButton = new VerticalLayout();
+		layoutButton.addClassNames(LumoUtility.Padding.Left.NONE);
+
+		Button addCuttingButton = new Button();
+		addCuttingButton.addClassNames("button-layout-common");
+		addCuttingButton.setText("+ Stecklinge hinzufügen");
+
+		addCuttingButton.addClickListener(e -> {
+			deleteCuttingButton.setEnabled(false);
+			addCuttingsDialog.open();
+		});
+
+		layoutButton.setAlignItems(Alignment.CENTER);
+		layoutButton.add(addCuttingButton);
+
+		H2 balance = new H2("Stecklinge:");
+
+		VerticalLayout layout = new VerticalLayout();
+		layout.add(balance);
+		layout.add(amountCuttings);
+		layout.setAlignItems(Alignment.CENTER);
+
+		horizontalLayout.add(layoutButton);
+		horizontalLayout.add(layout);
+		wrapper.add(horizontalLayout);
+		
+		cuttingsGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+		cuttingsGrid.addColumn(p -> p.getCuttingNumber()).setHeader("Nummer");
+		cuttingsGrid.addColumn(p -> p.getName()).setHeader("Name").setAutoWidth(true).setSortable(true);
+		cuttingsGrid.addColumn(p -> renderDate(p.getDatePlanted())).setHeader("Gepflanzt am").setAutoWidth(true)
+				.setSortable(true);
+		cuttingsGrid
+				.addColumn(p -> p.getMotherPlant() == null ? "-"
+						: p.getMotherPlant().getName() + " (" + p.getMotherPlant().getStrainNumber() + ")")
+				.setHeader("Mutterpflanze").setAutoWidth(true).setSortable(true);
+		cuttingsGrid.addColumn(p -> p.getAmountOfCuttings()).setHeader("Menge").setAutoWidth(true).setSortable(true);
+		cuttingsGrid.addColumn(p -> p.getStatus().getLabel()).setHeader("Status").setAutoWidth(true).setSortable(true);
+		
+		cuttingsGrid.addComponentColumn(item -> {
+			Button button = new Button("Details");
+			
+			button.addClickListener(click -> {
+				changeCutting = item;
+				openCuttingToEdit();
+			});
+			
+			button.addClassNames("button-grid-green");
+			return button;
+        }).setAutoWidth(true);
+		
+		refreshGrid(ViewStatus.CUTTING);
+		
+		wrapper.add(cuttingsGrid);
+
 		tabSheet.add("Stecklinge", wrapper);
+	}
+
+	private void openCuttingToEdit() {
+		
+		this.cuttingNumberField.setValue(String.valueOf(changeCutting.getCuttingNumber()));
+		this.cuttingNameField.setValue(changeCutting.getName());
+		this.cuttingsPriceField.setValue(String.valueOf(changeCutting.getPrice()));
+		this.cuttingPlantDate.setValue(LocalDateTime.of(changeCutting.getDatePlanted(), LocalTime.now()));
+		this.cuttingsAmountField.setValue(String.valueOf(changeCutting.getAmountOfCuttings()));
+		this.comboBoxResponsibleForCutting.setValue(changeCutting.getResponsiblePerson());
+		this.comboBoxLocationCutting.setValue(changeCutting.getGrowLocation());
+		this.comboxCuttingStatus.setValue(changeCutting.getStatus());
+		this.comboboxCuttingsOrigins.setValue(changeCutting.getMotherPlant() != null ? changeCutting.getMotherPlant() : comboboxCuttingsOrigins.getEmptyValue());
+		
+		if(changeCutting.getMotherPlant() == null) {
+			isFreshCuttingBox.setValue(true);
+			this.comboboxCuttingsOrigins.setEnabled(false);
+		} else {
+			isFreshCuttingBox.setValue(false);
+			this.comboboxCuttingsOrigins.setEnabled(true);
+		}
+		addCuttingsDialog.open();
+
 	}
 
 	private void createStrainsLayout(TabSheet tabSheet) {
 		
 		VerticalLayout wrapper = new VerticalLayout();
+		wrapper.setClassName("grid-wrapper");
+
 		wrapper.setHeightFull();	
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
 		
@@ -136,7 +515,11 @@ public class WarenlagerView extends Div {
 		addStrainButton.addClassNames("button-layout-common");
 		addStrainButton.setText("+ Sorte hinzufügen");
 		
-		addStrainButton.addClickListener(e -> openAddStrainDialog());
+		addStrainButton.addClickListener(e -> {
+			numberField.setValue(String.valueOf(strainService.getFreeStrainNumber(associationId)));
+			addStrainDialog.open();
+			deleteStrainButton.setEnabled(false);
+		});
 		
 		layoutButton.setAlignItems(Alignment.CENTER);
 		layoutButton.add(addStrainButton);
@@ -160,16 +543,18 @@ public class WarenlagerView extends Div {
 		strainGrid.addColumn(p -> p.getAmountGramm() == 0 ? "-" : p.getAmountGramm() + " Gramm").setHeader("Vorhandene Menge").setAutoWidth(true).setSortable(true);
 		strainGrid.addColumn(p -> p.getStatus().getLabel()).setHeader("Status").setAutoWidth(true).setSortable(true);
 		
-		strainGrid.addComponentColumn(item -> new Button("Status aktualisieren", click -> {
-			changeStrain = item;
-			statusBox.setValue(changeStrain.getStatus());
-			if (changeStrain.getDateFinished() != null) {
-				dateHarvested.setValue(LocalDateTime.of(changeStrain.getDateFinished(), LocalTime.now()));
-			}
-			changeStrainStatusDialog.open();
-        })).setAutoWidth(true);
+		strainGrid.addComponentColumn(item -> {
+			Button button = new Button("Details");
+			button.addClickListener(click -> {
+				changeStrain = item;
+				openDialogForEdit(changeStrain);
+				addStrainDialog.open();
+			});
+			button.addClassNames("button-grid-green");
+			return button;
+		}).setAutoWidth(true);
 		
-		refreshGrid();
+		refreshGrid(ViewStatus.STRAIN);
 		
 		wrapper.add(strainGrid);
 		
@@ -209,7 +594,7 @@ public class WarenlagerView extends Div {
 				changeStrain.setDateFinished(dateHarvested.getValue().toLocalDate());
 			}
 			strainService.update(changeStrain);
-			refreshGrid();
+			refreshGrid(ViewStatus.STRAIN);
 			changeStrainStatusDialog.close();
 		});
 		
@@ -244,10 +629,60 @@ public class WarenlagerView extends Div {
 			return "-";
 		}
 	}
+	
+	private void openDialogForEdit(Strain strain) {
+		
+		
+		if(strain.getDateFinished() != null) {
+			box.setValue(true);
+			statusBox.setValue(strain.getStatus());
+			
+			responsiblePersonOne.setEnabled(true);
+			List<Person> weighedByMembers = strain.getWeighedByMembers();
+			responsiblePersonOne.setValue(weighedByMembers.get(0));
+			responsiblePersonTwo.setEnabled(true);
+			responsiblePersonTwo.setValue(weighedByMembers.get(1));
+			
+			strainInfoAmount.setEnabled(true);
+			strainInfoAmount.setValue(strain.getAmountGramm());
+			
+			strainInfoThc.setEnabled(true);
+			strainInfoThc.setValue(strain.getThc());
+			
+			amountPerGramm.setEnabled(true);
+			amountPerGramm.setAmount(String.valueOf(strain.getPrice()));
+			dateAvailable.setValue(LocalDateTime.of(strain.getDateFinished(), LocalTime.now()));
+		} else {
+			box.setValue(false);
+			statusBox.setValue(strain.getStatus());
+			
+			responsiblePersonOne.setEnabled(false);
+			responsiblePersonOne.setValue(responsiblePersonOne.getEmptyValue());
+			responsiblePersonTwo.setEnabled(false);
+			responsiblePersonTwo.setValue(responsiblePersonTwo.getEmptyValue());
+			
+			strainInfoAmount.setEnabled(false);
+			strainInfoAmount.setValue(0.0);
+			
+			strainInfoThc.setEnabled(false);
+			strainInfoThc.setValue(0.0);
+			
+			amountPerGramm.setEnabled(false);
+			amountPerGramm.setAmount(String.valueOf(strain.getPrice()));
+			dateAvailable.setValue(LocalDateTime.now());
+		}
+		
+		numberField.setValue(String.valueOf(strain.getStrainNumber()));
+		nameField.setValue(strain.getName());
+		date.setValue(LocalDateTime.of(strain.getDatePlanted(), LocalTime.now()));
+		locationBox.setValue(strain.getGrowLocation());
+		amountOfPlantsField.setValue(String.valueOf(strain.getAmountOfPlants()));
+	}
 
-	private void openAddStrainDialog() {
+	private void createAddStrainDialog() {
 		
 		addStrainDialog = new Dialog();
+		addStrainDialog.addClassNames(LumoUtility.Width.FULL);
 		VerticalLayout headerLayout = new VerticalLayout();
 		HorizontalLayout headlineLayout = new HorizontalLayout();
 		
@@ -291,27 +726,239 @@ public class WarenlagerView extends Div {
 		Button saveButton = new Button("Hinzufügen", e -> {
 
 			if (!nameField.isEmpty()) {
-				
+				preparePath();
 				addNewStrain(nameField.getValue(), date.getValue(), dateAvailable.getValue(), strainInfoAmount, strainInfoThc, statusBox);
 				addStrainDialog.close();
-
+				clearStrainDialog();
 			} else { 
 				Notification.show("Die Sorte muss einen Namen haben !");
 			}
+			
+			deleteStrainButton.setEnabled(true);
+
 		});
 		saveButton.addClassName("save-button");
 		
-		Button cancelButton = new Button("Abbrechen", e -> addStrainDialog.close());
+		Button cancelButton = new Button("Abbrechen", e -> {
+			clearStrainDialog();
+			addStrainDialog.close();	
+			deleteStrainButton.setEnabled(true);
+		});
 		cancelButton.addClassNames("cancel-button");
 		
+		deleteStrainButton = new Button("Löschen", e -> {
+			strainService.delete(changeStrain.getId());
+			addStrainDialog.close();
+			Notification.show("Sorte gelöscht.");
+			deleteStrainButton.setEnabled(true);
+
+		});
+		
+		addStrainDialog.addDialogCloseActionListener(e -> {
+			clearStrainDialog();
+		});
+		
+		deleteStrainButton.addClassNames("delete-button");
+		
+		addStrainDialog.getFooter().add(deleteStrainButton);
 		addStrainDialog.getFooter().add(cancelButton);
 		addStrainDialog.getFooter().add(saveButton);
-		addStrainDialog.open();
 	}
 	
+	private void createAddCuttingsDialog() {
+		addCuttingsDialog = new Dialog();
+		addCuttingsDialog.addClassNames(LumoUtility.MaxWidth.SCREEN_MEDIUM);
+		
+		VerticalLayout headerLayout = new VerticalLayout();
+		HorizontalLayout headlineLayout = new HorizontalLayout();
+		
+		H2 header = new H2("Neue Stecklinge hinzufügen");
+		isFreshCuttingBox = new Checkbox("Ohne eigene Mutterpflanze");
+		isFreshCuttingBox.addValueChangeListener(e -> {
+			comboboxCuttingsOrigins.setEnabled(!e.getValue());
+		});
+		
+		isFreshCuttingBox.addClassNames(LumoUtility.Padding.Top.XSMALL);
+		headlineLayout.add(header, isFreshCuttingBox);
+
+		Hr hr = new Hr();		
+		headerLayout.add(headlineLayout, hr);
+		
+		HorizontalLayout layout = new HorizontalLayout();
+		layout.addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.MEDIUM);
+		FormLayout formLayout = createCuttingsDialogComponent();
+		
+		layout.add(formLayout);
+		addCuttingsDialog.add(headerLayout);
+		addCuttingsDialog.add(layout);
+		
+		
+		Button saveButton = new Button("Hinzufügen", e -> {
+
+			if (!cuttingNameField.isEmpty()) {
+				if (!cuttingPlantDate.isEmpty()) {
+					if (!comboboxCuttingsOrigins.isEmpty() || isFreshCuttingBox.getValue()) {
+						if(!cuttingsAmountField.isEmpty()) {
+							if(!cuttingsPriceField.isEmpty()) {								
+								addNewCuttings();
+								addCuttingsDialog.close();
+								clearCuttingsDialog();
+							} else {
+								Notification.show("Was soll ein Steckling kosten ?");
+							}
+						} else {
+							Notification.show("Um wieviele Stecklinge handelt es sich ?");
+						}
+					} else {
+						Notification.show("Die Stecklinge brauchen eine Mutterpflanze !");
+					}
+				} else {
+					Notification.show("Es muss feststehen wann die Stecklinge gepflanzt wurden !");
+				}
+			} else {
+				Notification.show("Die Stecklinge müssem einen Namen haben !");
+			}
+
+			deleteCuttingButton.setEnabled(true);
+
+		});
+		saveButton.addClassName("save-button");
+		
+		Button cancelButton = new Button("Abbrechen", e -> {
+			clearCuttingsDialog();
+			addCuttingsDialog.close();	
+			deleteCuttingButton.setEnabled(true);
+		});
+		cancelButton.addClassNames("cancel-button");
+		
+		deleteCuttingButton = new Button("Löschen", e -> {
+			cuttingService.delete(changeCutting.getId());
+			addCuttingsDialog.close();
+			Notification.show("Steckling gelöscht.");
+			deleteCuttingButton.setEnabled(true);
+			changeCutting = null;
+			refreshGrid(ViewStatus.CUTTING);
+		});
+		
+		addCuttingsDialog.addDialogCloseActionListener(e -> {
+			clearStrainDialog();
+		});
+		
+		deleteCuttingButton.addClassNames("delete-button");
+		
+		addCuttingsDialog.getFooter().add(deleteCuttingButton);
+		addCuttingsDialog.getFooter().add(cancelButton);
+		addCuttingsDialog.getFooter().add(saveButton);
+	}
+ 	
+	private void clearCuttingsDialog() {
+		this.cuttingNumberField.setValue(String.valueOf(cuttingService.getFreeCuttingNumber(associationId)));
+		this.cuttingNameField.setValue("");
+		this.cuttingsPriceField.setValue("");
+		this.cuttingPlantDate.setValue(LocalDateTime.now());
+		this.cuttingsAmountField.setValue("");
+		this.comboBoxResponsibleForCutting.setValue(comboBoxResponsibleForCutting.getListDataView().getItem(0));
+		this.comboBoxLocationCutting.setValue(comboBoxLocationCutting.getListDataView().getItem(0));
+		this.comboxCuttingStatus.setValue(comboxCuttingStatus.getListDataView().getItem(0));
+		this.comboboxCuttingsOrigins.setValue(comboboxCuttingsOrigins.getEmptyValue());
+		
+		isFreshCuttingBox.setValue(false);
+		this.comboboxCuttingsOrigins.setEnabled(true);
+	}
+
+	private void addNewCuttings() {
+		
+		Cutting cutting;
+    	
+		if(changeCutting == null) {
+			cutting = new Cutting();
+		} else {
+			cutting = changeCutting;
+		}
+		
+		cutting.setAssociationId(associationId);
+		cutting.setAmountOfCuttings(Integer.valueOf(cuttingsAmountField.getValue()));
+		cutting.setCuttingNumber(Integer.valueOf(cuttingNumberField.getValue()));
+		cutting.setDatePlanted(cuttingPlantDate.getValue().toLocalDate());
+		cutting.setMotherPlant(comboboxCuttingsOrigins.getValue());
+		cutting.setName(cuttingNameField.getValue());
+		cutting.setStatus(comboxCuttingStatus.getValue());
+		
+		cutting.setGrowLocation(comboBoxLocationCutting.getValue());
+		cutting.setPrice(Double.valueOf(cuttingsPriceField.getValue()));
+		cutting.setResponsiblePerson(comboBoxResponsibleForCutting.getValue());
+		
+		cuttingService.update(cutting);
+		
+		refreshGrid(ViewStatus.CUTTING);
+	}
+
+	private FormLayout createCuttingsDialogComponent() {
+		FormLayout formLayout = new FormLayout();
+		
+		cuttingNumberField = new TextField("Eindeutige Nummer");
+		cuttingNumberField.setEnabled(false);
+		cuttingNumberField.setValue(String.valueOf(cuttingService.getFreeCuttingNumber(associationId)));
+		comboboxCuttingsOrigins.setItems(strainService.findAllByAssociation(associationId));
+		comboboxCuttingsOrigins.setItemLabelGenerator(e -> e.getName() + " (" + e.getStrainNumber() + ")");
+		
+		cuttingNameField = new TextField("Name");
+		cuttingPlantDate = new DateTimePicker("Datum des Pflanzens");
+		comboxCuttingStatus.setItems(Arrays.asList(GrowStatus.values()).stream()
+				.filter(e -> (e == GrowStatus.NEW || (e == GrowStatus.GROWING || e == GrowStatus.READY))).toList());
+		comboxCuttingStatus.setItemLabelGenerator(e -> e.getLabel());
+		comboxCuttingStatus.setValue(GrowStatus.NEW);
+		
+		cuttingsAmountField = new TextField("Anzahl Stecklinge");
+		cuttingsAmountField.setAllowedCharPattern("[0-9/]");
+		
+		cuttingsPriceField = new TextField("Preis pro Steckling");
+		cuttingsPriceField.setAllowedCharPattern("[0-9/]");
+		
+		comboBoxResponsibleForCutting.setItems(personService.findAllByAssociation(associationId));
+		comboBoxResponsibleForCutting.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
+		comboBoxResponsibleForCutting.setValue(comboBoxResponsibleForCutting.getListDataView().getItem(0));
+		
+		comboBoxLocationCutting.setItems(locationService.findAllByAssociation(associationId));
+		comboBoxLocationCutting.setItemLabelGenerator(e -> e.getName());
+		comboBoxLocationCutting.setValue(comboBoxLocationCutting.getListDataView().getItem(0));
+		
+		formLayout.add(cuttingNumberField, cuttingNameField, comboboxCuttingsOrigins, cuttingPlantDate,
+				comboxCuttingStatus, cuttingsAmountField, cuttingsPriceField, comboBoxResponsibleForCutting, comboBoxLocationCutting);
+		return formLayout;
+	}
+
+	private void clearStrainDialog() {
+		box.setValue(false);
+		dateAvailable.setValue(LocalDateTime.now());
+		statusBox.setValue(statusBox.getEmptyValue());
+		responsiblePersonOne.setValue(responsiblePersonOne.getEmptyValue());
+		responsiblePersonTwo.setValue(responsiblePersonTwo.getEmptyValue());
+		strainInfoAmount.setValue(0.0);
+		strainInfoThc.setValue(0.0);
+		amountPerGramm.clear();
+		CurrencyUnit eur = Monetary.getCurrency("EUR");
+	    MonetaryAmount fstAmtEUR = Monetary.getDefaultAmountFactory()
+	      .setCurrency(eur).setNumber(0.0).create();
+		amountPerGramm.setValue(fstAmtEUR);
+		numberField.setValue("");
+		nameField.setValue("");
+		date.setValue(LocalDateTime.now());
+		locationBox.setValue(locationBox.getListDataView().getItem(0));
+		amountOfPlantsField.setValue("");
+		
+		if(changeStrain != null) {
+			changeStrain = null;
+		}
+	}
+
 	private Component createUploadComponent() {
 		uploadCertificate = new Upload();
-		uploadCertificate.setDropAllowed(false);
+		FileBuffer buffer = new FileBuffer();
+		uploadCertificate.setReceiver(buffer);
+		uploadCertificate.setAcceptedFileTypes(".pdf");
+//		uploadCertificate.setMaxFileSize(16000);
+		uploadCertificate.setDropAllowed(true);
 		uploadCertificate.setMaxFiles(1);
 
 		UploadI18N i18n = new UploadI18N();
@@ -324,12 +971,77 @@ public class WarenlagerView extends Div {
 
         uploadCertificate.setI18n(i18n);
         
+        uploadCertificate.addSucceededListener(event -> {
+        	preparePath();
+            streamCertificate = buffer.getInputStream();
+            pathToCertificate = new File(directoryPath, event.getFileName());
+        });
+        
         Button uploadButton = (Button) uploadCertificate.getUploadButton();
         uploadButton.setText("Zertifikat auswählen");
 		uploadButton.setEnabled(false);
 		uploadCertificate.setVisible(false);
 		
 		return uploadCertificate;
+	}
+	
+	private void handleFile() {
+
+	    File targetFile = pathToCertificate;
+	    try {
+	        if (!targetFile.exists()) {
+	            targetFile.createNewFile();
+	        }
+	        try (FileOutputStream out = new FileOutputStream(targetFile)) {
+	        	// 16 KB buffer
+	            byte[] buffer = new byte[16384];
+	            int bytesRead;
+	            while ((bytesRead = streamCertificate.read(buffer)) != -1) {
+	                out.write(buffer, 0, bytesRead);
+	            }
+	        }
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	        Notification.show("Fehler beim Speichern der Datei");
+	    }
+	    
+	    streamCertificate = null;
+	}
+	
+	private void preparePath() {
+		final Properties properties = new Properties();
+		try (InputStream input = new FileInputStream(new File("/application.properties"))) {
+
+			// Load the properties file
+			properties.load(input);
+		} catch (IOException ex) {
+			try (InputStream input = WarenlagerView.class.getClassLoader().getResourceAsStream("application.properties")) {
+				if (input == null) {
+					System.out.println("Sorry, unable to find application.properties");
+					System.exit(1);
+				}
+
+				// Load the properties file
+				properties.load(input);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		directoryPath = properties.getProperty("certificate.upload.path") + File.separator +  associationId + File.separator + "strains" + File.separator + numberField.getValue() + File.separator + "certificates" + File.separator;
+	    Path path = Paths.get(directoryPath);
+
+	    // Überprüfe, ob das Verzeichnis existiert
+	    if (!Files.exists(path)) {
+	        try {
+	            // Erstelle das Verzeichnis, falls es nicht existiert
+	            Files.createDirectories(path);
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            Notification.show("Fehler beim Erstellen des Verzeichnisses");
+	            return; // Beende die Methode, falls das Verzeichnis nicht erstellt werden kann
+	        }
+	    }
 	}
 
 	private FormLayout createSecondComponent() {
@@ -376,7 +1088,7 @@ public class WarenlagerView extends Div {
 		formLayout.setMaxWidth(500, Unit.PIXELS);
 		
 		numberField = new TextField("Nummer");
-		numberField.setValue(String.valueOf(strainService.getFreeMemberNumber(associationId)));
+		numberField.setValue(String.valueOf(strainService.getFreeStrainNumber(associationId)));
 		numberField.setEnabled(false);
 		
 		nameField = new TextField("Name");
@@ -417,58 +1129,86 @@ public class WarenlagerView extends Div {
 		amountOfPlantsField.setAllowedCharPattern("[0-9/]");
 		
 		formLayout.add(numberField, nameField, amountOfPlantsField, date, locationBox, statusBox);
-		
-//		formLayout.setColspan(nameField, 2);
 		return formLayout;
 	}
 
 	private void addNewStrain(String name, LocalDateTime dateBegin, LocalDateTime dateEnd, NumberField strainInfoAmount, NumberField strainInfoThc, ComboBox<GrowStatus> statusBox) {
 		
-		Strain newStrain = new Strain();
+		Strain newStrain;
+		if (changeStrain != null) {
+			newStrain = changeStrain;
+		} else {			
+			newStrain = new Strain();
+		}
+		
 		newStrain.setStrainNumber(Integer.valueOf(numberField.getValue()));
 		newStrain.setName(name);
 		newStrain.setDatePlanted(dateBegin.toLocalDate());
 		newStrain.setAssociationId(associationId);
-		newStrain.setStatus(statusBox.getValue()); 
+		newStrain.setStatus(statusBox.getValue());
+		newStrain.setGrowLocation(locationBox.getValue());
+		newStrain.setAmountOfPlants(Integer.valueOf(amountOfPlantsField.getValue()));
 		
-		if(box.getValue()) {			
+		if (box.getValue()) {
 			newStrain.setDateFinished(dateEnd.toLocalDate());
 			newStrain.setAmountGramm(strainInfoAmount.getValue());
 			newStrain.setThc(strainInfoThc.getValue());
-			newStrain.setWeighedByMembers(Arrays.asList(responsiblePersonOne.getValue(), responsiblePersonTwo.getValue()));
-			newStrain.setAmountOfPlants(Integer.valueOf(amountOfPlantsField.getValue()));
-			newStrain.setPricePerGram(amountPerGramm.getValue().getNumber().doubleValue());
-			newStrain.setGrowLocation(locationBox.getValue());
-			
-			if(statusBox.getValue().ordinal() > 3) {
-				//TODO
-				newStrain.setPathOfCertificate("");
+			newStrain.setWeighedByMembers(
+					Arrays.asList(responsiblePersonOne.getValue(), responsiblePersonTwo.getValue()));
+			if(amountPerGramm.getValue() != null) {				
+				newStrain.setPrice(amountPerGramm.getValue().getNumber().doubleValue());
+			}
+
+			if (statusBox.getValue().ordinal() > 3 && pathToCertificate != null) {
+				handleFile();
+				newStrain.setPathOfCertificate(pathToCertificate.getAbsolutePath());
+				pathToCertificate = null;
+
 			}
 		}
-		 
+
 		strainService.update(newStrain);
-		refreshGrid();
+
+		refreshGrid(ViewStatus.STRAIN);
 	}
 	
-	private void refreshGrid() {
+	private void refreshGrid(ViewStatus status) {
 		
-		if(allByAssociation.isEmpty()) {			 
-			allByAssociation = strainService.findAllByAssociation(associationId);
-		}
+		if(status == ViewStatus.STRAIN) {
+		allStrainsByAssociation = strainService.findAllByAssociation(associationId);
 		
 		if(outputAssociation.isEmpty()) {
 			outputAssociation = outputService.findAllByAssociation(associationId);
 		}
 		
-		this.strainGrid.setItems(allByAssociation);
+		this.strainGrid.setItems(allStrainsByAssociation);
 		this.outputGrid.setItems(outputAssociation.stream().filter(e -> !e.isOutdated()).toList());
-		
+		cuttingsGrid.setItems(cuttingService.findAllByAssociation(associationId));
 		double generalAmount = 0;
-		for(Strain strain : allByAssociation) {
+		for(Strain strain : allStrainsByAssociation) {
 			generalAmount = generalAmount + strain.getAmountGramm();
 		}
 		
 		this.amount.setText(String.valueOf(generalAmount) + " Gramm");
-		this.amount2.setText(String.valueOf(generalAmount) + " Gramm");
+		
+		} else if (status == ViewStatus.CUTTING) {
+			double cuttingsAmount = 0;
+			List<Cutting> allCuttingsByAssociation = cuttingService.findAllByAssociation(associationId);
+			for(Cutting cutting :  allCuttingsByAssociation) {
+				cuttingsAmount = cuttingsAmount + cutting.getAmountOfCuttings();
+			}
+			this.amountCuttings.setText(String.valueOf((int)cuttingsAmount) + " Stück");
+			this.cuttingsGrid.setItems(allCuttingsByAssociation);
+			
+		} else {
+			double seedsAmount = 0;
+			List<Seed> allSeedsByAssociation = seedService.findAllByAssociation(associationId);
+			for(Seed seed :  allSeedsByAssociation) {
+				seedsAmount = seedsAmount + seed.getAmountOfSeeds();
+			}
+			this.amountSeeds.setText(String.valueOf((int)seedsAmount) + " Stück");
+			this.seedsGrid.setItems(allSeedsByAssociation);
+			
+		}
 	}
 }

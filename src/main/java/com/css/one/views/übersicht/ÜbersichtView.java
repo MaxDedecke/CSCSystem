@@ -5,23 +5,29 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
+import com.css.one.data.Cutting;
 import com.css.one.data.Output;
+import com.css.one.data.OutputEntity;
 import com.css.one.data.OutputType;
 import com.css.one.data.PaymentMethod;
 import com.css.one.data.Person;
+import com.css.one.data.Seed;
 import com.css.one.data.Strain;
 import com.css.one.data.Transaction;
 import com.css.one.data.TransactionType;
 import com.css.one.data.WorkingUnit;
 import com.css.one.data.WorkingUnitCategory;
+import com.css.one.services.CuttingService;
 import com.css.one.services.OutputService;
 import com.css.one.services.PersonService;
+import com.css.one.services.SeedService;
 import com.css.one.services.StrainService;
 import com.css.one.services.TransactionService;
 import com.css.one.services.WorkingUnitCategoryService;
@@ -71,7 +77,7 @@ public class ÜbersichtView extends Div {
 
     private ComboBox<Person> searchMemberBox = new ComboBox<>();
     private ComboBox<Strain> searchStrainBox = new ComboBox<>();
-    private ComboBox<Strain> searchStrainOutputBox = new ComboBox<>("Sorte");
+    private ComboBox<OutputEntity> searchStrainOutputBox = new ComboBox<>("Sorte");
     private ComboBox<OutputType> outputTypeBox = new ComboBox<>("Art");
     private ComboBox<PaymentMethod> paymentMethodBox;
     
@@ -81,6 +87,9 @@ public class ÜbersichtView extends Div {
     private WorkingUnitService workingUnitService;
     private TransactionService transactionService;
     private WorkingUnitCategoryService workingUnitCategoryService;
+    private CuttingService cuttingService;
+    private SeedService seedService;
+    
     private ComboBox<WorkingUnitCategory> box;
     
     private Button buttonOpenPersonInfo = new Button("Info");
@@ -100,6 +109,7 @@ public class ÜbersichtView extends Div {
 
     Grid<Strain> outputMemberGrid = new Grid<>();
     Grid<String> newsGrid = new Grid<>();
+    List<OutputEntity> entities = new ArrayList<>();
     
     Text workloudMember = new Text("");
     
@@ -120,13 +130,15 @@ public class ÜbersichtView extends Div {
 	private WorkingUnit workingUnit;
     
     public ÜbersichtView(PersonService personService, StrainService strainService, OutputService outputService, WorkingUnitService workingUnitService,
-    				TransactionService transactionService, WorkingUnitCategoryService workingUnitCategoryService) {    	
+    				TransactionService transactionService, WorkingUnitCategoryService workingUnitCategoryService, SeedService seedService, CuttingService cuttingService) {    	
     	this.personService = personService;
     	this.strainService = strainService;
     	this.outputService = outputService;
     	this.workingUnitService = workingUnitService;
     	this.transactionService = transactionService;
     	this.workingUnitCategoryService = workingUnitCategoryService;
+    	this.cuttingService = cuttingService;
+    	this.seedService = seedService;
     	
     	addClassNames("uebersicht-view");
 
@@ -263,6 +275,7 @@ public class ÜbersichtView extends Div {
     private void createBookOutputDialogContent() {
     	
     	bookOutputDialog.add(addBookOutputLayoutForDialog());
+    	
     	Button bookButton = new Button("Buchen", e -> {
     		Output output = new Output();
     		output.setAssociationId(associationId);
@@ -271,7 +284,7 @@ public class ÜbersichtView extends Div {
     		output.setOutdated(false);
     		output.setPersonId(this.selectedMember.getId().intValue());
     		if(this.searchStrainOutputBox.getValue() != null) {    			
-    			output.setStrainId(this.searchStrainOutputBox.getValue().getId().intValue());
+    			output.setEntityId(this.searchStrainOutputBox.getValue().getId().intValue());
     			if(!amountField.getValue().isEmpty()) {
     				output.setAmount(Double.valueOf(amountField.getValue()));
     				
@@ -283,6 +296,26 @@ public class ÜbersichtView extends Div {
     				} else {
     					Notification.show("Ohne Preis pro Gramm kann keine Transaktion gebucht werden !");
     				}
+    				
+    				if (outputTypeBox.getValue() == OutputType.BLOSSOM) {
+    					Optional<Strain> optional = strainService.get(this.searchStrainOutputBox.getValue().getId());
+    					if (optional.isPresent()) {
+    						optional.get().setAmountGramm(optional.get().getAmountGramm() - Double.valueOf(amountField.getValue()));
+    						strainService.update(optional.get());
+    					}
+    				} else if (outputTypeBox.getValue() == OutputType.CUTTING) {
+    					Optional<Cutting> optional = cuttingService.get(this.searchStrainOutputBox.getValue().getId());	
+    					if(optional.isPresent()) {			
+    						optional.get().setAmountOfCuttings(optional.get().getAmountOfCuttings() - Integer.valueOf(amountField.getValue()));
+    						cuttingService.update(optional.get());		
+    					}
+    				} else {
+    					Optional<Seed> optional = seedService.get(this.searchStrainOutputBox.getValue().getId());	
+    					if(optional.isPresent()) {			
+    						optional.get().setAmountOfSeeds(optional.get().getAmountOfSeeds() - Integer.valueOf(amountField.getValue()));
+    						seedService.update(optional.get());		
+    					}
+    				}
     			} else {
     				Notification.show("Es muss die Menge angeben werden!");
     			}			
@@ -290,7 +323,6 @@ public class ÜbersichtView extends Div {
     			Notification.show("Es muss eine Sorte ausgewählt werden");
     		}
     	});
-    	
     	
     	Button cancelButton = new Button("Zurück", e -> bookOutputDialog.close());
     	cancelButton.addClassName("cancel-button");
@@ -339,25 +371,26 @@ public class ÜbersichtView extends Div {
     	outputTypeBox.setWidthFull();
     	outputTypeBox.setValue(outputTypeBox.getListDataView().getItem(0));
     	outputTypeBox.addValueChangeListener(e -> {
-    		//TODO Set items in searchStrainOutputBox depending on selected value
+    		refreshItemsByOutputType(e.getValue());
     	});
     	
-    	searchStrainOutputBox.setItems(strainService.findAllReadyForOutput(associationId));
-    	searchStrainOutputBox.setItemLabelGenerator(e -> e.getName() + " (" + e.getThc() + "%)");
+    	searchStrainOutputBox.setItemLabelGenerator(e -> e.getName());
     	searchStrainOutputBox.setWidth("100%"); 
 		searchStrainOutputBox.addValueChangeListener(e -> {
 			if (!amountField.isEmpty()) {
-				Double endPrice = e.getValue().getPricePerGram() * Double.valueOf(amountField.getValue());
+				Double endPrice = e.getValue().getPrice() * Double.valueOf(amountField.getValue());
 				billingTextField.setValue(String.valueOf(endPrice));
 			}
 		});
-    	
+		
+		refreshItemsByOutputType(OutputType.BLOSSOM);
+		
     	amountField = new TextField("Menge in Gramm");
     	amountField.setAllowedCharPattern("[0-9/]");
     	amountField.setWidthFull();
     	amountField.addValueChangeListener(e -> {
     		if (!searchStrainOutputBox.isEmpty()) {
-				Double endPrice = searchStrainOutputBox.getValue().getPricePerGram() * Double.valueOf(e.getValue());
+				Double endPrice = searchStrainOutputBox.getValue().getPrice() * Double.valueOf(e.getValue());
 				billingTextField.setValue(String.valueOf(endPrice));
 			}
     	});
@@ -378,6 +411,25 @@ public class ÜbersichtView extends Div {
     	outputInfoLayout.setColspan(outputMemberField, 2);
 
     	return mainDialogLayout;
+	}
+
+	private void refreshItemsByOutputType(OutputType outputType) {
+		entities = new ArrayList<>();
+		if(outputType == OutputType.BLOSSOM) {
+			strainService.findAllReadyForOutput(associationId).forEach(e -> {
+				entities.add((OutputEntity)e);
+			});
+		} else if(outputType == OutputType.CUTTING) {
+			cuttingService.findAllByAssociation(associationId).forEach(e -> {
+				entities.add((OutputEntity)e);
+			});
+		} else {
+			seedService.findAllByAssociation(associationId).forEach(e -> {
+				entities.add((OutputEntity)e);
+			});
+		}
+		
+		searchStrainOutputBox.setItems(entities);
 	}
 
 	private void createSearchStrainLayout() {
@@ -555,11 +607,10 @@ public class ÜbersichtView extends Div {
     	return mainDialogLayout;
     }
       
-    
     private String resolveOutputOfStrainPerMember(Strain s) {
     	
     	List<Output> outputOfMember = outputService.findOutputByMember(selectedMember.getId().intValue());
-    	List<Output> outputOfSpecificStrain = outputOfMember.stream().filter(e -> e.getStrainId() == s.getId().intValue()).toList();
+    	List<Output> outputOfSpecificStrain = outputOfMember.stream().filter(e -> e.getEntityId() == s.getId().intValue()).toList();
     	
     	Double amountOfStrain = 0.0;
     	
@@ -631,6 +682,7 @@ public class ÜbersichtView extends Div {
     	outputMemberField.setWidthFull();
     	dateOutputField.setValue(now.getDayOfMonth() + "." + now.getMonthValue() + "." + now.getYear() + ", um " + now.getHour() + ":" + now.getMinute() + " Uhr");
     	
+    
     }
     
     private String resolveWorkingHours(int workingHours) {

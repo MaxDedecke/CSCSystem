@@ -1,5 +1,6 @@
 package com.css.one.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +35,8 @@ public class LocationService {
 	    }
 	    
 	    public List<Location> findAllByAssociation(int associationId) {
-	    	return repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).toList();
+	    	List<Location> locations = new ArrayList<>();
+	    	locations.addAll(repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).toList());
+	    	return locations;
 	    }
 }

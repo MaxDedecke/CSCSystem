@@ -50,13 +50,13 @@
   background-color: #efefef;  
 }
 
-vaadin-tab {
+.verein-view vaadin-tab {
   color: #333;  /* Farbe des Textes auf den Tabs */
   padding: 10px 20px;
   border-radius: 5px 5px 0 0; /* Abgerundete Ecken oben am Tab */
 }
 
-vaadin-tab::before, vaadin-tab::after {
+.verein-view vaadin-tab::before, vaadin-tab::after {
 	content: '';
       position: absolute;
       display: var(--_lumo-tab-marker-display, block);
@@ -72,7 +72,7 @@ vaadin-tab::before, vaadin-tab::after {
       will-change: transform;
 }
 
-vaadin-tab[active] {
+.verein-view vaadin-tab[active] {
 	color:  #8ABD3E;  /* Dunklere Textfarbe für bessere Lesbarkeit */
   background-color: #cccccc;
 }

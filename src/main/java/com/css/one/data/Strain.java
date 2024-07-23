@@ -4,17 +4,17 @@ import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.annotation.Nullable;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class Strain extends AbstractEntity {
+public class Strain extends OutputEntity {
 	
     	private int strainNumber;
-	 	private String name;
 	 	private LocalDate datePlanted;
-	 	private int associationId;
 	 	private GrowStatus status;
 	 	private int amountOfPlants;
 	 	
@@ -28,10 +28,7 @@ public class Strain extends AbstractEntity {
 	 	private double thc;
 	 	
 	 	@Nullable
-	 	private double pricePerGram;
-	 	
-	 	@Nullable
-	 	@ManyToMany
+	 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	 	private List<Person> weighedByMembers;
 	 	
 		@Nullable
@@ -66,12 +63,6 @@ public class Strain extends AbstractEntity {
 		public void setAmountGramm(double amount) {
 			this.amountGramm = amount;
 		}
-		public String getName() {
-			return name;
-		}
-		public void setName(String name) {
-			this.name = name;
-		}
 		public LocalDate getDatePlanted() {
 			return datePlanted;
 		}
@@ -83,12 +74,6 @@ public class Strain extends AbstractEntity {
 		}
 		public void setDateFinished(LocalDate dateFinished) {
 			this.dateFinished = dateFinished;
-		}
-		public int getAssociationId() {
-			return associationId;
-		}
-		public void setAssociationId(int associationId) {
-			this.associationId = associationId;
 		}
 		public double getThc() {
 			return thc;
@@ -107,12 +92,6 @@ public class Strain extends AbstractEntity {
 		}
 		public void setAmountOfPlants(int amountOfPlants) {
 			this.amountOfPlants = amountOfPlants;
-		}
-		public double getPricePerGram() {
-			return pricePerGram;
-		}
-		public void setPricePerGram(double pricePerGram) {
-			this.pricePerGram = pricePerGram;
 		}
 		public int getStrainNumber() {
 			return strainNumber;

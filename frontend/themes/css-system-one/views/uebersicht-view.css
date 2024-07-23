@@ -81,7 +81,7 @@
 }
 
 /* Grundstil für den Dialog */
-vaadin-dialog-overlay::part(overlay) {
+.uebersicht-view vaadin-dialog-overlay::part(overlay) {
   border-radius: 8px;
   height:80%;
   min-width: 30%;
@@ -89,7 +89,7 @@ vaadin-dialog-overlay::part(overlay) {
 }
 
 /* Stil für den Header des Dialogs */
-vaadin-dialog-overlay::part(header) {
+.uebersicht-view vaadin-dialog-overlay::part(header) {
   background-color: var(--lumo-primary-color);
   color: white;
   padding: 1rem;
@@ -99,13 +99,13 @@ vaadin-dialog-overlay::part(header) {
 }
 
 /* Stil für den Content-Bereich des Dialogs */
-vaadin-dialog-overlay::part(content) {
+.uebersicht-view vaadin-dialog-overlay::part(content) {
   padding: 1rem;
   font-size: 1rem;
 }
 
 /* Stil für den Footer des Dialogs */
-vaadin-dialog-overlay::part(footer) {
+.uebersicht-view vaadin-dialog-overlay::part(footer) {
   background-color: var(--lumo-contrast-10pct);
   padding: 1rem;
   display: flex;
@@ -114,27 +114,27 @@ vaadin-dialog-overlay::part(footer) {
   border-bottom-right-radius: 8px;
 }
 
-vaadin-dialog-overlay .cancel-button {
+.uebersicht-view vaadin-dialog-overlay .cancel-button {
   background-color: #808080;
   color: white;
 }
 
-vaadin-dialog-overlay .save-button {
+.uebersicht-view vaadin-dialog-overlay .save-button {
   background-color: #8ABD3E;
   color: white;
 }
 
-vaadin-dialog-overlay .cancel-button:hover {
+.uebersicht-view vaadin-dialog-overlay .cancel-button:hover {
   background-color: rgb(192, 192, 192);
   color: white;
 }
 
-vaadin-dialog-overlay .save-button:hover {
+.uebersicht-view vaadin-dialog-overlay .save-button:hover {
   background-color: #88b149;
   color: white;
 }
 
-vaadin-dialog-overlay .save-button[disabled] {
+.uebersicht-view vaadin-dialog-overlay .save-button[disabled] {
   background-color: rgb(192, 192, 192);
   opacity: 0.5;
   cursor: not-allowed;

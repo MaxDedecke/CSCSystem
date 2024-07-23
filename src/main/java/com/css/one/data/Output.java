@@ -2,18 +2,23 @@ package com.css.one.data;
 
 import java.time.LocalDate;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 
 @Entity
 public class Output extends AbstractEntity {
 	
 	private LocalDate date;
- 	private String note;
     private int associationId;
-    private int strainId;
+    private int entityId;
     private int personId;
     private double amount;
     private boolean outdated;
+    
+    private OutputType type;
+    
+    @Nullable
+    private String note;
     
 	public LocalDate getDate() {
 		return date;
@@ -33,11 +38,11 @@ public class Output extends AbstractEntity {
 	public void setAssociationId(int associationId) {
 		this.associationId = associationId;
 	}
-	public int getStrainId() {
-		return strainId;
+	public int getEntityId() {
+		return entityId;
 	}
-	public void setStrainId(int strainId) {
-		this.strainId = strainId;
+	public void setEntityId(int strainId) {
+		this.entityId = strainId;
 	}
 	public double getAmount() {
 		return amount;
@@ -56,6 +61,12 @@ public class Output extends AbstractEntity {
 	}
 	public void setOutdated(boolean outdated) {
 		this.outdated = outdated;
+	}
+	public OutputType getType() {
+		return type;
+	}
+	public void setType(OutputType type) {
+		this.type = type;
 	}
 
 }

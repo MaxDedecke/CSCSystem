@@ -523,6 +523,8 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 						recurringPaymentService.update(recurringPayment);
 						
 						bookButton.setEnabled(false);
+						status = ViewStatus.RECURRING_PAYMENTS;
+						refreshGrid();
 					});
 					return bookButton;
 				} else {
