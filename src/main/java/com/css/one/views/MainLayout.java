@@ -3,6 +3,7 @@ package com.css.one.views;
 import com.css.one.data.User;
 import com.css.one.migrations.DB;
 import com.css.one.security.AuthenticatedUser;
+import com.css.one.views.ai.AiWizzardView;
 import com.css.one.views.arbeitsplanung.ArbeitsplanungView;
 import com.css.one.views.diary.DiaryView;
 import com.css.one.views.finanzen.FinanzenView;
@@ -107,7 +108,7 @@ public class MainLayout extends AppLayout {
         HorizontalLayout versionLayout = new HorizontalLayout();
         versionLayout.setWidth("100%");
         versionLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.NONE, "main");
-        versionLayout.add(new Text("ClubOS - v.0.0.3"));
+        versionLayout.add(new Text("ClubOS - v.0.0.4"));
         layout.add(versionLayout);
         
         Hr hr2 = new Hr();
@@ -167,6 +168,11 @@ public class MainLayout extends AppLayout {
         }
         if (accessChecker.hasAccess(ConfigurationView.class)) {
             nav.addItem(new SideNavItem("Konfiguration", ConfigurationView.class, LineAwesomeIcon.COG_SOLID.create()));
+
+        }
+        
+        if (accessChecker.hasAccess(AiWizzardView.class)) {
+            nav.addItem(new SideNavItem("AI Wizzard", AiWizzardView.class, LineAwesomeIcon.MAGIC_SOLID.create()));
 
         }
 

@@ -11,16 +11,18 @@ public class WorkingUnit extends AbstractEntity {
 	
 	private Long personId;
 	private String personName;
-	@ManyToOne
-    private WorkingUnitCategory category;
+	
     private int workingHours;
     private LocalDate dateBegin;
-    @Nullable
-    private LocalDate dateEnd;
     
     private int hourBegin;
     private int minuteBegin;
     
+    @Nullable
+    private LocalDate dateEnd;
+    @ManyToOne
+    @Nullable
+    private WorkingUnitCategory category;
     @Nullable
     private int hourEnd;
     @Nullable

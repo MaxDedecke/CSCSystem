@@ -1,3 +1,4 @@
+@import "theme-editor.css";
 @import url('./main-layout.css');
 @import url('./views/mitglieder-view.css');
 @import url('./views/arbeitsplanung-view.css');
@@ -7,3 +8,5 @@
 @import url('./views/verein-view.css');
 @import url('./views/warenlager-view.css');
 @import url('./views/output-view.css');
+@import url('./views/configuration-view.css');
+@import url('./views/aiwizzard-view.css');

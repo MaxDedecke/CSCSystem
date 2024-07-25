@@ -802,8 +802,8 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		}
 	}
 
-	private Div createGeneralTab() {
-		Div wrapperGeneralTab = new Div();
+	private Component createGeneralTab() {
+		VerticalLayout wrapperGeneralTab = new VerticalLayout();
 		wrapperGeneralTab.setClassName("grid-wrapper");
 		wrapperGeneralTab.setHeight("100%");
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
