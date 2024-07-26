@@ -405,9 +405,10 @@ public class WarenlagerView extends Div {
 		comboBoxResponsibleForSeed.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
 		comboBoxResponsibleForSeed.setValue(comboBoxResponsibleForSeed.getListDataView().getItem(0));
 		
-		comboBoxLocationSeed.setItems(locationService.findAllByAssociation(associationId));
+		List<Location> allByAssociation = locationService.findAllByAssociation(associationId);
+		comboBoxLocationSeed.setItems(allByAssociation);
 		comboBoxLocationSeed.setItemLabelGenerator(e -> e.getName());
-		comboBoxLocationSeed.setValue(comboBoxLocationSeed.getListDataView().getItem(0));
+		comboBoxLocationSeed.setValue(allByAssociation.isEmpty() ? comboBoxLocationSeed.getEmptyValue() : comboBoxLocationSeed.getListDataView().getItem(0));
 		
 		formLayout.add(seedNumberField, seedNameField, comboboxSeedsOrigins,
 				seedsAmountField, seedPriceField, comboBoxResponsibleForSeed, comboBoxLocationSeed);
@@ -858,7 +859,7 @@ public class WarenlagerView extends Div {
 		this.cuttingPlantDate.setValue(LocalDateTime.now());
 		this.cuttingsAmountField.setValue("");
 		this.comboBoxResponsibleForCutting.setValue(comboBoxResponsibleForCutting.getListDataView().getItem(0));
-		this.comboBoxLocationCutting.setValue(comboBoxLocationCutting.getListDataView().getItem(0));
+		this.comboBoxLocationCutting.setValue(comboBoxLocationCutting.getListDataView().getItem(0) == null ? comboBoxLocationCutting.getEmptyValue() : comboBoxLocationCutting.getListDataView().getItem(0));
 		this.comboxCuttingStatus.setValue(comboxCuttingStatus.getListDataView().getItem(0));
 		this.comboboxCuttingsOrigins.setValue(comboboxCuttingsOrigins.getEmptyValue());
 		
@@ -919,9 +920,10 @@ public class WarenlagerView extends Div {
 		comboBoxResponsibleForCutting.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
 		comboBoxResponsibleForCutting.setValue(comboBoxResponsibleForCutting.getListDataView().getItem(0));
 		
-		comboBoxLocationCutting.setItems(locationService.findAllByAssociation(associationId));
+		List<Location> allByAssociation = locationService.findAllByAssociation(associationId);
+		comboBoxLocationCutting.setItems(allByAssociation);
 		comboBoxLocationCutting.setItemLabelGenerator(e -> e.getName());
-		comboBoxLocationCutting.setValue(comboBoxLocationCutting.getListDataView().getItem(0));
+		comboBoxLocationCutting.setValue(allByAssociation.isEmpty() ? comboBoxLocationCutting.getEmptyValue() : comboBoxLocationCutting.getListDataView().getItem(0));
 		
 		formLayout.add(cuttingNumberField, cuttingNameField, comboboxCuttingsOrigins, cuttingPlantDate,
 				comboxCuttingStatus, cuttingsAmountField, cuttingsPriceField, comboBoxResponsibleForCutting, comboBoxLocationCutting);
@@ -1121,8 +1123,9 @@ public class WarenlagerView extends Div {
 		});
 		
 		locationBox = new ComboBox<>("Standort");
-		locationBox.setItems(locationService.findAllByAssociation(associationId));
-		locationBox.setValue(locationBox.getListDataView().getItem(0));
+		List<Location> allByAssociation = locationService.findAllByAssociation(associationId);
+		locationBox.setItems(allByAssociation);
+		locationBox.setValue(allByAssociation.isEmpty() ? locationBox.getEmptyValue() : locationBox.getListDataView().getItem(0));
 		locationBox.setItemLabelGenerator(e -> e.getName());
 		
 		amountOfPlantsField = new TextField("Anzahl Pflanzen");

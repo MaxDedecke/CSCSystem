@@ -1036,12 +1036,18 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		amount.setCurrency("EUR");
 
 		date = new DateTimePicker();
+		//<theme-editor-local-classname>
+		date.setOverlayClassName("finanzen-view-date-time-picker-1");
+		//<theme-editor-local-classname>
+		date.addClassName("finanzen-view-date-time-picker-1");
 		date.setLabel("Zeitpunkt");
 		date.setStep(Duration.ofSeconds(1));
 		date.setValue(LocalDateTime.now());
 
 		note = new TextField("Notiz");
-		
+		//<theme-editor-local-classname>
+		note.addClassName("finanzen-view-text-field-1");
+
 		optionalPersonBox = new ComboBox<Person>("Optional - Mitglied");
 		optionalPersonBox.setItems(personService.findAllByAssociation(associationId));
 		optionalPersonBox.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());

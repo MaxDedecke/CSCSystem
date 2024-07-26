@@ -96,9 +96,18 @@ public class ConfigurationView extends VerticalLayout {
 		tabSheet.add("Arbeitsplanung", createWorkingEnvTab());
 		//Bank Verbindung konfigurieren
 		tabSheet.add("Finanzen", createFinancesTab());
+		//Rollen und deren Rechte + Zuweisung an Mitglieder
+		tabSheet.add("Autorisierung", createAuthorizationTab());
 
 		add(tabSheet);
     }
+
+	private Component createAuthorizationTab() {
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.setHeight("100%");
+		
+		return mainLayout;
+	}
 
 	private Component createLocationsTab() {
 		

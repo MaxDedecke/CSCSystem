@@ -2,4 +2,66 @@
  * This file has been created by the Vaadin Theme Editor. Please note that
  * manual changes to individual CSS properties may be overwritten by the theme editor.
  */
-vaadin-grid::part(header-cell) { color:var(--lumo-success-text-color); }
+
+vaadin-grid::-webkit-scrollbar-thumb {
+    background-color: #8ABD3E;/* Farbe des Scrollbar-Daumen */
+    background:#8ABD3E;
+    color:#8ABD3E;
+}
+
+vaadin-checkbox label { color:var(--lumo-body-text-color); }
+
+vaadin-checkbox::part(checkbox)::after { color:rgb(255,255,255); }
+
+vaadin-checkbox[checked]::part(checkbox) { background-color:#8ABD3E; }
+
+vaadin-combo-box.diary-view-combo-box-1::part(label) { color:#8ABD3E; }
+
+vaadin-combo-box::part(label) { color:#8ABD3E; }
+
+vaadin-date-time-picker.finanzen-view-date-time-picker-1::part(label) { color:#8ABD3E; }
+
+vaadin-date-time-picker::part(label) { color:#8ABD3E; }
+
+vaadin-details {
+  border-color:#8ABD3E;
+  border-width:2px;
+}
+
+vaadin-details-summary.diary-view-details-summary-1 { color:#8ABD3E; }
+
+vaadin-details.diary-view-details-summary-1 {
+  border-radius:var(--lumo-border-radius-l);
+  border-style:solid;
+  border-width:2px;
+  padding:var(--lumo-space-xs);
+}
+
+vaadin-grid {
+  background:rgba(255,255,255,0.65);
+  border-color:rgba(255,255,255,0.65);
+  border-radius:10px;
+  border-width:0px;
+}
+
+vaadin-grid::part(body-cell) {
+  background-color:rgba(191,191,191,0.08);
+  color:var(--lumo-header-text-color);
+  font-size:var(--lumo-font-size-s);
+}
+
+vaadin-grid::part(header-cell) {
+  --lumo-font-size-s:var(--lumo-font-size-l);
+  background-color:rgba(247,247,247,1);
+  border-bottom:none;
+  border-radius:10px;
+  color:var(--lumo-success-text-color);
+}
+
+vaadin-grid::part(selected-row-cell) { background-color:rgba(191,191,191,0.65); }
+
+vaadin-text-area.diary-view-text-area-1::part(label) { color:#8ABD3E; }
+
+vaadin-text-field.finanzen-view-text-field-1::part(label) { color:#8ABD3E; }
+
+vaadin-text-field::part(label) { color:#8ABD3E; }
