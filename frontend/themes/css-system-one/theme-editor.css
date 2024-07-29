@@ -2,12 +2,17 @@
  * This file has been created by the Vaadin Theme Editor. Please note that
  * manual changes to individual CSS properties may be overwritten by the theme editor.
  */
+h3.diary-view-h3-1 { font-weight:bold; }
 
-vaadin-grid::-webkit-scrollbar-thumb {
-    background-color: #8ABD3E;/* Farbe des Scrollbar-Daumen */
-    background:#8ABD3E;
-    color:#8ABD3E;
-}
+vaadin-app-layout { background-color:rgb(255,255,255); }
+
+vaadin-app-layout.main-layout-app-layout-1 { background-color:rgb(255,255,255); }
+
+vaadin-app-layout::part(navbar) { background-color:rgb(255,255,255); }
+
+vaadin-button.diary-view-button-1 { margin-top:37px; }
+
+vaadin-button.diary-view-button-1::part(label) { color:#8ABD3E; }
 
 vaadin-checkbox label { color:var(--lumo-body-text-color); }
 
@@ -34,7 +39,8 @@ vaadin-details.diary-view-details-summary-1 {
   border-radius:var(--lumo-border-radius-l);
   border-style:solid;
   border-width:2px;
-  padding:var(--lumo-space-xs);
+  margin-right:12px;
+  padding-left:var(--lumo-space-xs);
 }
 
 vaadin-grid {
@@ -42,6 +48,12 @@ vaadin-grid {
   border-color:rgba(255,255,255,0.65);
   border-radius:10px;
   border-width:0px;
+}
+
+vaadin-grid::-webkit-scrollbar-thumb {
+  background-color:#8ABD3E;
+  background:#8ABD3E;
+  color:#8ABD3E;
 }
 
 vaadin-grid::part(body-cell) {
@@ -60,8 +72,34 @@ vaadin-grid::part(header-cell) {
 
 vaadin-grid::part(selected-row-cell) { background-color:rgba(191,191,191,0.65); }
 
-vaadin-text-area.diary-view-text-area-1::part(label) { color:#8ABD3E; }
+vaadin-horizontal-layout.diary-view-horizontal-layout-1 {
+  border-color:#8ABD3E;
+  border-style:solid;
+  border-width:1px;
+  gap:var(--lumo-space-xs);
+  height: 100%;
+  padding-left: 8px;
+}
 
 vaadin-text-field.finanzen-view-text-field-1::part(label) { color:#8ABD3E; }
 
 vaadin-text-field::part(label) { color:#8ABD3E; }
+
+vaadin-vertical-layout.diary-view-button-1 { background-color:rgb(255,255,255); }
+
+vaadin-vertical-layout.diary-view-vertical-layout-1 {
+  border-width:0px;
+  gap:var(--lumo-space-xs);
+  padding:none;
+}
+
+vaadin-vertical-layout.diary-view-vertical-layout-2 {
+  border-width:0px;
+  padding-left: none;
+  margin-left: none;
+  justify-content: center;
+  padding:none;
+  max-width: 70px;
+  height: 100%;
+
+}

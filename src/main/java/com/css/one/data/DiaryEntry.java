@@ -1,5 +1,7 @@
 package com.css.one.data;
 
+import java.time.LocalDate;
+
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
@@ -8,7 +10,7 @@ import jakarta.persistence.ManyToOne;
 public class DiaryEntry extends AbstractEntity {
 	
  	private int associationId;
-
+ 	private LocalDate date;
 	private String text;
 	
 	@Nullable
@@ -61,5 +63,13 @@ public class DiaryEntry extends AbstractEntity {
 
 	public void setAssociationId(int associationId) {
 		this.associationId = associationId;
+	}
+
+	public LocalDate getDate() {
+		return date;
+	}
+
+	public void setDate(LocalDate date) {
+		this.date = date;
 	}	
 }

@@ -265,3 +265,25 @@ vaadin-dialog-overlay .save-button {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.diary-view .right-to-left-layout {
+    display: flex;
+    flex-direction: row-reverse;
+    margin: none;
+}
+
+:host {
+    --vaadin-input-field-readonly-border: none; /* Passen Sie die Farbe und Dicke der Umrandung nach Bedarf an */
+}
+
+.diary-view .textarea::part(input-field){
+    opacity: 1;
+    color: black;
+    border: none;
+    border-style: none;
+    border-width: 0px;
+    border-color: #efefef;
+    padding-left: none;
+    pointer-events: auto;
+    --vaadin-input-field-readonly-border: none;
+}
