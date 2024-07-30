@@ -89,6 +89,58 @@ vaadin-text-field.finanzen-view-text-field-1::part(label) { color:#8ABD3E; }
 
 vaadin-text-field::part(label) { color:#8ABD3E; }
 
+vaadin-vertical-layout.uebersicht-box {
+	
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:1px 1px 1px 1px #c0c0c0;
+  gap:var(--lumo-space-xs);
+  padding-bottom: none;
+  padding-top: none;
+  padding-left:8px;
+  padding-right:8px;
+  margin-bottom: none;
+  max-width: 500px;
+}
+
+vaadin-vertical-layout.uebersicht-box-header {
+	
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:1px 1px 1px 1px #c0c0c0;
+  width: 100%;
+  margin-top: none;
+  margin-right: 12px;
+  margin-bottom: none;
+  justify-content: center;
+  padding-bottom: none;
+  padding-top: none;
+}
+
+.primary-background {
+	background:rgba(191,191,191,0.08);
+	margin-right: 12px;
+}
+
+vaadin-vertical-layout.uebersicht-box-grid {
+	
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:1px 1px 1px 1px #c0c0c0;
+  margin: none;
+  padding-bottom: none;
+  padding-top: none;
+}
+
 vaadin-vertical-layout.diary-view-button-1 { background-color:rgb(255,255,255); }
 
 vaadin-vertical-layout.diary-view-vertical-layout-1 {

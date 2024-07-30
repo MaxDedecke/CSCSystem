@@ -41,7 +41,6 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
@@ -63,7 +62,7 @@ import jakarta.annotation.security.PermitAll;
 @Route(value = "", layout = MainLayout.class)
 @RouteAlias(value = "uebersicht/", layout = MainLayout.class)
 @PermitAll
-public class ÜbersichtView extends Div {
+public class ÜbersichtView extends VerticalLayout {
 
     private static final long serialVersionUID = 7776014341101416897L;
     
@@ -72,8 +71,9 @@ public class ÜbersichtView extends Div {
     private VerticalLayout layoutSearchMembers = new VerticalLayout();
     private VerticalLayout layoutSearchStrains = new VerticalLayout();
     private VerticalLayout layoutNews = new VerticalLayout();
+    private VerticalLayout layoutAvailables = new VerticalLayout();
 
-    private HorizontalLayout layoutCurrentDate = new HorizontalLayout();
+    private VerticalLayout layoutCurrentDate = new VerticalLayout();
 
     private ComboBox<Person> searchMemberBox = new ComboBox<>();
     private ComboBox<Strain> searchStrainBox = new ComboBox<>();
@@ -95,7 +95,7 @@ public class ÜbersichtView extends Div {
     private Button buttonOpenPersonInfo = new Button("Info");
     private Button buttonOpenStrainInfo = new Button("Info");
     private Button buttonBookOutput = new Button("Abgabe");
-    private Button buttonWorkingUnit = new Button("Zeit stempeln");
+    private Button buttonWorkingUnit = new Button("Stempeln");
     
     Button buttonStopWorkingUnit = new Button("ausstempeln");
     Button buttonStartWorkingUnit = new Button("einstempeln");
@@ -109,6 +109,8 @@ public class ÜbersichtView extends Div {
 
     Grid<Strain> outputMemberGrid = new Grid<>();
     Grid<String> newsGrid = new Grid<>();
+    Grid<WorkingUnit> availablesGrid = new Grid<>();
+
     List<OutputEntity> entities = new ArrayList<>();
     
     Text workloudMember = new Text("");
@@ -140,49 +142,63 @@ public class ÜbersichtView extends Div {
     	this.cuttingService = cuttingService;
     	this.seedService = seedService;
     	
-    	addClassNames("uebersicht-view");
-
+    	addClassNames("uebersicht-view", LumoUtility.Padding.NONE);
+   
 		associationId = MainLayout.getAssociationId();
 		createCurrentDateLayout();
 		
 		createSearchMemberLayout();
 		createSearchStrainLayout();
 		createNewsLayout();
-		
-		Hr hr1 = new Hr();
-		hr1.addClassName(LumoUtility.Margin.SMALL);
-		
+		createCurrentAvailableLayout();
+
 		VerticalLayout mainLayout = new VerticalLayout();
-		mainLayout.setWidth("100%");
 		HorizontalLayout firstLayerLayout = new HorizontalLayout();
-		firstLayerLayout.add(layoutSearchMembers, layoutSearchStrains);
+		firstLayerLayout.add(layoutSearchMembers, layoutAvailables);
 		firstLayerLayout.setWidth("100%");
+		firstLayerLayout.addClassName(LumoUtility.Padding.NONE);
 		
 		mainLayout.add(firstLayerLayout);
 		
 		HorizontalLayout secondLayerLayout = new HorizontalLayout(); 
-		secondLayerLayout.add(layoutNews);
+		secondLayerLayout.add(layoutSearchStrains, layoutNews);
 		secondLayerLayout.setWidth("100%");
+		secondLayerLayout.addClassName(LumoUtility.Padding.NONE);
 		
 		mainLayout.add(secondLayerLayout);
-        add(layoutCurrentDate, hr1, mainLayout);
+		
+		VerticalLayout dateWrapper = new VerticalLayout();
+		dateWrapper.add(layoutCurrentDate);
+        add(dateWrapper, mainLayout);
     }
+
+	private void createCurrentAvailableLayout() {
+		H1 headerAvailables = new H1("Anwesende Personen");
+		headerAvailables.addClassName(LumoUtility.Margin.Left.MEDIUM);
+		headerAvailables.addClassName("backround");
+    	
+		availablesGrid.addColumn(e -> e).setAutoWidth(true);
+//		availablesGrid.setItems(Arrays.asList("Keine Neuigkeiten."));
+		availablesGrid.setHeight(200, Unit.PIXELS);
+		availablesGrid.addClassNames(LumoUtility.Border.ALL ,LumoUtility.BorderRadius.LARGE, LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
+		layoutAvailables.addClassNames("uebersicht-box-grid");
+		
+		layoutAvailables.add(headerAvailables, new Hr(), availablesGrid);
+	}
 
 	private void createNewsLayout() {		
 		newsGrid.addColumn(e -> e).setAutoWidth(true);
 		newsGrid.setItems(Arrays.asList("Keine Neuigkeiten."));
 		newsGrid.setHeight(200, Unit.PIXELS);
-		newsGrid.addClassNames(LumoUtility.Border.ALL ,LumoUtility.BorderRadius.LARGE, LumoUtility.BorderColor.PRIMARY_10, LumoUtility.Padding.NONE);
-		layoutNews.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		newsGrid.addClassNames(LumoUtility.Border.ALL ,LumoUtility.BorderRadius.LARGE, LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
+		layoutNews.addClassNames("uebersicht-box-grid");
 		
 		layoutNews.add(newsGrid);
 	}
 
 	private void createCurrentDateLayout() {
     	
-    	layoutCurrentDate.addClassNames(LumoUtility.AlignContent.CENTER,
-    			LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.Top.LARGE, LumoUtility.Margin.Bottom.SMALL, LumoUtility.BorderRadius.LARGE); 
-    	
+    	layoutCurrentDate.addClassNames("primary-background", "uebersicht-box-header"); 
 		LocalDate now = LocalDate.now();
 		currentDateText = new H1(convertDayOfWeek(now.getDayOfWeek()) + ", der " + 
 				now.getDayOfMonth() + "." + now.getMonth().getValue() + "." + now.getYear());
@@ -192,17 +208,13 @@ public class ÜbersichtView extends Div {
     
     private void createSearchMemberLayout() {
     	
-    	layoutSearchMembers.addClassNames("vaadin-horizontal-layout", LumoUtility.AlignContent.CENTER,
-    			LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_10, 
-    			LumoUtility.JustifyContent.CENTER, 
-    			LumoUtility.Margin.Top.SMALL, LumoUtility.BorderRadius.LARGE); 
+    	layoutSearchMembers.addClassNames("uebersicht-box"); 
     	 
     	HorizontalLayout headerLayout = new HorizontalLayout();
     	H1 headerSearch = new H1("Mitgliedersuche");
-    	headerSearch.addClassNames(LumoUtility.Margin.MEDIUM);
+    	headerSearch.addClassName(LumoUtility.Margin.Left.MEDIUM);
+    	headerLayout.addClassName("backround");
     	headerLayout.add(headerSearch);
-    	headerLayout.addClassNames(LumoUtility.JustifyContent.CENTER);
-    	headerLayout.setWidth("100%");
 		
 		buttonOpenPersonInfo.setMinWidth("20%");
     	buttonWorkingUnit.setMinWidth("20%");
@@ -211,12 +223,13 @@ public class ÜbersichtView extends Div {
     	VerticalLayout mainLayout = new VerticalLayout();
     	HorizontalLayout boxLayout = new HorizontalLayout();
     	
-    	boxLayout.setWidth("100%");
-    	boxLayout.addClassNames(LumoUtility.JustifyContent.CENTER);
+    	boxLayout.addClassNames("backround");
+    	mainLayout.addClassName("backround");
     	
     	this.searchMemberBox.setItems(personService.findAllByAssociation(associationId));
     	this.searchMemberBox.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
     	this.searchMemberBox.setHeight(75, Unit.PIXELS);
+    	this.searchMemberBox.setMaxWidth(400, Unit.PIXELS);
     	this.searchMemberBox.setWidth("100%");
     	
     	createMemberInfoDialogContent();
@@ -235,19 +248,19 @@ public class ÜbersichtView extends Div {
     		}
     	});
     	
-    	buttonOpenPersonInfo.addClassName("button-category");
+    	buttonOpenPersonInfo.addClassName("button-category-1");
     	buttonOpenPersonInfo.addClickListener(e -> {
     		initMemberInfoDialog(searchMemberBox.getValue());
     		memberInfoDialog.open();
     	});
     	
-    	buttonWorkingUnit.addClassName("button-category");
+    	buttonWorkingUnit.addClassName("button-category-1");
     	buttonWorkingUnit.addClickListener(e -> {
     		initStartWorkDialog(searchMemberBox.getValue());
     		startWorkingUnitDialog.open();
     	});
     	
-    	buttonBookOutput.addClassName("button-category");
+    	buttonBookOutput.addClassName("button-category-1");
     	buttonBookOutput.addClickListener(e -> {
     		initOutputDialog(searchMemberBox.getValue());
     		bookOutputDialog.open();
@@ -259,14 +272,15 @@ public class ÜbersichtView extends Div {
 		
     	this.searchMemberBox.setClearButtonVisible(true);	
     	boxLayout.add(buttonOpenPersonInfo, buttonBookOutput, buttonWorkingUnit);
+    	boxLayout.setWidthFull();
     	mainLayout.add(this.searchMemberBox, boxLayout);
     	
     	//Add margin top
     	headerSearch.addClassNames(LumoUtility.Margin.Top.LARGE);
-    	searchMemberBox.addClassNames(LumoUtility.Padding.SMALL, LumoUtility.Margin.Top.LARGE);
-    	buttonOpenPersonInfo.addClassNames(LumoUtility.Padding.LARGE,LumoUtility.Margin.Top.LARGE);
-    	buttonWorkingUnit.addClassNames(LumoUtility.Padding.LARGE,LumoUtility.Margin.Top.LARGE);
-		buttonBookOutput.addClassNames(LumoUtility.Padding.LARGE,LumoUtility.Margin.Top.LARGE);
+    	searchMemberBox.addClassNames(LumoUtility.Margin.Top.LARGE);
+    	buttonOpenPersonInfo.addClassNames(LumoUtility.Margin.Top.LARGE);
+    	buttonWorkingUnit.addClassNames(LumoUtility.Margin.Top.LARGE);
+		buttonBookOutput.addClassNames(LumoUtility.Margin.Top.LARGE);
 		
 		layoutSearchMembers.add(headerLayout, new Hr(), mainLayout);
 
@@ -433,14 +447,12 @@ public class ÜbersichtView extends Div {
 	}
 
 	private void createSearchStrainLayout() {
-    	layoutSearchStrains.addClassNames("vaadin-horizontal-layout", LumoUtility.AlignContent.CENTER,
-    			LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_10, LumoUtility.Margin.Top.SMALL,  
-    			LumoUtility.BorderRadius.LARGE);
+    	layoutSearchStrains.addClassNames("uebersicht-box");
     	
     	HorizontalLayout headerLayout = new HorizontalLayout();
-    	headerLayout.setWidth("100%");
     	H1 headerSearch = new H1("Bestandssuche");
-    	headerLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.Top.LARGE);
+    	headerSearch.addClassName(LumoUtility.Margin.Left.MEDIUM);
+    	headerLayout.addClassName("backround");
     	headerLayout.add(headerSearch);
 
     	buttonOpenStrainInfo.setEnabled(false);
@@ -451,11 +463,13 @@ public class ÜbersichtView extends Div {
     	HorizontalLayout boxLayout = new HorizontalLayout();
     	
     	boxLayout.setWidth("100%");
-    	boxLayout.addClassNames(LumoUtility.Margin.Top.SMALL,LumoUtility.JustifyContent.CENTER);
+    	boxLayout.addClassNames("backround");
+    	mainLayout.addClassName("backround");
     	
     	this.searchStrainBox.setItems(strainService.findAllByAssociation(associationId));
     	this.searchStrainBox.setItemLabelGenerator(e -> e.getName() + " (" + e.getThc() + "% THC)");
     	this.searchStrainBox.setHeight(75, Unit.PIXELS);
+    	this.searchStrainBox.setMaxWidth(400, Unit.PIXELS);
     	this.searchStrainBox.setWidth("100%");
     	
     	createStrainInfoDialogContent();
@@ -479,8 +493,8 @@ public class ÜbersichtView extends Div {
     	
     	//Add margin top
     	headerSearch.addClassNames(LumoUtility.Margin.Top.LARGE);
-    	searchStrainBox.addClassNames(LumoUtility.Padding.SMALL, LumoUtility.Margin.Top.LARGE);
-    	buttonOpenStrainInfo.addClassNames(LumoUtility.Padding.LARGE,LumoUtility.Margin.Top.LARGE);
+    	searchStrainBox.addClassNames(LumoUtility.Margin.Top.LARGE);
+    	buttonOpenStrainInfo.addClassNames(LumoUtility.Padding.LARGE,LumoUtility.Margin.Top.LARGE, "button-category-1");
     	
 		layoutSearchStrains.add(headerLayout, new Hr(), mainLayout);
 
