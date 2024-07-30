@@ -21,6 +21,7 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -55,6 +56,8 @@ public class DiaryView extends VerticalLayout {
 	private ComboBox<OutputEntity> entityBox = new ComboBox<OutputEntity>("Sorte");
 	private ComboBox<OutputType> outputTypeBox = new ComboBox<OutputType>("Art");
 	
+	ComboBox<OutputEntity> filterEntityBox = new ComboBox<OutputEntity>("Filtern nach");
+
 	private TextArea textArea = new TextArea("Eintrag");
 	private VirtualList<DiaryEntry> virtualList = new VirtualList<>();
 	private Button addEntryButton = new Button("Neuer Eintrag");
@@ -80,12 +83,53 @@ public class DiaryView extends VerticalLayout {
 
 	private Component createButtonComponent() {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
+		buttonLayout.setWidthFull();
 		addEntryButton.addClassName("button-category");
 		addEntryButton.addClickListener(e -> {
 			addEntryDialog.open();
 		});
 		
-		buttonLayout.add(addEntryButton);
+		//Filter Component
+		HorizontalLayout filterLayout = new HorizontalLayout();
+		filterLayout.addClassNames("filter-layout");
+		filterLayout.setWidthFull();
+		
+		filterEntityBox.setItemLabelGenerator(e -> e.getName());
+		filterEntityBox.addValueChangeListener(e -> {
+			
+			if(filterEntityBox.isEmpty()) {
+				refreshGrid(null);
+			} else {
+				refreshGrid(e.getValue());
+			}
+		});
+		filterEntityBox.setEnabled(false);
+		filterEntityBox.setClearButtonVisible(true);
+		
+		ComboBox<OutputType> typeBox = new ComboBox<OutputType>("Typ");
+		typeBox.setItemLabelGenerator(e -> e.getLabel());
+		typeBox.setItems(OutputType.values());
+		typeBox.setClearButtonVisible(true);
+		typeBox.addValueChangeListener(e -> {
+			filterEntityBox.setEnabled(e.getValue() != typeBox.getEmptyValue());
+			if(e.getValue() != typeBox.getEmptyValue()) {				
+				setItemsOfEntityBox(e.getValue(), true);
+			} else {
+				refreshGrid(null);
+			}
+		});
+		typeBox.setEnabled(false);
+		
+		Checkbox specificEntityBox = new Checkbox("Filtern");
+		specificEntityBox.addClassName(LumoUtility.Margin.Bottom.SMALL);
+		specificEntityBox.setValue(false);
+		specificEntityBox.addValueChangeListener(e -> {
+			typeBox.setEnabled(e.getValue());
+			filterEntityBox.setEnabled(e.getValue());
+		});
+		
+		filterLayout.add(specificEntityBox, typeBox, filterEntityBox);
+		buttonLayout.add(addEntryButton, filterLayout);
 		return buttonLayout;
 	}
 
@@ -96,11 +140,10 @@ public class DiaryView extends VerticalLayout {
         virtualList.setRenderer(new ComponentRenderer<>(entry -> {
         	EntryLayout entryLayout = new EntryLayout();
         	entryLayout.addClassName("diary-view-horizontal-layout-1");
-        	entryLayout.addClassName("diary-view-horizontal-layout-1");
         	entryLayout.setEntry(entry);
             return entryLayout;
         }));
-        virtualList.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.Top.NONE);
+        virtualList.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.Top.NONE, "custom-scrollbar");
         layout.add(virtualList);
         return layout;
 	}
@@ -175,14 +218,14 @@ public class DiaryView extends VerticalLayout {
 		outputTypeBox.setValue(outputTypeBox.getListDataView().getItem(0));
 		
 		outputTypeBox.addValueChangeListener(e -> {
-			setItemsOfEntityBox(e.getValue());
+			setItemsOfEntityBox(e.getValue(), false);
 		});
 		
 		entityBox.setOverlayClassName("diary-view-combo-box-1");
 		entityBox.addClassName("diary-view-combo-box-1");
 		entityBox.setItemLabelGenerator(e -> e.getName());
 		entityBox.setWidthFull();
-		setItemsOfEntityBox(OutputType.BLOSSOM);
+		setItemsOfEntityBox(OutputType.BLOSSOM, false);
 		
 		Button addEntryButton = new Button("hinzufügen");
 		addEntryButton.addClassName("save-button");
@@ -242,10 +285,10 @@ public class DiaryView extends VerticalLayout {
 	private void clearDialog() {
 		outputTypeBox.setValue(outputTypeBox.getListDataView().getItem(0));
 		textArea.setValue("");
-		setItemsOfEntityBox(OutputType.BLOSSOM);
+		setItemsOfEntityBox(OutputType.BLOSSOM, false);
 	}
 
-	private void setItemsOfEntityBox(OutputType outputType) {
+	private void setItemsOfEntityBox(OutputType outputType, boolean isForFilter) {
 		List<OutputEntity>entities = new ArrayList<>();
 		
 		if(outputType == OutputType.BLOSSOM) {
@@ -262,7 +305,11 @@ public class DiaryView extends VerticalLayout {
 			});
 		}
 		
-		entityBox.setItems(entities);
+		if(isForFilter) {
+			filterEntityBox.setItems(entities);
+		} else {			
+			entityBox.setItems(entities);
+		}
 	}
 	
 	public class EntryLayout extends HorizontalLayout {
@@ -295,9 +342,8 @@ public class DiaryView extends VerticalLayout {
             avatar.getElement().setAttribute("tabindex", "-1");
             avatar.addClassName(LumoUtility.Margin.Top.MEDIUM);
 	        setWidthFull();
-	        addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50, LumoUtility.BorderRadius.LARGE,
-	        		LumoUtility.Padding.Top.MEDIUM, LumoUtility.Padding.Left.MEDIUM, LumoUtility.Padding.Right.MEDIUM,
-	        		LumoUtility.Margin.Top.XSMALL);
+	        addClassNames(LumoUtility.Padding.Top.MEDIUM, LumoUtility.Padding.Left.MEDIUM, LumoUtility.Padding.Right.MEDIUM,
+	        		LumoUtility.Margin.Top.XSMALL, "diary-view-horizontal-layout-1");
 	        
 	        innerLayout = new VerticalLayout();
 	        innerLayout.addClassName("diary-view-vertical-layout-1");

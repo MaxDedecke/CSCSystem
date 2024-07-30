@@ -272,6 +272,13 @@ vaadin-dialog-overlay .save-button {
     margin: none;
 }
 
+.diary-view .filter-layout {
+    display: flex;
+    align-items: flex-end; 
+    margin: none;
+    justify-content: flex-end;
+}
+
 :host {
     --vaadin-input-field-readonly-border: none; /* Passen Sie die Farbe und Dicke der Umrandung nach Bedarf an */
 }
@@ -286,4 +293,14 @@ vaadin-dialog-overlay .save-button {
     padding-left: none;
     pointer-events: auto;
     --vaadin-input-field-readonly-border: none;
+}
+
+/* For Firefox */
+.diary-view .custom-scrollbar {
+    scrollbar-width: thin; /* Width of the scrollbar */
+    scrollbar-color: #88b149 #efefef; /* Color of the scrollbar thumb and track */
+    border-radius: 24px;
+}
+.diary-view .custom-scrollbar::-webkit-scrollbar-button {
+    display: none; /* Entfernt die Pfeile */
 }

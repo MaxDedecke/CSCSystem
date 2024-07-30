@@ -161,7 +161,23 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 		
 		levelup.addClickListener(e -> {
 			newMemberDialog = new Dialog();
-			if(this.waitingPerson != null) {				
+			
+			
+			if (this.waitingPerson == null) {
+				if (checkPersonDataForWaitingList()) {
+					this.waitingPerson = new WaitingPerson();
+					this.waitingPerson.setAssociationId(associationId);
+					this.waitingPerson.setDateOfBirth(dateOfBirth.getValue());
+					this.waitingPerson.setDateOfRegistration(LocalDate.now());
+					this.waitingPerson.setEmail(email.getValue());
+					this.waitingPerson.setFirstName(firstName.getValue());
+					this.waitingPerson.setLastName(lastName.getValue());
+					this.waitingPerson.setPhone(phone.getValue());
+
+					createNewMemberDialog();
+					newMemberDialog.open();
+				}
+			} else {				
 				createNewMemberDialog();
 				newMemberDialog.open();
 			}
@@ -299,7 +315,9 @@ private void createSingleSubscriptionForNewMember(Person member) {
 				person.setMemberNumber(personService.getFreeMemberNumber(associationId));
 				person = personService.update(person);
 
-				waitingPersonService.delete(waitingPerson.getId());
+				if(waitingPerson.getId() != null) {				
+					waitingPersonService.delete(waitingPerson.getId());
+				}
 				this.waitingPerson = null;
 				
 				createSingleSubscriptionForNewMember(person);
