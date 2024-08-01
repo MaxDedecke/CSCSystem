@@ -33,10 +33,12 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
+import jakarta.annotation.security.PermitAll;
+
 
 @PageTitle("Konfiguration")
 @Route(value = "setting", layout = MainLayout.class)
-@AnonymousAllowed
+@PermitAll
 public class ConfigurationView extends VerticalLayout {
 
 	private static final long serialVersionUID = 4433493049583669274L;

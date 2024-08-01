@@ -65,9 +65,11 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
+import jakarta.annotation.security.PermitAll;
+
 @PageTitle("Warenlager")
 @Route(value = "waren", layout = MainLayout.class)
-@AnonymousAllowed
+@PermitAll
 public class WarenlagerView extends Div {
 
     private static final long serialVersionUID = 5652277988730640569L;

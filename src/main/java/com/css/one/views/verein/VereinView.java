@@ -58,9 +58,11 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
+import jakarta.annotation.security.PermitAll;
+
 @PageTitle("Verein")
 @Route(value = "verein", layout = MainLayout.class)
-@AnonymousAllowed
+@PermitAll
 public class VereinView extends Div {
 	/**
 	 * 

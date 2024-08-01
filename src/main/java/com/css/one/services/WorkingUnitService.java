@@ -1,5 +1,6 @@
 package com.css.one.services;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,6 +51,10 @@ public class WorkingUnitService {
 	    
 	    public List<WorkingUnit> findByCategory(WorkingUnitCategory category, int associationId) {
 	    	return findAllByAssociation(associationId).stream().filter(e -> e.getCategory().getName().equals(category.getName())).toList();
+	    }
+	    
+	    public List<WorkingUnit> findByDay(LocalDate localDate, int associationId) {
+	    	return findAllByAssociation(associationId).stream().filter(e -> e.getBegin().isEqual(localDate)).toList();
 	    }
 	    
 	    public List<WorkingUnit> findByMember(int personId) {

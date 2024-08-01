@@ -2,6 +2,11 @@
  * This file has been created by the Vaadin Theme Editor. Please note that
  * manual changes to individual CSS properties may be overwritten by the theme editor.
  */
+.primary-background {
+  background:rgba(191,191,191,0.08);
+  margin-right:12px;
+}
+
 h3.diary-view-h3-1 { font-weight:bold; }
 
 vaadin-app-layout { background-color:rgb(255,255,255); }
@@ -85,67 +90,52 @@ vaadin-horizontal-layout.diary-view-horizontal-layout-1 {
   padding-right:8px;
 }
 
+vaadin-horizontal-layout.uebersicht-view-horizontal-layout-1 {
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #8ABD3E;
+}
+
+vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(helper-text) { color:rgba(255,255,255,0.97); }
+
+vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper::part(error-message-description) { color:rgba(252,252,252,1); }
+
+vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper::part(error-message-title) { color:rgba(0,0,0,0); }
+
+vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper::part(form-title) { color:rgba(255,255,255,1); }
+
+vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-password-field::part(reveal-button) { color:rgba(255,255,255,1); }
+
+vaadin-login-overlay-wrapper.login-view-login-overlay-1::part(description) {
+  color:rgba(255,254,254,1);
+  font-size:var(--lumo-font-size-xl);
+  font-weight:bold;
+}
+
+vaadin-menu-bar-overlay.main-layout-menu-bar-1 vaadin-menu-bar-item {
+  background-color:rgb(255,255,255);
+  font-weight:bold;
+}
+
+vaadin-menu-bar-overlay.main-layout-menu-bar-1::part(overlay) { background-color:rgba(247,11,11,1); }
+
 vaadin-text-field.finanzen-view-text-field-1::part(label) { color:#8ABD3E; }
 
 vaadin-text-field::part(label) { color:#8ABD3E; }
-
-vaadin-vertical-layout.uebersicht-box {
-	
-  background:rgba(191,191,191,0.08);
-  border-color:#000000;
-  border-radius:10px;
-  border-width:10px;
-  border:thick;
-  box-shadow:1px 1px 1px 1px #c0c0c0;
-  gap:var(--lumo-space-xs);
-  padding-bottom: none;
-  padding-top: none;
-  padding-left:8px;
-  padding-right:8px;
-  margin-bottom: none;
-  max-width: 500px;
-}
-
-vaadin-vertical-layout.uebersicht-box-header {
-	
-  background:rgba(191,191,191,0.08);
-  border-color:#000000;
-  border-radius:10px;
-  border-width:10px;
-  border:thick;
-  box-shadow:1px 1px 1px 1px #c0c0c0;
-  width: 100%;
-  margin-top: none;
-  margin-right: 12px;
-  margin-bottom: none;
-  justify-content: center;
-  padding-bottom: none;
-  padding-top: none;
-}
-
-.primary-background {
-	background:rgba(191,191,191,0.08);
-	margin-right: 12px;
-}
-
-vaadin-vertical-layout.uebersicht-box-grid {
-	
-  background:rgba(191,191,191,0.08);
-  border-color:#000000;
-  border-radius:10px;
-  border-width:10px;
-  border:thick;
-  box-shadow:1px 1px 1px 1px #c0c0c0;
-  margin: none;
-  padding-bottom: none;
-  padding-top: none;
-}
 
 vaadin-vertical-layout.diary-view-button-1 { background-color:rgb(255,255,255); }
 
 vaadin-vertical-layout.diary-view-vertical-layout-1 {
   gap:var(--lumo-space-xs);
   padding:none;
+}
+
+vaadin-vertical-layout.uebersicht-view-vertical-layout-1 {
+  padding:none;
+  margin: none;  
 }
 
 vaadin-vertical-layout.diary-view-vertical-layout-2 {
@@ -155,4 +145,63 @@ vaadin-vertical-layout.diary-view-vertical-layout-2 {
   max-width:70px;
   padding-left:none;
   padding:none;
+}
+
+vaadin-vertical-layout.uebersicht-view-vertical-layout-2 {
+  justify-content:center;
+  margin-left:none;
+  max-width:70px;
+  padding-left:none;
+  padding:none;
+}
+
+vaadin-vertical-layout.uebersicht-box {
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #8ABD3E;
+  gap:var(--lumo-space-xs);
+  margin-bottom:none;
+  max-width:500px;
+  padding-bottom:none;
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:none;
+}
+
+vaadin-vertical-layout.uebersicht-box-grid {
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #8ABD3E;
+  margin:none;
+  padding-bottom:none;
+  padding-top:none;
+  flex-direction: column;
+  max-height: 100%;
+  width:100%;
+}
+
+vaadin-vertical-layout.uebersicht-box-header {
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #8ABD3E;
+  justify-content:center;
+  margin-bottom:none;
+  margin-right:12px;
+  margin-top:none;
+  padding-bottom:none;
+  padding-top:none;
+  width:100%;
+}
+
+vaadin-vertical-layout.übersicht-view-vertical-layout-1 {
+	flex-direction: column;
 }

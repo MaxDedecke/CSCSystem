@@ -49,9 +49,11 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
+import jakarta.annotation.security.PermitAll;
+
 @PageTitle("Abgabe")
 @Route(value = "abgabe", layout = MainLayout.class)
-@AnonymousAllowed
+@PermitAll
 public class OutputView extends Div {
 
 	private static final long serialVersionUID = -433269476320215595L;

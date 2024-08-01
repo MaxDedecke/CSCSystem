@@ -6,13 +6,13 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import com.css.one.data.Cutting;
+import com.css.one.data.DiaryEntry;
 import com.css.one.data.Output;
 import com.css.one.data.OutputEntity;
 import com.css.one.data.OutputType;
@@ -25,6 +25,7 @@ import com.css.one.data.TransactionType;
 import com.css.one.data.WorkingUnit;
 import com.css.one.data.WorkingUnitCategory;
 import com.css.one.services.CuttingService;
+import com.css.one.services.DiaryEntryService;
 import com.css.one.services.OutputService;
 import com.css.one.services.PersonService;
 import com.css.one.services.SeedService;
@@ -36,6 +37,7 @@ import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.Unit;
+import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -48,12 +50,17 @@ import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.virtuallist.VirtualList;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
@@ -62,7 +69,7 @@ import jakarta.annotation.security.PermitAll;
 @Route(value = "", layout = MainLayout.class)
 @RouteAlias(value = "uebersicht/", layout = MainLayout.class)
 @PermitAll
-public class ÜbersichtView extends VerticalLayout {
+public class ÜbersichtView extends FlexLayout {
 
     private static final long serialVersionUID = 7776014341101416897L;
     
@@ -89,6 +96,7 @@ public class ÜbersichtView extends VerticalLayout {
     private WorkingUnitCategoryService workingUnitCategoryService;
     private CuttingService cuttingService;
     private SeedService seedService;
+    private DiaryEntryService diaryEntryService;
     
     private ComboBox<WorkingUnitCategory> box;
     
@@ -108,7 +116,9 @@ public class ÜbersichtView extends VerticalLayout {
     private TextField dateOutputField = new TextField("Datum");
 
     Grid<Strain> outputMemberGrid = new Grid<>();
-    Grid<String> newsGrid = new Grid<>();
+    VirtualList<DiaryEntry> newsList = new VirtualList<DiaryEntry>();
+    VirtualList<WorkingUnit> availablesList = new VirtualList<WorkingUnit>();
+    
     Grid<WorkingUnit> availablesGrid = new Grid<>();
 
     List<OutputEntity> entities = new ArrayList<>();
@@ -132,7 +142,8 @@ public class ÜbersichtView extends VerticalLayout {
 	private WorkingUnit workingUnit;
     
     public ÜbersichtView(PersonService personService, StrainService strainService, OutputService outputService, WorkingUnitService workingUnitService,
-    				TransactionService transactionService, WorkingUnitCategoryService workingUnitCategoryService, SeedService seedService, CuttingService cuttingService) {    	
+    				TransactionService transactionService, WorkingUnitCategoryService workingUnitCategoryService, SeedService seedService, CuttingService cuttingService,
+    				DiaryEntryService diaryEntryService) {    	
     	this.personService = personService;
     	this.strainService = strainService;
     	this.outputService = outputService;
@@ -141,9 +152,12 @@ public class ÜbersichtView extends VerticalLayout {
     	this.workingUnitCategoryService = workingUnitCategoryService;
     	this.cuttingService = cuttingService;
     	this.seedService = seedService;
+    	this.diaryEntryService = diaryEntryService;
     	
     	addClassNames("uebersicht-view", LumoUtility.Padding.NONE);
-   
+    	setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+    	setHeightFull();
+    	
 		associationId = MainLayout.getAssociationId();
 		createCurrentDateLayout();
 		
@@ -153,6 +167,7 @@ public class ÜbersichtView extends VerticalLayout {
 		createCurrentAvailableLayout();
 
 		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.addClassName("übersicht-view-vertical-layout-1");
 		HorizontalLayout firstLayerLayout = new HorizontalLayout();
 		firstLayerLayout.add(layoutSearchMembers, layoutAvailables);
 		firstLayerLayout.setWidth("100%");
@@ -177,8 +192,9 @@ public class ÜbersichtView extends VerticalLayout {
 		headerAvailables.addClassName(LumoUtility.Margin.Left.MEDIUM);
 		headerAvailables.addClassName("backround");
     	
-		availablesGrid.addColumn(e -> e).setAutoWidth(true);
-//		availablesGrid.setItems(Arrays.asList("Keine Neuigkeiten."));
+		availablesGrid.addColumn(e -> e.getPersonName()).setAutoWidth(true);
+		availablesGrid.addColumn(e -> "Da seit: " + e.getHourBegin() + ":" + e.getMinuteBegin() + " Uhr").setAutoWidth(true);
+		availablesGrid.setItems(workingUnitService.findByDay(LocalDate.now(),associationId).stream().filter(e -> e.getEnd() == null).toList());
 		availablesGrid.setHeight(200, Unit.PIXELS);
 		availablesGrid.addClassNames(LumoUtility.Border.ALL ,LumoUtility.BorderRadius.LARGE, LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
 		layoutAvailables.addClassNames("uebersicht-box-grid");
@@ -187,13 +203,23 @@ public class ÜbersichtView extends VerticalLayout {
 	}
 
 	private void createNewsLayout() {		
-		newsGrid.addColumn(e -> e).setAutoWidth(true);
-		newsGrid.setItems(Arrays.asList("Keine Neuigkeiten."));
-		newsGrid.setHeight(200, Unit.PIXELS);
-		newsGrid.addClassNames(LumoUtility.Border.ALL ,LumoUtility.BorderRadius.LARGE, LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
-		layoutNews.addClassNames("uebersicht-box-grid");
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.addClassName("übersicht-view-vertical-layout-1");
+
+		H3 h3 = new H3("Neuigkeiten");
+		newsList.setItems(diaryEntryService.findAllByAssociation(associationId));
+		newsList.setRenderer(new ComponentRenderer<>(entry -> {
+        	EntryLayout entryLayout = new EntryLayout();
+        	entryLayout.addClassName("uebersicht-view-horizontal-layout-1");
+        	entryLayout.setEntry(entry);
+            return entryLayout;
+        }));
+		newsList.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.Top.NONE);
+		newsList.setHeight(250, Unit.PIXELS);
 		
-		layoutNews.add(newsGrid);
+		layoutNews.addClassNames("uebersicht-box-grid");
+		mainLayout.add(h3, newsList);
+		layoutNews.add(mainLayout);
 	}
 
 	private void createCurrentDateLayout() {
@@ -758,4 +784,95 @@ public class ÜbersichtView extends VerticalLayout {
 		return "MONTAG";
 	}
 
+    public class EntryLayout extends HorizontalLayout {
+
+		private static final long serialVersionUID = 8080325977391846535L;
+		private TextArea textField;
+	    private Text entityField;
+	    private Text date;
+	    private Avatar avatar;
+	    private VerticalLayout innerLayout;
+	    
+	    public EntryLayout() {
+	    	
+	    	addClassNames(LumoUtility.Margin.Top.XSMALL, "uebersicht-view-horizontal-layout-1");
+			entityField = new Text("");
+
+			textField = new TextArea();
+			textField.setWidthFull();
+			textField.setReadOnly(true);
+			textField.addClassNames("textarea");
+			date = new Text("Datum");
+
+			avatar = new Avatar("");
+			StreamResource imageResource = new StreamResource("seed.png",
+					() -> getClass().getResourceAsStream("/seed.png"));
+
+			avatar.setImageResource(imageResource);
+            avatar.setHeight("32px");
+            avatar.setWidth("32px");
+            avatar.getElement().setAttribute("tabindex", "-1");
+	        setWidthFull();
+	        
+	        innerLayout = new VerticalLayout();
+	        innerLayout.addClassName("uebersicht-view-vertical-layout-1");
+	        innerLayout.setMinHeight(100, Unit.PIXELS);
+	        
+	        HorizontalLayout dateWrapper = new HorizontalLayout();
+	        dateWrapper.setWidthFull();
+	        dateWrapper.add(date);
+	        dateWrapper.addClassName("right-to-left-layout");
+	        
+	        innerLayout.add(entityField, textField, dateWrapper);
+	        
+	        VerticalLayout avatarLayout = new VerticalLayout();
+	        avatarLayout.addClassName("uebersicht-view-vertical-layout-2");
+	        avatarLayout.add(avatar);
+	        add(avatarLayout, innerLayout);
+	    }
+
+	    public void setEntry(DiaryEntry entry) {
+	    	
+	        textField.setValue(renderText(entry.getText()));
+	        
+	        if(entry.getSeed() != null) {
+	        	entityField.setText("Samen: " + entry.getSeed().getName());
+	        } else if(entry.getCutting() != null) {
+	        	entityField.setText("Steckling: " + entry.getCutting().getName());
+	        } else if(entry.getStrain() != null) {
+	        	entityField.setText("Sorte: " + entry.getStrain().getName());
+	        }
+	        
+	        date.setText(renderDate(entry.getDate()));
+	    }
+	    
+	    private String renderText(String text) {
+	    	  // Füge nach maxLineLength Zeichen einen Zeilenumbruch hinzu
+	        return text.replaceAll("(.{" + 180 + "})", "$1\n");
+		}
+
+		public String renderDate(LocalDate date) {
+	    	String day = "";
+			String month = "";
+
+			if (date != null) {
+
+				if (date.getDayOfMonth() < 10) {
+					day = "0" + String.valueOf(date.getDayOfMonth());
+				} else {
+					day = String.valueOf(date.getDayOfMonth());
+				}
+
+				if (date.getMonthValue() < 10) {
+					month = "0" + String.valueOf(date.getMonthValue());
+				} else {
+					month = String.valueOf(date.getMonthValue());
+				}
+
+				return day + "." + month + "." + date.getYear();
+			} else {
+				return "-";
+			}
+	    }
+	}
 }

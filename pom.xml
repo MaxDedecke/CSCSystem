@@ -132,6 +132,11 @@
 			<artifactId>httpclient5</artifactId>
 			<version>5.2.3</version><!--$NO-MVN-MAN-VER$-->
 			</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20240303</version>
+		</dependency>
     </dependencies>
 
     <build>

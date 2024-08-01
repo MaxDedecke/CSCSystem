@@ -35,12 +35,13 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+
+import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Tagebuch")
 @Route(value = "tagebuch", layout = MainLayout.class)
-@AnonymousAllowed
+@PermitAll
 public class DiaryView extends VerticalLayout {
 
 	private static final long serialVersionUID = -474632761341117537L;
@@ -326,7 +327,6 @@ public class DiaryView extends VerticalLayout {
 
 			entityField.addClassNames(LumoUtility.Padding.Left.SMALL, "diary-view-h3-1");
 			textField = new TextArea();
-			textField.addClassName("diary-view-text-area-1");
 			textField.setWidthFull();
 			textField.setReadOnly(true);
 			textField.addClassNames("textarea");

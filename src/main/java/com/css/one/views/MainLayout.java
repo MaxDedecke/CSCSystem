@@ -208,6 +208,10 @@ public class MainLayout extends AppLayout {
             avatar.getElement().setAttribute("tabindex", "-1");
 
             MenuBar userMenu = new MenuBar();
+            //<theme-editor-local-classname>
+            userMenu.setOverlayClassName("main-layout-menu-bar-1");
+            //<theme-editor-local-classname>
+            userMenu.addClassName("main-layout-menu-bar-1");
             userMenu.setThemeName("tertiary-inline contrast");
 
             MenuItem userName = userMenu.addItem("");

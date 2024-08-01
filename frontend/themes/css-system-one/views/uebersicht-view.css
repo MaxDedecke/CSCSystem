@@ -5,7 +5,6 @@
   background-color: #efefef;
   padding: none;
   margin: none;
-    height: 100%;
 }
 
 .uebersicht-view vaadin-split-layout {
@@ -146,4 +145,25 @@
 .uebersicht-view .backround {
 	background-color: transparent;
 	margin-right: 12px;
+}
+
+.uebersicht-view .textarea::part(input-field){
+    opacity: 1;
+    color: black;
+    border: none;
+    border-style: none;
+    border-width: 0px;
+    border-color: #efefef;
+    padding: none;
+    padding-left: none;
+    pointer-events: auto;
+    
+    --vaadin-input-field-readonly-border: none;
+}
+
+.uebersicht-view .right-to-left-layout {
+    display: flex;
+    flex-direction: row-reverse;
+    margin: none;
+    padding:none;
 }

@@ -69,9 +69,11 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import com.vaadin.flow.theme.lumo.LumoUtility.Height;
 
+import jakarta.annotation.security.PermitAll;
+
 @PageTitle("Finanzen")
 @Route(value = "finanzen", layout = MainLayout.class)
-@AnonymousAllowed
+@PermitAll
 public class FinanzenView extends Div implements BeforeEnterObserver {
 
 	private static final long serialVersionUID = -4231560701323089634L;
