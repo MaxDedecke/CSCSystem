@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
+import com.css.one.data.Association;
 import com.css.one.data.Cutting;
 import com.css.one.data.DiaryEntry;
 import com.css.one.data.Output;
@@ -24,6 +25,7 @@ import com.css.one.data.Transaction;
 import com.css.one.data.TransactionType;
 import com.css.one.data.WorkingUnit;
 import com.css.one.data.WorkingUnitCategory;
+import com.css.one.services.AssociationService;
 import com.css.one.services.CuttingService;
 import com.css.one.services.DiaryEntryService;
 import com.css.one.services.OutputService;
@@ -74,11 +76,13 @@ public class ÜbersichtView extends FlexLayout {
     private static final long serialVersionUID = 7776014341101416897L;
     
     private H1 currentDateText;
-    
+    private H1 currentNameText;
+
     private VerticalLayout layoutSearchMembers = new VerticalLayout();
     private VerticalLayout layoutSearchStrains = new VerticalLayout();
     private VerticalLayout layoutNews = new VerticalLayout();
     private VerticalLayout layoutAvailables = new VerticalLayout();
+    private VerticalLayout layoutName = new VerticalLayout();
 
     private VerticalLayout layoutCurrentDate = new VerticalLayout();
 
@@ -88,6 +92,7 @@ public class ÜbersichtView extends FlexLayout {
     private ComboBox<OutputType> outputTypeBox = new ComboBox<>("Art");
     private ComboBox<PaymentMethod> paymentMethodBox;
     
+    private AssociationService associationService;
     private PersonService personService;
     private StrainService strainService;
     private OutputService outputService; 
@@ -143,7 +148,7 @@ public class ÜbersichtView extends FlexLayout {
     
     public ÜbersichtView(PersonService personService, StrainService strainService, OutputService outputService, WorkingUnitService workingUnitService,
     				TransactionService transactionService, WorkingUnitCategoryService workingUnitCategoryService, SeedService seedService, CuttingService cuttingService,
-    				DiaryEntryService diaryEntryService) {    	
+    				DiaryEntryService diaryEntryService, AssociationService associationService) {    	
     	this.personService = personService;
     	this.strainService = strainService;
     	this.outputService = outputService;
@@ -153,6 +158,7 @@ public class ÜbersichtView extends FlexLayout {
     	this.cuttingService = cuttingService;
     	this.seedService = seedService;
     	this.diaryEntryService = diaryEntryService;
+    	this.associationService = associationService;
     	
     	addClassNames("uebersicht-view", LumoUtility.Padding.NONE);
     	setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -165,6 +171,7 @@ public class ÜbersichtView extends FlexLayout {
 		createSearchStrainLayout();
 		createNewsLayout();
 		createCurrentAvailableLayout();
+		createNameLayout();
 
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.addClassName("übersicht-view-vertical-layout-1");
@@ -183,9 +190,23 @@ public class ÜbersichtView extends FlexLayout {
 		mainLayout.add(secondLayerLayout);
 		
 		VerticalLayout dateWrapper = new VerticalLayout();
-		dateWrapper.add(layoutCurrentDate);
+		dateWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.Right.NONE);
+		HorizontalLayout innerWrapper = new HorizontalLayout();
+		innerWrapper.add(layoutCurrentDate, layoutName);
+		innerWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		dateWrapper.add(innerWrapper);
         add(dateWrapper, mainLayout);
     }
+
+	private void createNameLayout() {
+		
+		layoutName.addClassNames("primary-background", "uebersicht-box-header", "pulsing-shadow"); 
+		Optional<Association> optional = associationService.get(Integer.toUnsignedLong(associationId));
+		
+		optional.ifPresent(e -> currentNameText = new H1(e.getName()));
+		
+		layoutName.add(currentNameText);
+	}
 
 	private void createCurrentAvailableLayout() {
 		H1 headerAvailables = new H1("Anwesende Personen");
@@ -214,7 +235,7 @@ public class ÜbersichtView extends FlexLayout {
         	entryLayout.setEntry(entry);
             return entryLayout;
         }));
-		newsList.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.Top.NONE);
+		newsList.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.Top.NONE, "custom-scrollbar");
 		newsList.setHeight(250, Unit.PIXELS);
 		
 		layoutNews.addClassNames("uebersicht-box-grid");
@@ -242,10 +263,6 @@ public class ÜbersichtView extends FlexLayout {
     	headerLayout.addClassName("backround");
     	headerLayout.add(headerSearch);
 		
-		buttonOpenPersonInfo.setMinWidth("20%");
-    	buttonWorkingUnit.setMinWidth("20%");
-		buttonBookOutput.setMinWidth("20%");
-		
     	VerticalLayout mainLayout = new VerticalLayout();
     	HorizontalLayout boxLayout = new HorizontalLayout();
     	
@@ -255,8 +272,6 @@ public class ÜbersichtView extends FlexLayout {
     	this.searchMemberBox.setItems(personService.findAllByAssociation(associationId));
     	this.searchMemberBox.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
     	this.searchMemberBox.setHeight(75, Unit.PIXELS);
-    	this.searchMemberBox.setMaxWidth(400, Unit.PIXELS);
-    	this.searchMemberBox.setWidth("100%");
     	
     	createMemberInfoDialogContent();
     	createStartWorkingDialogContent();
@@ -298,8 +313,12 @@ public class ÜbersichtView extends FlexLayout {
 		
     	this.searchMemberBox.setClearButtonVisible(true);	
     	boxLayout.add(buttonOpenPersonInfo, buttonBookOutput, buttonWorkingUnit);
+    	boxLayout.setFlexGrow(1, buttonOpenPersonInfo, buttonBookOutput, buttonWorkingUnit);
+
+    	
     	boxLayout.setWidthFull();
     	mainLayout.add(this.searchMemberBox, boxLayout);
+    	this.searchMemberBox.setWidthFull();
     	
     	//Add margin top
     	headerSearch.addClassNames(LumoUtility.Margin.Top.LARGE);
@@ -483,7 +502,6 @@ public class ÜbersichtView extends FlexLayout {
 
     	buttonOpenStrainInfo.setEnabled(false);
     	buttonOpenStrainInfo.addClassName("button-category");
-    	buttonOpenStrainInfo.setMinWidth("40%");
 
     	VerticalLayout mainLayout = new VerticalLayout();
     	HorizontalLayout boxLayout = new HorizontalLayout();
@@ -495,8 +513,7 @@ public class ÜbersichtView extends FlexLayout {
     	this.searchStrainBox.setItems(strainService.findAllByAssociation(associationId));
     	this.searchStrainBox.setItemLabelGenerator(e -> e.getName() + " (" + e.getThc() + "% THC)");
     	this.searchStrainBox.setHeight(75, Unit.PIXELS);
-    	this.searchStrainBox.setMaxWidth(400, Unit.PIXELS);
-    	this.searchStrainBox.setWidth("100%");
+    	this.searchStrainBox.setWidthFull();
     	
     	createStrainInfoDialogContent();
     	
@@ -521,7 +538,7 @@ public class ÜbersichtView extends FlexLayout {
     	headerSearch.addClassNames(LumoUtility.Margin.Top.LARGE);
     	searchStrainBox.addClassNames(LumoUtility.Margin.Top.LARGE);
     	buttonOpenStrainInfo.addClassNames(LumoUtility.Padding.LARGE,LumoUtility.Margin.Top.LARGE, "button-category-1");
-    	
+    	buttonOpenStrainInfo.setWidthFull();
 		layoutSearchStrains.add(headerLayout, new Hr(), mainLayout);
 
     }

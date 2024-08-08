@@ -1,10 +1,8 @@
-@keyframes slide-in {
+@keyframes fadeIn {
     from {
-        transform: translateY(100%);
         opacity: 0;
     }
     to {
-        transform: translateY(0);
         opacity: 1;
     }
 }
@@ -22,19 +20,14 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  animation: slide-in 0.5s ease-out forwards, change-background 5s 1s forwards;
+  animation: fadeIn 2s ease-out, change-background 3s 1s forwards;
   color: #FFFFFF;
   
 }
 
 [part="content"] {
-  animation: slide-in 1s ease-out forwards;
-  --lumo-base-color: #8ABD3E;
-  --lumo-primary-color: #8ABD3E;
-  --lumo-primary-text-color: #FFFFFF;
-  --lumo-header-text-color: #FFFFFF;
-  --lumo-body-text-color: #FFFFFF;
-  --lumo-border-radius: 8px;
+  animation: fadeIn 2s ease-out forwards;
+
 }
 
 [part="overlay"]::part(title) {
@@ -43,7 +36,7 @@
 }
 
 [part="backdrop"]::before {
-  animation: slide-in 1s ease-out forwards;
+  animation: fadeIn 2s ease-out forwards;
   color: #FFFFFF;  
   
 }	
@@ -53,7 +46,7 @@
   display: flex;
   max-width: 500px;
   height: 100%;
-  animation: slide-in 1s ease-out forwards; 
+  animation: fadeIn 2s ease-out forwards; 
 }
 
 .login-view vaadin-login-form-wrapper {
@@ -89,11 +82,6 @@
 /* my-theme.css */
 :root {
     /* Hintergrundfarben */
-    --main-background-color: #FFFFFF;
-    --secondary-background-color: #8ABD3E;
-    --tertiary-background-color: #66DA9D;
-    --header-background-color: #4A4A4A;
-    --footer-background-color: #333333;
 
     /* Textfarben */
     --text-color: #66DA9D;
@@ -160,5 +148,9 @@ body {
 
 .v-textfield:focus {
     border-color: var(--secondary-color);
+}
+
+.logo {
+	margin-left: 100px;
 }
 

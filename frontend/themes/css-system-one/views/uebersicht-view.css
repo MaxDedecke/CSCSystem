@@ -44,9 +44,6 @@
 }
 
 .uebersicht-view .button-category-1 {
-  max-width: 30%;
-  max-width: 30%;
-  width: 200px;
   background-color: var(--lumo-contrast-5pct);
   padding-bottom: var(--lumo-space-s);
   padding-top: var(--lumo-space-s);
@@ -74,7 +71,6 @@
     background-color: #cccccc; /* Grauer Hintergrund */
     color: #666666; /* Dunkler Grauer Text */
     cursor: not-allowed; /* Nicht erlaubter Mauszeiger */
-    width: 200px;
 }
 
 .uebersicht-view .grid-wrapper {
@@ -166,4 +162,36 @@
     flex-direction: row-reverse;
     margin: none;
     padding:none;
+}
+
+.uebersicht-view .custom-scrollbar {
+    scrollbar-width: thin; /* Width of the scrollbar */
+    scrollbar-color: #88b149 #efefef; /* Color of the scrollbar thumb and track */
+    border-radius: 24px;
+}
+
+.uebersicht-view .custom-scrollbar::-webkit-scrollbar-button {
+    display: none; /* Entfernt die Pfeile */
+}
+
+
+/* Entfernen der Pfeile in Firefox */
+.uebersicht-view .custom-scrollbar::-moz-scrollbar-button {
+  display: none;
+}
+
+@keyframes shadowPulse {
+    0% {
+        box-shadow: 0 4px 8px #5918ab;
+    }
+    50% {
+        box-shadow: 0 4px 16px rgb(69, 18, 131);
+    }
+    100% {
+        box-shadow: 0 4px 8px #1f0247;
+    }
+}
+
+.pulsing-shadow {
+    animation: shadowPulse 2s infinite;
 }

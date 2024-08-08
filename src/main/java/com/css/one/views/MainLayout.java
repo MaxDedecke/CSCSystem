@@ -1,7 +1,11 @@
 package com.css.one.views;
 
+import java.io.ByteArrayInputStream;
+import java.util.Optional;
+
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
 import com.css.one.data.User;
-import com.css.one.migrations.DB;
 import com.css.one.security.AuthenticatedUser;
 import com.css.one.views.ai.AiWizzardView;
 import com.css.one.views.arbeitsplanung.ArbeitsplanungView;
@@ -41,12 +45,6 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-import java.io.ByteArrayInputStream;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Optional;
-
-import org.vaadin.lineawesome.LineAwesomeIcon;
 
 /**
  * The main view is a top-level placeholder for other views.
@@ -72,7 +70,7 @@ public class MainLayout extends AppLayout {
         addDrawerContent();
         addHeaderContent(); 
         addClassName("main-layout-app-layout-1");
-
+        setDrawerOpened(false);
     }
 
     private void addHeaderContent() {
@@ -88,12 +86,8 @@ public class MainLayout extends AppLayout {
     private void addDrawerContent() {
     	
     	VerticalLayout layout = new VerticalLayout(); 
-    	
-    	appName = new Span("Ceres");
-        appName.addClassNames(LumoUtility.FontWeight.SEMIBOLD, LumoUtility.FontSize.LARGE);
-
-        StreamResource imageResource = new StreamResource("NewLogo050724_transparent.png",
-                () -> getClass().getResourceAsStream("/NewLogo050724_transparent.png"));
+        StreamResource imageResource = new StreamResource("CLOS.png",
+                () -> getClass().getResourceAsStream("/CLOS.png"));
 
         Image logoImage = new Image(imageResource, "");
         logoImage.setHeight(250, Unit.PIXELS);
@@ -101,7 +95,7 @@ public class MainLayout extends AppLayout {
          
         layout.setAlignItems(Alignment.CENTER);
         layout.addClassNames(LumoUtility.Padding.XSMALL);
-        layout.add(logoImage, appName, new Hr());
+        layout.add(logoImage, new Hr());
         Header header = new Header(layout);
         
         Scroller scroller = new Scroller(createNavigation());
@@ -138,7 +132,7 @@ public class MainLayout extends AppLayout {
 
         }
         if (accessChecker.hasAccess(ArbeitsplanungView.class)) {
-            nav.addItem(new SideNavItem("Arbeitsplanung", ArbeitsplanungView.class,
+            nav.addItem(new SideNavItem("Zeiterfassung", ArbeitsplanungView.class,
                     LineAwesomeIcon.BUSINESS_TIME_SOLID.create()));
 
         }
@@ -188,17 +182,6 @@ public class MainLayout extends AppLayout {
             User user = maybeUser.get();
             
             associationId = user.getAssociationId();
-            
-			try (var connection = DB.connect()) {
-				var sql = "SELECT name FROM association WHERE id = " + associationId;
-				var statement = connection.createStatement();
-				ResultSet executedQuery = statement.executeQuery(sql);
-				 while (executedQuery.next()) {
-					 appName.setText(executedQuery.getString(1));		               
-		            }	
-			} catch (SQLException e) {
-				System.err.println(e.getMessage());
-			}
                         
             Avatar avatar = new Avatar(user.getName());
             StreamResource resource = new StreamResource("profile-pic",
@@ -208,9 +191,7 @@ public class MainLayout extends AppLayout {
             avatar.getElement().setAttribute("tabindex", "-1");
 
             MenuBar userMenu = new MenuBar();
-            //<theme-editor-local-classname>
             userMenu.setOverlayClassName("main-layout-menu-bar-1");
-            //<theme-editor-local-classname>
             userMenu.addClassName("main-layout-menu-bar-1");
             userMenu.setThemeName("tertiary-inline contrast");
 
@@ -223,14 +204,14 @@ public class MainLayout extends AppLayout {
             div.getElement().getStyle().set("align-items", "center");
             div.getElement().getStyle().set("gap", "var(--lumo-space-s)");
             userName.add(div);
-            userName.getSubMenu().addItem("Sign out", e -> {
+            userName.getSubMenu().addItem("Logout", e -> {
                 authenticatedUser.logout();
             });
 
             layout.add(userMenu);
             layout.addClassNames(LumoUtility.JustifyContent.CENTER);
         } else {
-            Anchor loginLink = new Anchor("login", "Sign in");
+            Anchor loginLink = new Anchor("login", "Einloggen");
             layout.add(loginLink);
         }
 

@@ -3,10 +3,10 @@ package com.css.one.views.login;
 import com.css.one.security.AuthenticatedUser;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.login.LoginI18n;
 import com.vaadin.flow.component.login.LoginOverlay;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -33,22 +33,24 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         LoginI18n i18n = LoginI18n.createDefault(); 
         i18n.setHeader(new LoginI18n.Header());    
         i18n.getHeader().setTitle("Ceres"); 
-        i18n.getHeader().setDescription("We grow modern systems");
         i18n.setAdditionalInformation(null);
         i18n.getForm().setSubmit("Login");
-        i18n.getForm().setPassword("Passwort");
+        i18n.getForm().setPassword("Passwort"); 
+        i18n.getErrorMessage().setPassword("Passwort fehlt!");
         i18n.getForm().setUsername("Nutzername");
+        i18n.getErrorMessage().setUsername("Nutzername fehlt!");
         i18n.getForm().setTitle("Einloggen");
-        setI18n(i18n); 
+        setI18n(i18n);
         
-        Div plant = new Div(); 
-        plant.addClassName("plant");
+        VerticalLayout plant = new VerticalLayout();
+        plant.setWidthFull();
+        plant.addClassNames(LumoUtility.JustifyContent.CENTER);
         
-        StreamResource imageResource = new StreamResource("NewLogo050724_transparent.png",
-                () -> getClass().getResourceAsStream("/NewLogo050724_transparent.png"));
+        StreamResource imageResource = new StreamResource("CLOS.png",
+                () -> getClass().getResourceAsStream("/CLOS.png"));
  
         Image logoImage = new Image(imageResource, ""); 
-        logoImage.addClassNames(LumoUtility.Margin.Left.LARGE);
+        logoImage.addClassNames(LumoUtility.Margin.Left.XLARGE);
         
         logoImage.setHeight(250, Unit.PIXELS);
         plant.add(logoImage);
@@ -58,7 +60,6 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         
         setForgotPasswordButtonVisible(false);
         setOpened(true); 
-        //<theme-editor-local-classname>
         addClassName("login-view-login-overlay-1");
 
     }
