@@ -1038,9 +1038,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		amount.setCurrency("EUR");
 
 		date = new DateTimePicker();
-		//<theme-editor-local-classname>
 		date.setOverlayClassName("finanzen-view-date-time-picker-1");
-		//<theme-editor-local-classname>
 		date.addClassName("finanzen-view-date-time-picker-1");
 		date.setLabel("Zeitpunkt");
 		date.setStep(Duration.ofSeconds(1));
