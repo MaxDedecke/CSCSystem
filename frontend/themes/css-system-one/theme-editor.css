@@ -283,11 +283,15 @@ vaadin-vertical-layout.rechtliches-box {
   border:thick;
   box-shadow:2px 2px 5px #8ABD3E;
   gap:var(--lumo-space-xs);
-  margin-bottom:none;
+  margin-bottom:8px;
+  margin-left: 8px;
+  margin-top: 8px;
   padding-bottom:none;
+  flex-direction:column;
   padding-left:8px;
   padding-right:8px;
-  padding-top:none;
+  padding-top:8px;
+  padding-bottom: 8px;
 }
 
 vaadin-vertical-layout.uebersicht-box-grid {

@@ -38,12 +38,10 @@ import com.css.one.services.WorkingUnitService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -73,7 +71,6 @@ import jakarta.annotation.security.PermitAll;
 @Route(value = "", layout = MainLayout.class)
 @RouteAlias(value = "uebersicht/", layout = MainLayout.class)
 @PermitAll
-@JavaScript("./chart.js")
 public class ÜbersichtView extends FlexLayout {
 
     private static final long serialVersionUID = 7776014341101416897L;
@@ -86,7 +83,7 @@ public class ÜbersichtView extends FlexLayout {
     private VerticalLayout layoutNews = new VerticalLayout();
     private VerticalLayout layoutAvailables = new VerticalLayout();
     private VerticalLayout layoutName = new VerticalLayout();
-    private VerticalLayout layoutChart = new VerticalLayout();
+//    private VerticalLayout layoutChart = new VerticalLayout();
 
     private VerticalLayout layoutCurrentDate = new VerticalLayout();
 
@@ -173,7 +170,7 @@ public class ÜbersichtView extends FlexLayout {
 		
 		createSearchMemberLayout();
 		createSearchStrainLayout();
-		createChartLayout();
+//		createChartLayout();
 		createNewsLayout();
 		createCurrentAvailableLayout();
 		createNameLayout();
@@ -181,7 +178,9 @@ public class ÜbersichtView extends FlexLayout {
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.addClassName("übersicht-view-vertical-layout-1");
 		HorizontalLayout firstLayerLayout = new HorizontalLayout();
-		firstLayerLayout.add(layoutSearchMembers, layoutAvailables, layoutChart);
+//		firstLayerLayout.add(layoutSearchMembers, layoutAvailables, layoutChart);
+		firstLayerLayout.add(layoutSearchMembers, layoutAvailables);
+
 		firstLayerLayout.setWidth("100%");
 		firstLayerLayout.addClassName(LumoUtility.Padding.NONE);
 		
@@ -202,19 +201,19 @@ public class ÜbersichtView extends FlexLayout {
 		dateWrapper.add(innerWrapper);
         add(dateWrapper, mainLayout);
         
-        UI.getCurrent().access(() -> {
-        	layoutChart.getElement().executeJs("drawChart()");
-        });
+//        UI.getCurrent().access(() -> {
+//        	layoutChart.getElement().executeJs("drawChart()");
+//        });
     }
 
-	private void createChartLayout() {
-		 
-		layoutChart.addClassName("uebersicht-box");
-		VerticalLayout wrapper = new VerticalLayout();
-		wrapper.setId("chart-container");
-		
-		layoutChart.add(wrapper);
-	}
+//	private void createChartLayout() {
+//		 
+//		layoutChart.addClassName("uebersicht-box");
+//		VerticalLayout wrapper = new VerticalLayout();
+//		wrapper.setId("chart-container");
+//		
+//		layoutChart.add(wrapper);
+//	}
 
 	private void createNameLayout() {
 		

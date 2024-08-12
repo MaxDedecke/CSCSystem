@@ -3,6 +3,7 @@ package com.css.one.data;
 import java.time.LocalDate;
 import java.util.List;
 
+import io.micrometer.common.lang.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 
@@ -18,7 +19,10 @@ public class Association extends AbstractEntity {
 	    private double amountMemberSubscription;
 	    private LocalDate registrationDate;
 	    
-	    @OneToMany
+	    @Nullable
+	    private String statutePath;
+	    
+		@OneToMany
 	    private List<Location> locations;
 	    
 		public String getName() {
@@ -70,4 +74,11 @@ public class Association extends AbstractEntity {
 			this.registrationDate = registrationDate;
 		}
 
+		public String getStatutePath() {
+			return statutePath;
+		}
+
+		public void setStatutePath(String statutePath) {
+			this.statutePath = statutePath;
+		}
 }

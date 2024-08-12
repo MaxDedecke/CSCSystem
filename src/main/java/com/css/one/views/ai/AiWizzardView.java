@@ -3,7 +3,6 @@ package com.css.one.views.ai;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import com.css.one.services.OpenAIClient;
 import com.css.one.views.MainLayout;
@@ -62,21 +61,21 @@ public class AiWizzardView extends VerticalLayout {
         add(h1, wrapper, responseArea);
 	}
 	
-	private void startTypingEffect(String text) {
-		responseArea.clear();
-		final int[] index = { 0 };
-		getUI().ifPresent(ui -> ui.access(() -> {
-			scheduler.scheduleAtFixedRate(() -> {
-
-				if (index[0] < text.length()) {
-					responseArea.setValue(responseArea.getValue() + text.charAt(index[0]));
-					index[0]++;
-				} else {
-					scheduler.shutdown();
-				}
-			}, 0, 100, TimeUnit.MILLISECONDS);
-		}));
-	}
+//	private void startTypingEffect(String text) {
+//		responseArea.clear();
+//		final int[] index = { 0 };
+//		getUI().ifPresent(ui -> ui.access(() -> {
+//			scheduler.scheduleAtFixedRate(() -> {
+//
+//				if (index[0] < text.length()) {
+//					responseArea.setValue(responseArea.getValue() + text.charAt(index[0]));
+//					index[0]++;
+//				} else {
+//					scheduler.shutdown();
+//				}
+//			}, 0, 100, TimeUnit.MILLISECONDS);
+//		}));
+//	}
 	
 	 @Override
 	    protected void onDetach(DetachEvent detachEvent) {

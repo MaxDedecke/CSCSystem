@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100%;
   background-color: #efefef;
   padding: none;
   margin: none;
@@ -24,3 +25,17 @@
     cursor: not-allowed; /* Nicht erlaubter Mauszeiger */
 }
 
+.law-view .cancel-button {
+  background-color: #808080;
+  color: white;
+}
+
+.law-view .cancel-button:hover {
+  background-color: rgb(192, 192, 192);
+  color: white;
+}
+
+.law-view .save-button {
+  background-color: #8ABD3E;
+  color: white;
+} 

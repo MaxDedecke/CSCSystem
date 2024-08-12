@@ -1,23 +1,43 @@
 package com.css.one.views.rechtliches;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Properties;
 
+import com.css.one.data.Association;
 import com.css.one.data.Person;
-import com.css.one.data.RecurringPayment;
 import com.css.one.data.Strain;
+import com.css.one.services.AssociationService;
 import com.css.one.services.PersonService;
+import com.css.one.services.PromptingService;
 import com.css.one.services.StrainService;
 import com.css.one.views.MainLayout;
+import com.css.one.views.warenlager.WarenlagerView;
+import com.vaadin.componentfactory.pdfviewer.PdfViewer;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.UploadI18N;
+import com.vaadin.flow.component.upload.receivers.FileBuffer;
 import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LitRenderer;
@@ -25,13 +45,12 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-
 import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Rechtliches")
 @Route(value = "rechtliches", layout = MainLayout.class)
 @PermitAll
-public class RechtlichesView extends VerticalLayout {
+public class RechtlichesView extends FlexLayout {
 
     private static final long serialVersionUID = -3563321934496915055L;
 
@@ -41,24 +60,42 @@ public class RechtlichesView extends VerticalLayout {
     private VerticalLayout certificateLayout;
     private VerticalLayout memberPreventionLayout;
     
+    private Dialog showStatuteDialog = new Dialog();
+    private Dialog uploadStatuteDialog = new Dialog();
+    private Dialog attorneyInfoDialog = new Dialog();
+    private Dialog showCertificateDialog = new Dialog();
+    
     private StrainService strainService;
     private PersonService personService;
+    private AssociationService associationService;
     
     private int associationId;
     
-	public RechtlichesView(StrainService strainService, PersonService personService) {
-        addClassName("law-view");
+    private String directoryPath;
+	private InputStream streamStatute;
+	private File pathToStatute;
+    
+	public RechtlichesView(StrainService strainService, PersonService personService, AssociationService associationService) {
+        
+		addClassName("law-view");
         
         this.strainService = strainService;
         this.personService = personService;
+        this.associationService = associationService;
         
         associationId = MainLayout.getAssociationId();
         
+        setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+    	setHeightFull();
+    	
         createStatuteComponent();
         createAttorneyComponent();
         createTemplatesComponent();
         createCertificatesComponent();
         createMemberPreventionComponent();
+        
+        createShowStatuteDialog();
+        createUploadStatuteDialog();
         
         HorizontalLayout layerOneLayout = new HorizontalLayout();
         layerOneLayout.setWidthFull();
@@ -68,12 +105,86 @@ public class RechtlichesView extends VerticalLayout {
         HorizontalLayout layerTwoLayout = new HorizontalLayout();
         layerTwoLayout.setWidthFull();
         layerTwoLayout.add(certificateLayout, memberPreventionLayout);
-
         layerTwoLayout.setFlexGrow(1, certificateLayout, memberPreventionLayout);
-
+        
         add(layerOneLayout, layerTwoLayout);
+        
         setFlexGrow(1, layerOneLayout);
+        setFlexGrow(1, layerTwoLayout);
+        
+        getStyle().set("max-height", "100vh");
     }
+
+	private void createUploadStatuteDialog() {
+		VerticalLayout mainLayout = new VerticalLayout();
+		H3 h3 = new H3("Satzung hochladen");
+		
+		Upload statuteUpload = new Upload();
+		FileBuffer buffer = new FileBuffer();
+		statuteUpload.setReceiver(buffer);
+		statuteUpload.setAcceptedFileTypes(".pdf");
+//		uploadCertificate.setMaxFileSize(16000);
+		statuteUpload.setDropAllowed(true);
+		statuteUpload.setMaxFiles(1);
+		
+		UploadI18N i18n = new UploadI18N();
+        i18n.setDropFiles(new UploadI18N.DropFiles().setOne("Datei hierhin ziehen...").setMany("Dateien hierhin ziehen..."));
+        i18n.setAddFiles(new UploadI18N.AddFiles().setOne("Satzung auswählen").setMany("Zertifikate auswählen"));
+        i18n.setError(new UploadI18N.Error().setTooManyFiles("Zu viele Dateien.").setFileIsTooBig("Datei ist zu groß."));
+        i18n.setUploading(new UploadI18N.Uploading().setStatus(new UploadI18N.Uploading.Status().setConnecting("Verbinden...").setStalled("Stillstand.").setProcessing("Verarbeiten der Datei..."))
+                        .setRemainingTime(new UploadI18N.Uploading.RemainingTime().setPrefix("verbleibende Zeit: ").setUnknown("unbekannte verbleibende Zeit"))
+                        .setError(new UploadI18N.Uploading.Error().setServerUnavailable("Server nicht verfügbar").setUnexpectedServerError("Unerwarteter Serverfehler").setForbidden("Verboten")));
+
+        statuteUpload.setI18n(i18n);
+        
+        statuteUpload.addSucceededListener(event -> {
+        	preparePath();
+            streamStatute = buffer.getInputStream();
+            pathToStatute = new File(directoryPath, event.getFileName());
+            
+        });
+		
+		mainLayout.add(h3, statuteUpload);
+				
+		Button cancelButton = new Button("zurück");
+		cancelButton.addClassName("cancel-button");
+		cancelButton.addClickListener(e -> uploadStatuteDialog.close());
+		
+		Button uploadButton = new Button("upload");
+		uploadButton.addClassName("save-button");
+		uploadButton.addClickListener(e -> {
+			Optional<Association> optAssociation = associationService.get(Integer.toUnsignedLong(associationId));
+			optAssociation.ifPresent(a -> {
+				handleFile();
+				a.setStatutePath(pathToStatute.getAbsolutePath());
+				associationService.update(a);
+				uploadStatuteDialog.close();
+				Notification.show("Neue Satzung erfolgreich hochgeladen.");
+			});
+		});
+		
+		uploadStatuteDialog.add(mainLayout);
+		uploadStatuteDialog.getFooter().add(cancelButton);
+		uploadStatuteDialog.getFooter().add(uploadButton);
+
+	}
+
+	private void createShowStatuteDialog() {
+		VerticalLayout mainLayout = new VerticalLayout();
+
+        PdfViewer pdfViewer = new PdfViewer();
+        
+		Optional<Association> optional = associationService.get(Integer.toUnsignedLong(associationId));
+		optional.ifPresentOrElse(e -> {
+            StreamResource resource = new StreamResource("example.pdf", () -> getClass().getResourceAsStream(e.getStatutePath()));
+			pdfViewer.setSrc(resource);
+			mainLayout.add(pdfViewer);
+		}, () -> {
+			
+		});
+		
+		showStatuteDialog.add(mainLayout);
+	}
 
 	private void createMemberPreventionComponent() {
 		memberPreventionLayout = new VerticalLayout();
@@ -86,7 +197,7 @@ public class RechtlichesView extends VerticalLayout {
 		grid.addColumn(e -> e.getFirstName() + " " + e.getLastName()).setAutoWidth(true).setHeader("Name");
 		
 		HorizontalLayout gridLayout = new HorizontalLayout();
-		gridLayout.setWidthFull();
+		gridLayout.setSizeFull();
 		
 		LitRenderer<Person> needsPreventionRenderer = LitRenderer.<Person>of(
 				"<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
@@ -96,16 +207,15 @@ public class RechtlichesView extends VerticalLayout {
 		 
 		grid.addColumn(needsPreventionRenderer).setAutoWidth(true).setHeader("Verdacht").setComparator((sub1, sub2) -> Boolean.compare(personIsSuspect(sub1), personIsSuspect(sub2)));
 		grid.setItems(personService.findAllByAssociation(associationId));
-		grid.setHeight(400, Unit.PIXELS);
-		grid.setWidth("100%");
+		grid.setSizeFull();
 		gridLayout.add(grid);
-		
+		gridLayout.setFlexGrow(1, grid);
 		memberPreventionLayout.add(typeLayout, gridLayout);
-		memberPreventionLayout.setHeight("100%");
 	}
 
 	private boolean personIsSuspect(Person person) {
 		
+		PromptingService.getMemberPreventionPrompt();
 		return false;
 	}
 
@@ -131,7 +241,6 @@ public class RechtlichesView extends VerticalLayout {
 		
 		layout.add(list);
 		certificateLayout.add(typeLayout, layout);
-		certificateLayout.setHeight("100%");
 	}
 
 	private void createAttorneyComponent() {
@@ -162,15 +271,15 @@ public class RechtlichesView extends VerticalLayout {
 		
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		Button buttonChangeAttorney = new Button("bearbeiten");
-		buttonChangeAttorney.addClassName("button-category-1");
+		buttonChangeAttorney.addClickListener(e -> attorneyInfoDialog.open());
 		
+		buttonChangeAttorney.addClassName("button-category-1");
 		
 		buttonLayout.add(buttonChangeAttorney);
 		buttonLayout.setFlexGrow(1, buttonChangeAttorney);
 		buttonLayout.setWidthFull();
 		
 		attorneyLayout.add(typeLayout, space1, contactLayout, buttonLayout);
-		attorneyLayout.setSizeUndefined();
 	}
 
 	private void createTemplatesComponent() {
@@ -200,12 +309,11 @@ public class RechtlichesView extends VerticalLayout {
 		clubLayout.setFlexGrow(1, buttonDataProtection);
 		
 		templateLayout.add(typeLayout, member, memberLayout, new Hr(), club, clubLayout, new Hr());
-		templateLayout.setSizeUndefined();
 	}
 
 	private void createStatuteComponent() {
 		statuteLayout = new VerticalLayout();
-		statuteLayout.addClassNames("uebersicht-box");
+		statuteLayout.addClassNames("rechtliches-box");
 		
 		HorizontalLayout typeLayout = new HorizontalLayout();
 		typeLayout.add(new H3("Satzung"));
@@ -234,9 +342,11 @@ public class RechtlichesView extends VerticalLayout {
 		
 		Button buttonOpenStatute = new Button("anzeigen");
 		buttonOpenStatute.addClassName("button-category-1");
+		buttonOpenStatute.addClickListener(e -> showStatuteDialog.open());
 		
 		Button buttonUploadNewStatute = new Button("hochladen");
 		buttonUploadNewStatute.addClassName("button-category-1");
+		buttonUploadNewStatute.addClickListener(e -> uploadStatuteDialog.open());
 		
 		Button buttonDownloadStatue = new Button("herunterladen");
 		buttonDownloadStatue.addClassName("button-category-1");
@@ -246,10 +356,67 @@ public class RechtlichesView extends VerticalLayout {
 		buttonLayout.setWidthFull();
 		
 		statuteLayout.add(typeLayout, imageLayout, nameLayout, buttonLayout);
-		statuteLayout.setSizeUndefined();
 
 	}
 
+	private void handleFile() {
+
+	    File targetFile = pathToStatute;
+	    try {
+	        if (!targetFile.exists()) {
+	            targetFile.createNewFile();
+	        }
+	        try (FileOutputStream out = new FileOutputStream(targetFile)) {
+	        	// 16 KB buffer
+	            byte[] buffer = new byte[16384];
+	            int bytesRead;
+	            while ((bytesRead = streamStatute.read(buffer)) != -1) {
+	                out.write(buffer, 0, bytesRead);
+	            }
+	        }
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	        Notification.show("Fehler beim Speichern der Datei");
+	    }
+	    
+	    streamStatute = null;
+	}
+	
+	private void preparePath() {
+		final Properties properties = new Properties();
+		try (InputStream input = new FileInputStream(new File("/application.properties"))) {
+
+			// Load the properties file
+			properties.load(input);
+		} catch (IOException ex) {
+			try (InputStream input = WarenlagerView.class.getClassLoader().getResourceAsStream("application.properties")) {
+				if (input == null) {
+					System.out.println("Sorry, unable to find application.properties");
+					System.exit(1);
+				}
+
+				// Load the properties file
+				properties.load(input);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		directoryPath = properties.getProperty("certificate.upload.path") + File.separator +  associationId + File.separator + "statute" + File.separator;
+	    Path path = Paths.get(directoryPath);
+
+	    // Überprüfe, ob das Verzeichnis existiert
+	    if (!Files.exists(path)) {
+	        try {
+	            // Erstelle das Verzeichnis, falls es nicht existiert
+	            Files.createDirectories(path);
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            Notification.show("Fehler beim Erstellen des Verzeichnisses");
+	            return; // Beende die Methode, falls das Verzeichnis nicht erstellt werden kann
+	        }
+	    }
+	}
 	
 	public class CertificateEntryLayout extends HorizontalLayout {
 
@@ -267,6 +434,7 @@ public class RechtlichesView extends VerticalLayout {
 	    	dateOfTest = new Text("Test");
 	    	buttonOpenCertificate = new Button("Zertifikat ansehen");
 	    	buttonOpenCertificate.addClassName("button-category-1");
+	    	buttonOpenCertificate.addClickListener(e -> showCertificateDialog.open());
 	    	
 			avatar = new Avatar("");
 			StreamResource imageResource = new StreamResource("seed.png",

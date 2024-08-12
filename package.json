@@ -4,6 +4,7 @@
   "type": "module",
   "dependencies": {
     "@polymer/polymer": "3.5.1",
+    "@vaadin-component-factory/vcf-pdf-viewer": "1.4.1",
     "@vaadin/a11y-base": "24.3.13",
     "@vaadin/accordion": "24.3.13",
     "@vaadin/app-layout": "24.3.13",
@@ -69,7 +70,8 @@
     "@vaadin/virtual-list": "24.3.13",
     "construct-style-sheets-polyfill": "3.1.0",
     "date-fns": "2.29.3",
-    "lit": "3.1.2"
+    "lit": "3.1.2",
+    "print-js": "1.6.0"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "5.0.5",
@@ -92,6 +94,7 @@
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.5.1",
+      "@vaadin-component-factory/vcf-pdf-viewer": "1.4.1",
       "@vaadin/a11y-base": "24.3.13",
       "@vaadin/accordion": "24.3.13",
       "@vaadin/app-layout": "24.3.13",
@@ -157,7 +160,8 @@
       "@vaadin/virtual-list": "24.3.13",
       "construct-style-sheets-polyfill": "3.1.0",
       "date-fns": "2.29.3",
-      "lit": "3.1.2"
+      "lit": "3.1.2",
+      "print-js": "1.6.0"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "5.0.5",
@@ -177,7 +181,7 @@
       "workbox-core": "7.0.0",
       "workbox-precaching": "7.0.0"
     },
-    "hash": "1b578191af08a883e68dfca9e08ad525b69d9824e0ec3e82a2689cdcf77b5ffe"
+    "hash": "d798a82272bac5613a71c5bcb4df2030ac73f6d102db779515ad1e6ee87d8982"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -246,6 +250,8 @@
     "lit": "$lit",
     "@polymer/polymer": "$@polymer/polymer",
     "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
-    "date-fns": "$date-fns"
+    "date-fns": "$date-fns",
+    "@vaadin-component-factory/vcf-pdf-viewer": "$@vaadin-component-factory/vcf-pdf-viewer",
+    "print-js": "$print-js"
   }
 }
