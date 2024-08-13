@@ -2,6 +2,7 @@ package com.css.one.views.rechtliches;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,10 +13,11 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
-import com.css.one.data.Association;
+import com.css.one.data.LawInfo;
 import com.css.one.data.Person;
 import com.css.one.data.Strain;
 import com.css.one.services.AssociationService;
+import com.css.one.services.LawInfoService;
 import com.css.one.services.PersonService;
 import com.css.one.services.PromptingService;
 import com.css.one.services.StrainService;
@@ -27,6 +29,7 @@ import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
@@ -35,6 +38,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.UploadI18N;
 import com.vaadin.flow.component.upload.receivers.FileBuffer;
@@ -45,6 +49,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+
 import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Rechtliches")
@@ -64,25 +69,42 @@ public class RechtlichesView extends FlexLayout {
     private Dialog uploadStatuteDialog = new Dialog();
     private Dialog attorneyInfoDialog = new Dialog();
     private Dialog showCertificateDialog = new Dialog();
-    
+    private PdfViewer statutePdfViewer = new PdfViewer();
+    private PdfViewer certificatePdfViewer = new PdfViewer();
+
+    private Text statuteName;
+    private Text contactName = new Text("Ansprechpartner: -");
+	private Text orgName = new Text("Kanzlei -");
+	private Text contactPhone = new Text("Telefonnummer: -");
+	private Text contactEmail = new Text("Email: -");
+
+	private TextField nameField = new TextField("Ansprechpartner");
+	private TextField phoneField = new TextField("Telefonnummer");
+	private TextField emailField = new TextField("Email");
+	private TextField orgNameField = new TextField("Kanzleiname");
+	
     private StrainService strainService;
     private PersonService personService;
     private AssociationService associationService;
+    private LawInfoService lawInfoService;
     
     private int associationId;
+    private LawInfo info;
     
     private String directoryPath;
 	private InputStream streamStatute;
 	private File pathToStatute;
+	private String fileName;
     
-	public RechtlichesView(StrainService strainService, PersonService personService, AssociationService associationService) {
+	public RechtlichesView(StrainService strainService, PersonService personService, AssociationService associationService, LawInfoService lawInfoService) {
         
 		addClassName("law-view");
         
         this.strainService = strainService;
         this.personService = personService;
         this.associationService = associationService;
-        
+        this.lawInfoService = lawInfoService;
+        		
         associationId = MainLayout.getAssociationId();
         
         setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -96,6 +118,8 @@ public class RechtlichesView extends FlexLayout {
         
         createShowStatuteDialog();
         createUploadStatuteDialog();
+        createChangeAttorneyDialog();
+        createShowCertificateDialog();
         
         HorizontalLayout layerOneLayout = new HorizontalLayout();
         layerOneLayout.setWidthFull();
@@ -113,7 +137,64 @@ public class RechtlichesView extends FlexLayout {
         setFlexGrow(1, layerTwoLayout);
         
         getStyle().set("max-height", "100vh");
+        
+        Optional<LawInfo> optLawInfo = lawInfoService.getByAssociation(associationId);
+		
+		optLawInfo.ifPresentOrElse(a -> {
+			info = a;
+			statuteName.setText(a.getStatuteName());
+			refreshAttorneyLayout(a);
+		}, () -> refreshAttorneyLayout(null));
     }
+
+	private void createShowCertificateDialog() {
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.add(certificatePdfViewer);
+		mainLayout.setWidth(1000, Unit.PIXELS);
+		
+		Button cancelButton = new Button("zurück");
+		cancelButton.addClassName("cancel-button");
+		cancelButton.addClickListener(e -> showCertificateDialog.close());
+		
+		showCertificateDialog.add(mainLayout);
+		showCertificateDialog.getFooter().add(cancelButton);		
+	}
+
+	private void createChangeAttorneyDialog() {
+		FormLayout mainLayout = new FormLayout();
+
+		mainLayout.add(orgNameField, nameField, phoneField, emailField);
+		attorneyInfoDialog.add(mainLayout);
+		
+		Button buttonCancel = new Button("zurück");
+		buttonCancel.addClassName("cancel-button");
+		buttonCancel.addClickListener(e -> attorneyInfoDialog.close());
+		
+		Button buttonUpdate = new Button("update");
+		buttonUpdate.addClassName("save-button");
+		buttonUpdate.addClickListener(e -> {
+			
+			LawInfo tmpInfo;
+			if(info != null) {
+				tmpInfo = info;
+			} else {
+				tmpInfo = new LawInfo();
+			}
+			
+			tmpInfo.setAttorneyEmail(emailField.getValue());
+			tmpInfo.setAttorneyName(nameField.getValue());
+			tmpInfo.setAttorneyPhone(phoneField.getValue());
+			tmpInfo.setAttorneyOrgName(orgNameField.getValue());
+			
+			info = lawInfoService.update(tmpInfo);
+			
+			refreshAttorneyLayout(info);
+			
+			attorneyInfoDialog.close();
+		});
+		
+		attorneyInfoDialog.getFooter().add(buttonCancel, buttonUpdate);
+	}
 
 	private void createUploadStatuteDialog() {
 		VerticalLayout mainLayout = new VerticalLayout();
@@ -128,7 +209,7 @@ public class RechtlichesView extends FlexLayout {
 		statuteUpload.setMaxFiles(1);
 		
 		UploadI18N i18n = new UploadI18N();
-        i18n.setDropFiles(new UploadI18N.DropFiles().setOne("Datei hierhin ziehen...").setMany("Dateien hierhin ziehen..."));
+        i18n.setDropFiles(new UploadI18N.DropFiles().setOne("PDF Datei hierhin ziehen...").setMany("PDF Dateien hierhin ziehen..."));
         i18n.setAddFiles(new UploadI18N.AddFiles().setOne("Satzung auswählen").setMany("Zertifikate auswählen"));
         i18n.setError(new UploadI18N.Error().setTooManyFiles("Zu viele Dateien.").setFileIsTooBig("Datei ist zu groß."));
         i18n.setUploading(new UploadI18N.Uploading().setStatus(new UploadI18N.Uploading.Status().setConnecting("Verbinden...").setStalled("Stillstand.").setProcessing("Verarbeiten der Datei..."))
@@ -141,7 +222,7 @@ public class RechtlichesView extends FlexLayout {
         	preparePath();
             streamStatute = buffer.getInputStream();
             pathToStatute = new File(directoryPath, event.getFileName());
-            
+            fileName = event.getFileName();
         });
 		
 		mainLayout.add(h3, statuteUpload);
@@ -153,14 +234,36 @@ public class RechtlichesView extends FlexLayout {
 		Button uploadButton = new Button("upload");
 		uploadButton.addClassName("save-button");
 		uploadButton.addClickListener(e -> {
-			Optional<Association> optAssociation = associationService.get(Integer.toUnsignedLong(associationId));
-			optAssociation.ifPresent(a -> {
+			
+			Optional<LawInfo> optLawInfo = lawInfoService.getByAssociation(associationId);
+			
+			optLawInfo.ifPresentOrElse(a -> {
+				
+				if(a.getStatutePath() != null) {
+					removeOldStatute(a);
+				}
+				
 				handleFile();
+				a.setStatuteName(fileName);
 				a.setStatutePath(pathToStatute.getAbsolutePath());
-				associationService.update(a);
+				lawInfoService.update(a);
 				uploadStatuteDialog.close();
 				Notification.show("Neue Satzung erfolgreich hochgeladen.");
+				statuteName.setText(fileName);
+				updateStatutePdfComponent(a);
+			}, () -> {
+				LawInfo info = new LawInfo();
+				info.setAssociation(associationService.get(Integer.toUnsignedLong(associationId)).get());
+				info.setStatuteName(fileName);
+				info.setStatutePath(pathToStatute.getAbsolutePath());
+				lawInfoService.update(info);
+				uploadStatuteDialog.close();
+				statuteName.setText(fileName);
+				Notification.show("Neue Satzung erfolgreich hochgeladen.");
+				updateStatutePdfComponent(info);
 			});
+			
+			uploadStatuteDialog.close();
 		});
 		
 		uploadStatuteDialog.add(mainLayout);
@@ -169,21 +272,61 @@ public class RechtlichesView extends FlexLayout {
 
 	}
 
+	private void removeOldStatute(LawInfo a) {
+		File tmpFile = new File(a.getStatutePath());
+		if(tmpFile.delete()) {
+			a.setStatuteName(null);
+			a.setStatutePath(null);
+		}
+	}
+
 	private void createShowStatuteDialog() {
 		VerticalLayout mainLayout = new VerticalLayout();
-
-        PdfViewer pdfViewer = new PdfViewer();
-        
-		Optional<Association> optional = associationService.get(Integer.toUnsignedLong(associationId));
-		optional.ifPresentOrElse(e -> {
-            StreamResource resource = new StreamResource("example.pdf", () -> getClass().getResourceAsStream(e.getStatutePath()));
-			pdfViewer.setSrc(resource);
-			mainLayout.add(pdfViewer);
-		}, () -> {
-			
+		        
+		Optional<LawInfo> optional = lawInfoService.getByAssociation(associationId);
+		optional.ifPresent(e -> {
+			updateStatutePdfComponent(e);
+			mainLayout.add(statutePdfViewer);
 		});
 		
+		mainLayout.setWidth(1000, Unit.PIXELS);
+		
+		Button cancelButton = new Button("zurück");
+		cancelButton.addClassName("cancel-button");
+		cancelButton.addClickListener(e -> showStatuteDialog.close());
+		
 		showStatuteDialog.add(mainLayout);
+		showStatuteDialog.getFooter().add(cancelButton);
+	}
+
+	private void updateStatutePdfComponent(LawInfo e) {
+		if (e.getStatutePath() != null) {
+			File file = new File(e.getStatutePath());
+			StreamResource resource = new StreamResource(e.getStatuteName(), () -> {
+				try {
+					return new FileInputStream(file);
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				}
+				return streamStatute;
+			});
+			statutePdfViewer.setSrc(resource);
+		}
+	}
+	
+	private void updateCertificatePdfComponent(Strain e) {
+		if (e.getPathOfCertificate() != null) {
+			File file = new File(e.getPathOfCertificate());
+			StreamResource resource = new StreamResource(e.getPathOfCertificate(), () -> {
+				try {
+					return new FileInputStream(file);
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				}
+				return streamStatute;
+			});
+			certificatePdfViewer.setSrc(resource);
+		}
 	}
 
 	private void createMemberPreventionComponent() {
@@ -254,24 +397,32 @@ public class RechtlichesView extends FlexLayout {
 		contactLayout.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		HorizontalLayout space1 = new HorizontalLayout();
 		space1.addClassNames(LumoUtility.Margin.MEDIUM, LumoUtility.Padding.NONE);
-		
-		Text contactName = new Text("Ansprechpartner: Herr Anwalt");
+				
+		VerticalLayout nameWrapper = new VerticalLayout();
+		nameWrapper.add(contactName);
+		nameWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		
 		VerticalLayout phoneWrapper = new VerticalLayout();
-		Text contactPhone = new Text("Telefonnummer: 0941/23345443");
 		phoneWrapper.add(contactPhone);
 		phoneWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		
 		VerticalLayout emailWrapper = new VerticalLayout();
-		Text contactEmail = new Text("Email: kanzleideinerwahl@gmail.com");
 		emailWrapper.add(contactEmail);
 		emailWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		
-		contactLayout.add(contactName, phoneWrapper, emailWrapper);
+		contactLayout.add(orgName, nameWrapper, phoneWrapper, emailWrapper);
 		
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		Button buttonChangeAttorney = new Button("bearbeiten");
-		buttonChangeAttorney.addClickListener(e -> attorneyInfoDialog.open());
+		buttonChangeAttorney.addClickListener(e -> {
+			if(this.info != null) {
+				nameField.setValue(info.getAttorneyName());
+				phoneField.setValue(info.getAttorneyPhone());
+				emailField.setValue(info.getAttorneyEmail());
+				orgNameField.setValue(info.getAttorneyOrgName());
+			}
+			attorneyInfoDialog.open();
+		});
 		
 		buttonChangeAttorney.addClassName("button-category-1");
 		
@@ -280,6 +431,39 @@ public class RechtlichesView extends FlexLayout {
 		buttonLayout.setWidthFull();
 		
 		attorneyLayout.add(typeLayout, space1, contactLayout, buttonLayout);
+	}
+	
+	private void refreshAttorneyLayout(LawInfo info) {
+		if(info == null) {
+		    contactName.setText("Ansprechpartner: -");
+			orgName.setText("Kanzlei: -");
+			contactPhone.setText("Telefonnummer: -");
+			contactEmail.setText("Email: -");
+		} else {
+			if(info.getAttorneyName() != null) {
+			    contactName.setText("Ansprechpartner: " + info.getAttorneyName());
+			} else {				
+				contactName.setText("Ansprechpartner: -");
+			}
+			
+			if(info.getAttorneyOrgName() != null) {				
+				orgName.setText("Kanzlei: " + info.getAttorneyOrgName());
+			} else {
+				orgName.setText("Kanzlei: -");
+			}
+			
+			if(info.getAttorneyPhone() != null) {				
+				contactPhone.setText("Telefonnummer: " + info.getAttorneyPhone());
+			} else {
+				contactPhone.setText("Telefonnummer: -");
+			}
+			
+			if(info.getAttorneyEmail() != null) {				
+				contactEmail.setText("Email: " + info.getAttorneyEmail());
+			} else {
+				contactEmail.setText("Email: -");
+			}
+		}
 	}
 
 	private void createTemplatesComponent() {
@@ -331,7 +515,7 @@ public class RechtlichesView extends FlexLayout {
 		imageLayout.addClassName(LumoUtility.Margin.Bottom.MEDIUM);
 		
 		HorizontalLayout nameLayout = new HorizontalLayout();
-		Text statuteName = new Text("beispielSatzung.pdf");
+		statuteName = new Text("beispielSatzung.pdf");
 		nameLayout.add(statuteName);
 		nameLayout.setWidthFull();
 		nameLayout.setJustifyContentMode(JustifyContentMode.CENTER);
@@ -348,11 +532,8 @@ public class RechtlichesView extends FlexLayout {
 		buttonUploadNewStatute.addClassName("button-category-1");
 		buttonUploadNewStatute.addClickListener(e -> uploadStatuteDialog.open());
 		
-		Button buttonDownloadStatue = new Button("herunterladen");
-		buttonDownloadStatue.addClassName("button-category-1");
-		
-		buttonLayout.add(buttonOpenStatute, buttonUploadNewStatute, buttonDownloadStatue);
-		buttonLayout.setFlexGrow(1, buttonOpenStatute, buttonUploadNewStatute, buttonDownloadStatue);
+		buttonLayout.add(buttonOpenStatute, buttonUploadNewStatute);
+		buttonLayout.setFlexGrow(1, buttonOpenStatute, buttonUploadNewStatute);
 		buttonLayout.setWidthFull();
 		
 		statuteLayout.add(typeLayout, imageLayout, nameLayout, buttonLayout);
@@ -427,6 +608,7 @@ public class RechtlichesView extends FlexLayout {
 	    private Avatar avatar;
 	    private VerticalLayout innerLayout;
 	    private Button buttonOpenCertificate;
+	    private Strain entry;
 	    
 	    public CertificateEntryLayout() {
 	    	
@@ -434,7 +616,10 @@ public class RechtlichesView extends FlexLayout {
 	    	dateOfTest = new Text("Test");
 	    	buttonOpenCertificate = new Button("Zertifikat ansehen");
 	    	buttonOpenCertificate.addClassName("button-category-1");
-	    	buttonOpenCertificate.addClickListener(e -> showCertificateDialog.open());
+	    	buttonOpenCertificate.addClickListener(e -> {
+	    		updateCertificatePdfComponent(entry);
+	    		showCertificateDialog.open();
+	    	});
 	    	
 			avatar = new Avatar("");
 			StreamResource imageResource = new StreamResource("seed.png",
@@ -466,11 +651,11 @@ public class RechtlichesView extends FlexLayout {
 	        add(avatarLayout, innerLayout);
 	    }
 
-	    public void setEntry(Strain entry) {
-	    	
-	       name.setText(entry.getName());
-	       dateOfTest.setText(renderDate(entry.getDatePlanted()));
-	    }
+		public void setEntry(Strain entry) {
+			this.entry = entry;
+			name.setText(entry.getName());
+			dateOfTest.setText(renderDate(entry.getDatePlanted()));
+		}
 
 		public String renderDate(LocalDate date) {
 	    	String day = "";
