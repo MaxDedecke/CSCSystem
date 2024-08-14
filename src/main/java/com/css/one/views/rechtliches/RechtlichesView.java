@@ -302,30 +302,34 @@ public class RechtlichesView extends FlexLayout {
 	private void updateStatutePdfComponent(LawInfo e) {
 		if (e.getStatutePath() != null) {
 			File file = new File(e.getStatutePath());
-			StreamResource resource = new StreamResource(e.getStatuteName(), () -> {
-				try {
-					return new FileInputStream(file);
-				} catch (FileNotFoundException e1) {
-					e1.printStackTrace();
-				}
-				return streamStatute;
-			});
-			statutePdfViewer.setSrc(resource);
+			if (file.exists()) {
+				StreamResource resource = new StreamResource(e.getStatuteName(), () -> {
+					try {
+						return new FileInputStream(file);
+					} catch (FileNotFoundException e1) {
+						e1.printStackTrace();
+					}
+					return streamStatute;
+				});
+				statutePdfViewer.setSrc(resource);
+			}
 		}
 	}
 	
 	private void updateCertificatePdfComponent(Strain e) {
 		if (e.getPathOfCertificate() != null) {
 			File file = new File(e.getPathOfCertificate());
-			StreamResource resource = new StreamResource(e.getPathOfCertificate(), () -> {
-				try {
-					return new FileInputStream(file);
-				} catch (FileNotFoundException e1) {
-					e1.printStackTrace();
-				}
-				return streamStatute;
-			});
-			certificatePdfViewer.setSrc(resource);
+			if (file.exists()) {
+				StreamResource resource = new StreamResource("Zertifikat", () -> {
+					try {
+						return new FileInputStream(file);
+					} catch (FileNotFoundException e1) {
+						e1.printStackTrace();
+						return streamStatute;
+					}
+				});
+				certificatePdfViewer.setSrc(resource);
+			}
 		}
 	}
 
@@ -604,57 +608,46 @@ public class RechtlichesView extends FlexLayout {
 
 	    private static final long serialVersionUID = 8051256955571934106L;
 		private Text name;
-		private Text dateOfTest;
 	    private Avatar avatar;
-	    private VerticalLayout innerLayout;
 	    private Button buttonOpenCertificate;
 	    private Strain entry;
 	    
 	    public CertificateEntryLayout() {
 	    	
+	    	setWidthFull();
+	    	addClassNames(LumoUtility.Padding.Top.MEDIUM, LumoUtility.Padding.Left.MEDIUM, LumoUtility.Padding.Right.MEDIUM,
+	    			LumoUtility.Margin.Top.XSMALL);
+	    	
+	    	VerticalLayout nameWrapper = new VerticalLayout();
 	    	name = new Text("Test");
-	    	dateOfTest = new Text("Test");
+	    	nameWrapper.add(name);
+	    	
+	    	VerticalLayout buttonWrapper = new VerticalLayout();
 	    	buttonOpenCertificate = new Button("Zertifikat ansehen");
 	    	buttonOpenCertificate.addClassName("button-category-1");
 	    	buttonOpenCertificate.addClickListener(e -> {
 	    		updateCertificatePdfComponent(entry);
 	    		showCertificateDialog.open();
 	    	});
+	    	buttonWrapper.add(buttonOpenCertificate);
+	    	buttonWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.Top.SMALL);
 	    	
-			avatar = new Avatar("");
-			StreamResource imageResource = new StreamResource("seed.png",
-					() -> getClass().getResourceAsStream("/seed.png"));
+	    	VerticalLayout avatarWrapper = new VerticalLayout();
+	    	StreamResource imageResource = new StreamResource("seed.png",
+	    			() -> getClass().getResourceAsStream("/seed.png"));
 
+	    	avatar = new Avatar("");
 			avatar.setImageResource(imageResource);
             avatar.setHeight("32px");
             avatar.setWidth("32px");
-            avatar.getElement().setAttribute("tabindex", "-1");
-            avatar.addClassName(LumoUtility.Margin.Top.MEDIUM);
-	        setWidthFull();
-	        addClassNames(LumoUtility.Padding.Top.MEDIUM, LumoUtility.Padding.Left.MEDIUM, LumoUtility.Padding.Right.MEDIUM,
-	        		LumoUtility.Margin.Top.XSMALL);
-	        
-	        innerLayout = new VerticalLayout();
-	        innerLayout.addClassName("diary-view-vertical-layout-1");
-	        innerLayout.setMinHeight(100, Unit.PIXELS);
-	        
-	        HorizontalLayout dateWrapper = new HorizontalLayout();
-	        dateWrapper.setWidthFull();
-	        dateWrapper.add(name, dateOfTest, buttonOpenCertificate);
-	        dateWrapper.addClassName("right-to-left-layout");
-	        
-	        innerLayout.add(dateWrapper);
-	        
-	        VerticalLayout avatarLayout = new VerticalLayout();
-	        avatarLayout.addClassName("diary-view-vertical-layout-2");
-	        avatarLayout.add(avatar);
-	        add(avatarLayout, innerLayout);
+            avatarWrapper.add(avatar);
+            avatarWrapper.addClassNames(LumoUtility.Margin.Bottom.MEDIUM);
+	        add(avatarWrapper, nameWrapper, buttonWrapper);
 	    }
 
 		public void setEntry(Strain entry) {
 			this.entry = entry;
 			name.setText(entry.getName());
-			dateOfTest.setText(renderDate(entry.getDatePlanted()));
 		}
 
 		public String renderDate(LocalDate date) {

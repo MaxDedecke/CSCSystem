@@ -10,11 +10,6 @@
 
 .law-view .button-category-1 {
   background-color: var(--lumo-contrast-5pct);
-  padding-bottom: var(--lumo-space-s);
-  padding-top: var(--lumo-space-s);
-  padding-left: var(--lumo-space-l);
-  padding-right: var(--lumo-space-l);
-  gap: var(--lumo-space-m);
   border-color: #8ABD3E;
   color: #8ABD3E;
 }

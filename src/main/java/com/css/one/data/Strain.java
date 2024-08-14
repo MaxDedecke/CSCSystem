@@ -28,7 +28,7 @@ public class Strain extends OutputEntity {
 	 	private double thc;
 	 	
 	 	@Nullable
-	 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 	 	private List<Person> weighedByMembers;
 	 	
 		@Nullable
