@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
+import com.css.one.data.AssociationRole;
 import com.css.one.data.LawInfo;
 import com.css.one.data.Person;
 import com.css.one.data.Strain;
@@ -64,11 +65,13 @@ public class RechtlichesView extends FlexLayout {
     private VerticalLayout attorneyLayout;
     private VerticalLayout certificateLayout;
     private VerticalLayout memberPreventionLayout;
+    private VerticalLayout trainingCertLayout;
     
     private Dialog showStatuteDialog = new Dialog();
     private Dialog uploadStatuteDialog = new Dialog();
     private Dialog attorneyInfoDialog = new Dialog();
     private Dialog showCertificateDialog = new Dialog();
+    private Dialog uploadTrainingCertDialog = new Dialog();
     private PdfViewer statutePdfViewer = new PdfViewer();
     private PdfViewer certificatePdfViewer = new PdfViewer();
 
@@ -90,12 +93,15 @@ public class RechtlichesView extends FlexLayout {
     
     private int associationId;
     private LawInfo info;
+    private Person trainingPerson;
     
     private String directoryPath;
 	private InputStream streamStatute;
+	private InputStream streamTrainingCert;
 	private File pathToStatute;
+	private File pathToTrainingCert;
 	private String fileName;
-    
+
 	public RechtlichesView(StrainService strainService, PersonService personService, AssociationService associationService, LawInfoService lawInfoService) {
         
 		addClassName("law-view");
@@ -115,11 +121,13 @@ public class RechtlichesView extends FlexLayout {
         createTemplatesComponent();
         createCertificatesComponent();
         createMemberPreventionComponent();
+        createTrainingComponent();
         
         createShowStatuteDialog();
         createUploadStatuteDialog();
         createChangeAttorneyDialog();
         createShowCertificateDialog();
+        createUploadTrainingCertDialog();
         
         HorizontalLayout layerOneLayout = new HorizontalLayout();
         layerOneLayout.setWidthFull();
@@ -128,8 +136,8 @@ public class RechtlichesView extends FlexLayout {
         
         HorizontalLayout layerTwoLayout = new HorizontalLayout();
         layerTwoLayout.setWidthFull();
-        layerTwoLayout.add(certificateLayout, memberPreventionLayout);
-        layerTwoLayout.setFlexGrow(1, certificateLayout, memberPreventionLayout);
+        layerTwoLayout.add(certificateLayout, memberPreventionLayout, trainingCertLayout);
+        layerTwoLayout.setFlexGrow(1, certificateLayout, memberPreventionLayout, trainingCertLayout);
         
         add(layerOneLayout, layerTwoLayout);
         
@@ -146,6 +154,130 @@ public class RechtlichesView extends FlexLayout {
 			refreshAttorneyLayout(a);
 		}, () -> refreshAttorneyLayout(null));
     }
+
+	private void createUploadTrainingCertDialog() {		
+		VerticalLayout mainLayout = new VerticalLayout();
+		H3 h3 = new H3("Trainingszertifikat hochladen");
+		
+		Upload trainingCertUpload = new Upload();
+		FileBuffer buffer = new FileBuffer();
+		trainingCertUpload.setReceiver(buffer);
+		trainingCertUpload.setAcceptedFileTypes(".pdf");
+//		uploadCertificate.setMaxFileSize(16000);
+		trainingCertUpload.setDropAllowed(true);
+		trainingCertUpload.setMaxFiles(1);
+		
+		UploadI18N i18n = new UploadI18N();
+        i18n.setDropFiles(new UploadI18N.DropFiles().setOne("PDF Datei hierhin ziehen...").setMany("PDF Dateien hierhin ziehen..."));
+        i18n.setAddFiles(new UploadI18N.AddFiles().setOne("Zertifikat auswählen").setMany("Zertifikate auswählen"));
+        i18n.setError(new UploadI18N.Error().setTooManyFiles("Zu viele Dateien.").setFileIsTooBig("Datei ist zu groß."));
+        i18n.setUploading(new UploadI18N.Uploading().setStatus(new UploadI18N.Uploading.Status().setConnecting("Verbinden...").setStalled("Stillstand.").setProcessing("Verarbeiten der Datei..."))
+                        .setRemainingTime(new UploadI18N.Uploading.RemainingTime().setPrefix("verbleibende Zeit: ").setUnknown("unbekannte verbleibende Zeit"))
+                        .setError(new UploadI18N.Uploading.Error().setServerUnavailable("Server nicht verfügbar").setUnexpectedServerError("Unerwarteter Serverfehler").setForbidden("Verboten")));
+
+        trainingCertUpload.setI18n(i18n);
+        
+        trainingCertUpload.addSucceededListener(event -> {
+        	preparePathTrainingCert(trainingPerson);
+            streamTrainingCert = buffer.getInputStream();
+            pathToTrainingCert = new File(directoryPath, event.getFileName());
+        });
+		
+		mainLayout.add(h3, trainingCertUpload);
+				
+		Button cancelButton = new Button("zurück");
+		cancelButton.addClassName("cancel-button");
+		cancelButton.addClickListener(e -> uploadStatuteDialog.close());
+		
+		Button uploadButton = new Button("upload");
+		uploadButton.addClassName("save-button");
+		uploadButton.addClickListener(e -> {
+			
+//			Optional<LawInfo> optLawInfo = lawInfoService.getByAssociation(associationId);
+//			
+//			optLawInfo.ifPresentOrElse(a -> {
+//				
+//				if(a.getStatutePath() != null) {
+//					removeOldStatute(a);
+//				}
+//				
+//				handleFile();
+//				a.setStatuteName(fileName);
+//				a.setStatutePath(pathToStatute.getAbsolutePath());
+//				lawInfoService.update(a);
+//				uploadStatuteDialog.close();
+//				Notification.show("Neue Satzung erfolgreich hochgeladen.");
+//				statuteName.setText(fileName);
+//				updateStatutePdfComponent(a);
+//			}, () -> {
+//				LawInfo info = new LawInfo();
+//				info.setAssociation(associationService.get(Integer.toUnsignedLong(associationId)).get());
+//				info.setStatuteName(fileName);
+//				info.setStatutePath(pathToStatute.getAbsolutePath());
+//				lawInfoService.update(info);
+//				uploadStatuteDialog.close();
+//				statuteName.setText(fileName);
+//				Notification.show("Neue Satzung erfolgreich hochgeladen.");
+//				updateStatutePdfComponent(info);
+//			});
+//			
+//			uploadStatuteDialog.close();
+		});
+		
+		uploadTrainingCertDialog.add(mainLayout);
+		uploadTrainingCertDialog.getFooter().add(cancelButton);
+		uploadTrainingCertDialog.getFooter().add(uploadButton);
+	}
+
+	private void createTrainingComponent() {
+		trainingCertLayout = new VerticalLayout();
+		trainingCertLayout.addClassNames("rechtliches-box");
+		
+		HorizontalLayout typeLayout = new HorizontalLayout();
+		typeLayout.add(new H3("Präventionsbeauftragter - Schulung"));
+		
+		Grid<Person> grid = new Grid<>();
+		grid.addColumn(e -> e.getFirstName() + " " + e.getLastName()).setAutoWidth(true).setHeader("Name");
+		
+		HorizontalLayout gridLayout = new HorizontalLayout();
+		gridLayout.setSizeFull();
+		
+		LitRenderer<Person> needsPreventionRenderer = LitRenderer.<Person>of(
+				"<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
+				.withProperty("icon", person -> !certificateIsMissing(person) ? "timer" : "check-circle")
+				.withProperty("color", person -> !certificateIsMissing(person) ? "var(--lumo-error-color)"
+						: "var(--lumo-success-color)");
+		 
+		grid.addColumn(needsPreventionRenderer).setAutoWidth(true).setHeader("Schulung");
+		grid.addComponentColumn(item -> {
+			if (certificateIsMissing(item)) {
+				Button button = new Button("Zertifikat hochladen");
+				button.addClassName("button-category-1");
+				button.addClickListener(click -> {
+					this.trainingPerson = item;
+					uploadTrainingCertDialog.open();
+
+				});
+				button.addClassName("button-grid-green");
+
+				return button;
+			} else {
+				return new Text("");
+			}
+        }).setAutoWidth(true);
+		
+		grid.setItems(personService.findAllByAssociation(associationId).stream().filter(e -> e.getAssociationRole() == AssociationRole.PREVENTION).toList());
+		grid.setSizeFull();
+		gridLayout.add(grid);
+		gridLayout.setFlexGrow(1, grid);
+		
+		trainingCertLayout.add(typeLayout, gridLayout);
+	}
+
+	private boolean certificateIsMissing(Person item) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 	private void createShowCertificateDialog() {
 		VerticalLayout mainLayout = new VerticalLayout();
@@ -588,6 +720,42 @@ public class RechtlichesView extends FlexLayout {
 		}
 		
 		directoryPath = properties.getProperty("certificate.upload.path") + File.separator +  associationId + File.separator + "statute" + File.separator;
+	    Path path = Paths.get(directoryPath);
+
+	    // Überprüfe, ob das Verzeichnis existiert
+	    if (!Files.exists(path)) {
+	        try {
+	            // Erstelle das Verzeichnis, falls es nicht existiert
+	            Files.createDirectories(path);
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            Notification.show("Fehler beim Erstellen des Verzeichnisses");
+	            return; // Beende die Methode, falls das Verzeichnis nicht erstellt werden kann
+	        }
+	    }
+	}
+	
+	private void preparePathTrainingCert(Person p) {
+		final Properties properties = new Properties();
+		try (InputStream input = new FileInputStream(new File("/application.properties"))) {
+
+			// Load the properties file
+			properties.load(input);
+		} catch (IOException ex) {
+			try (InputStream input = WarenlagerView.class.getClassLoader().getResourceAsStream("application.properties")) {
+				if (input == null) {
+					System.out.println("Sorry, unable to find application.properties");
+					System.exit(1);
+				}
+
+				// Load the properties file
+				properties.load(input);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		directoryPath = properties.getProperty("certificate.upload.path") + File.separator +  associationId + File.separator + "prevention" + File.separator + "training" + File.separator + p.getId();
 	    Path path = Paths.get(directoryPath);
 
 	    // Überprüfe, ob das Verzeichnis existiert

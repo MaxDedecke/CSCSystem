@@ -47,7 +47,7 @@ public class WorkingUnitCategoryService {
 	    
 	    public List<WorkingUnitCategory> findAllByAssociation(int associationId) {
 	    	List<WorkingUnitCategory> categories = new ArrayList<>();
-	    	Optional<WorkingUnitCategory> byId = repository.findById(Integer.toUnsignedLong(1));
+	    	Optional<WorkingUnitCategory> byId = repository.findById(Integer.toUnsignedLong(0));
 	    	if(byId.isPresent()) {	    		
 	    		categories.addAll(Arrays.asList(byId.get()));
 	    	}
