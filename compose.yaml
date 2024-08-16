@@ -26,6 +26,7 @@ services:
             - postgresql
         volumes:
             - ~/docker_data/cscs/application.properties:/application.properties
+            - cscs_data:/Data
 
     joomla:
         image: joomla:latest
@@ -33,7 +34,8 @@ services:
         restart: always
         env_file: ~/docker_data/joomla/joomla.env
         volumes:
-          - joomla_data:/var/www/html
+          - ~/horizon/horizon_demo_package_joomla/:/var/www/html
+          - joomla_data:/var/www/html/tmp
     
     portainer:
         image: portainer/portainer-ce:latest
@@ -89,3 +91,4 @@ volumes:
     joomla_data:
     portainer_data:
     postgres_data:
+    cscs_data:
