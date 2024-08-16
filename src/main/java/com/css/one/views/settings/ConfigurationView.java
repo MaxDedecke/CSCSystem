@@ -6,13 +6,13 @@ import java.util.Optional;
 import com.css.one.data.Cutting;
 import com.css.one.data.Location;
 import com.css.one.data.Seed;
-import com.css.one.data.Strain;
+import com.css.one.data.Blossom;
 import com.css.one.data.WorkingUnit;
 import com.css.one.data.WorkingUnitCategory;
 import com.css.one.services.CuttingService;
 import com.css.one.services.LocationService;
 import com.css.one.services.SeedService;
-import com.css.one.services.StrainService;
+import com.css.one.services.BlossomService;
 import com.css.one.services.WorkingUnitCategoryService;
 import com.css.one.services.WorkingUnitService;
 import com.css.one.views.MainLayout;
@@ -43,7 +43,7 @@ public class ConfigurationView extends VerticalLayout {
 	private static final long serialVersionUID = 4433493049583669274L;
 	
 	private LocationService locationService;
-	private StrainService strainService;
+	private BlossomService strainService;
 	private SeedService seedService;
 	private CuttingService cuttingService;
 	private WorkingUnitService workingUnitService;
@@ -78,7 +78,7 @@ public class ConfigurationView extends VerticalLayout {
 		LOCATION, WORKINGCATEGORY;
 	}
 	
-	public ConfigurationView(LocationService locationService, WorkingUnitCategoryService workingUnitCategoryService, StrainService strainService, SeedService seedService, CuttingService cuttingService,
+	public ConfigurationView(LocationService locationService, WorkingUnitCategoryService workingUnitCategoryService, BlossomService strainService, SeedService seedService, CuttingService cuttingService,
 			WorkingUnitService workingUnitService) {
 		
 		this.locationService = locationService;
@@ -225,7 +225,7 @@ public class ConfigurationView extends VerticalLayout {
 	}
 
 	private void deleteSelectedLocation() {
-		List<Strain> strainList = strainService.findAllByAssociation(associationId).stream().filter(e -> {
+		List<Blossom> strainList = strainService.findAllByAssociation(associationId).stream().filter(e -> {
 			if (e.getGrowLocation() != null) {
 				return e.getGrowLocation().getId().equals(this.selectedLocation.getId());
 			} else {

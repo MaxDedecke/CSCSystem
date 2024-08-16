@@ -16,14 +16,14 @@ import com.css.one.data.OutputType;
 import com.css.one.data.PaymentMethod;
 import com.css.one.data.Person;
 import com.css.one.data.Seed;
-import com.css.one.data.Strain;
+import com.css.one.data.Blossom;
 import com.css.one.data.Transaction;
 import com.css.one.data.TransactionType;
 import com.css.one.services.CuttingService;
 import com.css.one.services.OutputService;
 import com.css.one.services.PersonService;
 import com.css.one.services.SeedService;
-import com.css.one.services.StrainService;
+import com.css.one.services.BlossomService;
 import com.css.one.services.TransactionService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
@@ -59,7 +59,7 @@ public class OutputView extends Div {
 	
     private OutputService outputService;
     private PersonService personService;
-    private StrainService strainService;
+    private BlossomService strainService;
     private TransactionService transactionService;
     private CuttingService cuttingService;
     private SeedService seedService;
@@ -79,7 +79,7 @@ public class OutputView extends Div {
 	
     List<Output> outputAssociation = new ArrayList<>();
 
-	public OutputView(OutputService outputService, PersonService personService, StrainService strainService, TransactionService transactionService, CuttingService cuttingService, SeedService seedService) {
+	public OutputView(OutputService outputService, PersonService personService, BlossomService strainService, TransactionService transactionService, CuttingService cuttingService, SeedService seedService) {
 		this.strainService = strainService;
 		this.outputService = outputService;
 		this.personService = personService;
@@ -135,7 +135,7 @@ public class OutputView extends Div {
 			button.addClickListener(click -> {
 				item.setOutdated(true);
 				outputService.update(item);
-				Optional<Strain> optionalStrain = strainService.get(Integer.toUnsignedLong(item.getEntityId()));
+				Optional<Blossom> optionalStrain = strainService.get(Integer.toUnsignedLong(item.getEntityId()));
 				if(optionalStrain.isPresent()) {				
 					optionalStrain.get().setAmountGramm(optionalStrain.get().getAmountGramm() + item.getAmount());
 					strainService.update(optionalStrain.get());	
@@ -287,7 +287,7 @@ public class OutputView extends Div {
 	}
 	
 	private String resolveStrain(int strainId) {
-		Optional<Strain> optionalStrain = strainService.get(Integer.toUnsignedLong(strainId));
+		Optional<Blossom> optionalStrain = strainService.get(Integer.toUnsignedLong(strainId));
 		return optionalStrain.isPresent() ? optionalStrain.get().getName() : "-";
 	}
 	
@@ -318,7 +318,7 @@ public class OutputView extends Div {
 		outputService.update(output);
 		
 		if (typeBox.getValue() == OutputType.BLOSSOM) {
-			Optional<Strain> optional = strainService.get(outputEntityId);
+			Optional<Blossom> optional = strainService.get(outputEntityId);
 			if (optional.isPresent()) {
 				optional.get().setAmountGramm(optional.get().getAmountGramm() - amount);
 				strainService.update(optional.get());

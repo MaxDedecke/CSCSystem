@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.css.one.data.Cutting;
 import com.css.one.data.CuttingRepository;
-import com.css.one.data.Strain;
+import com.css.one.data.Blossom;
 
 @Service
 public class CuttingService {
@@ -52,7 +52,7 @@ public class CuttingService {
 	    	return cuttings;
 	    }
 	    
-	    public List<Cutting> findByStrain(Strain strain, int associationId) {
+	    public List<Cutting> findByStrain(Blossom strain, int associationId) {
 			return findAllByAssociation(associationId).stream().filter(e -> e.getMotherPlant().getId().equals(strain.getId())).toList();
 	    }
 	    

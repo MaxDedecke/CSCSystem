@@ -15,7 +15,7 @@ public class DiaryEntry extends AbstractEntity {
 	
 	@Nullable
 	@ManyToOne
-	private Strain strain;
+	private Blossom strain;
 	
 	@Nullable
 	@ManyToOne
@@ -33,11 +33,11 @@ public class DiaryEntry extends AbstractEntity {
 		this.text = text;
 	}
 
-	public Strain getStrain() {
+	public Blossom getStrain() {
 		return strain;
 	}
 
-	public void setStrain(Strain strain) {
+	public void setStrain(Blossom strain) {
 		this.strain = strain;
 	}
 

@@ -10,11 +10,11 @@ import com.css.one.data.DiaryEntry;
 import com.css.one.data.OutputEntity;
 import com.css.one.data.OutputType;
 import com.css.one.data.Seed;
-import com.css.one.data.Strain;
+import com.css.one.data.Blossom;
 import com.css.one.services.CuttingService;
 import com.css.one.services.DiaryEntryService;
 import com.css.one.services.SeedService;
-import com.css.one.services.StrainService;
+import com.css.one.services.BlossomService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
@@ -47,7 +47,7 @@ public class DiaryView extends VerticalLayout {
 	private static final long serialVersionUID = -474632761341117537L;
 	
 	private DiaryEntryService diaryEntryService;
-	private StrainService strainService;
+	private BlossomService strainService;
 	private SeedService seedService;
 	private CuttingService cuttingService;
 	
@@ -66,7 +66,7 @@ public class DiaryView extends VerticalLayout {
 	private Dialog addEntryDialog = new Dialog();
 	
 	
-	public DiaryView(DiaryEntryService diaryEntryService, StrainService strainService, SeedService seedService, CuttingService cuttingService) {
+	public DiaryView(DiaryEntryService diaryEntryService, BlossomService strainService, SeedService seedService, CuttingService cuttingService) {
 		this.diaryEntryService = diaryEntryService;
 		this.seedService = seedService;
 		this.strainService = strainService;
@@ -263,7 +263,7 @@ public class DiaryView extends VerticalLayout {
 
 		if (!entityBox.isEmpty()) {
 			if (outputTypeBox.getValue() == OutputType.BLOSSOM) {
-				Optional<Strain> optional = strainService.get(entityBox.getValue().getId());
+				Optional<Blossom> optional = strainService.get(entityBox.getValue().getId());
 				if (optional.isPresent()) {
 					entry.setStrain(optional.get());
 				}

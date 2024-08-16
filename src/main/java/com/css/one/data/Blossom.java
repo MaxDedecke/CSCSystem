@@ -11,7 +11,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class Strain extends OutputEntity {
+public class Blossom extends OutputEntity {
 	
     	private int strainNumber;
 	 	private LocalDate datePlanted;

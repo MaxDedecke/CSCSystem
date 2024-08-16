@@ -11,22 +11,22 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.GrowStatus;
-import com.css.one.data.Strain;
-import com.css.one.data.StrainRepository;
+import com.css.one.data.Blossom;
+import com.css.one.data.BlossomRepository;
 
 @Service
-public class StrainService {
-	private final StrainRepository repository;
+public class BlossomService {
+	private final BlossomRepository repository;
 
-    public StrainService(StrainRepository repository) {
+    public BlossomService(BlossomRepository repository) {
         this.repository = repository;
     }
 
-    public Optional<Strain> get(Long id) {
+    public Optional<Blossom> get(Long id) {
         return repository.findById(id);
     }
 
-    public Strain update(Strain entity) {
+    public Blossom update(Blossom entity) {
         return repository.save(entity);
     }
 
@@ -34,21 +34,21 @@ public class StrainService {
         repository.deleteById(id);
     }
 
-    public Page<Strain> list(Pageable pageable) {
+    public Page<Blossom> list(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
-    public Page<Strain> list(Pageable pageable, Specification<Strain> filter) {
+    public Page<Blossom> list(Pageable pageable, Specification<Blossom> filter) {
         return repository.findAll(filter, pageable);
     }
     
-    public List<Strain> findAllByAssociation(int associationId) {
-    	List<Strain> list = new ArrayList<>();
+    public List<Blossom> findAllByAssociation(int associationId) {
+    	List<Blossom> list = new ArrayList<>();
     	list.addAll(repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).toList());
     	return list;
     }
     
-    public List<Strain> findAllReadyForOutput(int associationId) {
+    public List<Blossom> findAllReadyForOutput(int associationId) {
     	return findAllByAssociation(associationId).stream().filter(e -> e.getStatus() == GrowStatus.OUTPUT_READY).toList();
     }
     
@@ -56,7 +56,7 @@ public class StrainService {
         return (int) repository.count();
     }
     
-    public List<Strain> getAllAsList() {
+    public List<Blossom> getAllAsList() {
     	return repository.findAll();
     }
     
@@ -68,7 +68,7 @@ public class StrainService {
 
 		while (!isNotEqual) {
 			n = rand.nextInt(1000000);
-			for (Strain s : findAllByAssociation(associationId)) {
+			for (Blossom s : findAllByAssociation(associationId)) {
 				if (s.getStrainNumber() == n) {
 					isNotEqual = false;
 				}

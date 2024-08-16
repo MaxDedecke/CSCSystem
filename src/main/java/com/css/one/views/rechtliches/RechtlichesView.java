@@ -15,12 +15,12 @@ import java.util.Properties;
 
 import com.css.one.data.LawInfo;
 import com.css.one.data.Person;
-import com.css.one.data.Strain;
+import com.css.one.data.Blossom;
 import com.css.one.services.AssociationService;
 import com.css.one.services.LawInfoService;
 import com.css.one.services.PersonService;
 import com.css.one.services.PromptingService;
-import com.css.one.services.StrainService;
+import com.css.one.services.BlossomService;
 import com.css.one.views.MainLayout;
 import com.css.one.views.warenlager.WarenlagerView;
 import com.vaadin.componentfactory.pdfviewer.PdfViewer;
@@ -83,7 +83,7 @@ public class RechtlichesView extends FlexLayout {
 	private TextField emailField = new TextField("Email");
 	private TextField orgNameField = new TextField("Kanzleiname");
 	
-    private StrainService strainService;
+    private BlossomService strainService;
     private PersonService personService;
     private AssociationService associationService;
     private LawInfoService lawInfoService;
@@ -96,7 +96,7 @@ public class RechtlichesView extends FlexLayout {
 	private File pathToStatute;
 	private String fileName;
     
-	public RechtlichesView(StrainService strainService, PersonService personService, AssociationService associationService, LawInfoService lawInfoService) {
+	public RechtlichesView(BlossomService strainService, PersonService personService, AssociationService associationService, LawInfoService lawInfoService) {
         
 		addClassName("law-view");
         
@@ -316,7 +316,7 @@ public class RechtlichesView extends FlexLayout {
 		}
 	}
 	
-	private void updateCertificatePdfComponent(Strain e) {
+	private void updateCertificatePdfComponent(Blossom e) {
 		if (e.getPathOfCertificate() != null) {
 			File file = new File(e.getPathOfCertificate());
 			if (file.exists()) {
@@ -376,7 +376,7 @@ public class RechtlichesView extends FlexLayout {
 		VerticalLayout layout = new VerticalLayout();
 		layout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.Top.NONE);
 		
-		VirtualList<Strain> list = new VirtualList<>();
+		VirtualList<Blossom> list = new VirtualList<>();
 		list.setRenderer(new ComponentRenderer<>(entry -> {
 			CertificateEntryLayout entryLayout = new CertificateEntryLayout();
         	entryLayout.addClassName("diary-view-horizontal-layout-1");
@@ -610,7 +610,7 @@ public class RechtlichesView extends FlexLayout {
 		private Text name;
 	    private Avatar avatar;
 	    private Button buttonOpenCertificate;
-	    private Strain entry;
+	    private Blossom entry;
 	    
 	    public CertificateEntryLayout() {
 	    	
@@ -645,7 +645,7 @@ public class RechtlichesView extends FlexLayout {
 	        add(avatarWrapper, nameWrapper, buttonWrapper);
 	    }
 
-		public void setEntry(Strain entry) {
+		public void setEntry(Blossom entry) {
 			this.entry = entry;
 			name.setText(entry.getName());
 		}

@@ -20,7 +20,7 @@ import com.css.one.data.OutputType;
 import com.css.one.data.PaymentMethod;
 import com.css.one.data.Person;
 import com.css.one.data.Seed;
-import com.css.one.data.Strain;
+import com.css.one.data.Blossom;
 import com.css.one.data.Transaction;
 import com.css.one.data.TransactionType;
 import com.css.one.data.WorkingUnit;
@@ -31,7 +31,7 @@ import com.css.one.services.DiaryEntryService;
 import com.css.one.services.OutputService;
 import com.css.one.services.PersonService;
 import com.css.one.services.SeedService;
-import com.css.one.services.StrainService;
+import com.css.one.services.BlossomService;
 import com.css.one.services.TransactionService;
 import com.css.one.services.WorkingUnitCategoryService;
 import com.css.one.services.WorkingUnitService;
@@ -88,14 +88,14 @@ public class ÜbersichtView extends FlexLayout {
     private VerticalLayout layoutCurrentDate = new VerticalLayout();
 
     private ComboBox<Person> searchMemberBox = new ComboBox<>();
-    private ComboBox<Strain> searchStrainBox = new ComboBox<>();
+    private ComboBox<Blossom> searchStrainBox = new ComboBox<>();
     private ComboBox<OutputEntity> searchStrainOutputBox = new ComboBox<>("Sorte");
     private ComboBox<OutputType> outputTypeBox = new ComboBox<>("Art");
     private ComboBox<PaymentMethod> paymentMethodBox;
     
     private AssociationService associationService;
     private PersonService personService;
-    private StrainService strainService;
+    private BlossomService strainService;
     private OutputService outputService; 
     private WorkingUnitService workingUnitService;
     private TransactionService transactionService;
@@ -121,7 +121,7 @@ public class ÜbersichtView extends FlexLayout {
     private TextField memberNameField = new TextField("Name");
     private TextField dateOutputField = new TextField("Datum");
 
-    Grid<Strain> outputMemberGrid = new Grid<>();
+    Grid<Blossom> outputMemberGrid = new Grid<>();
     VirtualList<DiaryEntry> newsList = new VirtualList<DiaryEntry>();
     VirtualList<WorkingUnit> availablesList = new VirtualList<WorkingUnit>();
     
@@ -147,7 +147,7 @@ public class ÜbersichtView extends FlexLayout {
 
 	private WorkingUnit workingUnit;
     
-    public ÜbersichtView(PersonService personService, StrainService strainService, OutputService outputService, WorkingUnitService workingUnitService,
+    public ÜbersichtView(PersonService personService, BlossomService strainService, OutputService outputService, WorkingUnitService workingUnitService,
     				TransactionService transactionService, WorkingUnitCategoryService workingUnitCategoryService, SeedService seedService, CuttingService cuttingService,
     				DiaryEntryService diaryEntryService, AssociationService associationService) {    	
     	this.personService = personService;
@@ -374,7 +374,7 @@ public class ÜbersichtView extends FlexLayout {
     				}
     				
     				if (outputTypeBox.getValue() == OutputType.BLOSSOM) {
-    					Optional<Strain> optional = strainService.get(this.searchStrainOutputBox.getValue().getId());
+    					Optional<Blossom> optional = strainService.get(this.searchStrainOutputBox.getValue().getId());
     					if (optional.isPresent()) {
     						optional.get().setAmountGramm(optional.get().getAmountGramm() - Double.valueOf(amountField.getValue()));
     						strainService.update(optional.get());
@@ -681,7 +681,7 @@ public class ÜbersichtView extends FlexLayout {
     	return mainDialogLayout;
     }
       
-    private String resolveOutputOfStrainPerMember(Strain s) {
+    private String resolveOutputOfStrainPerMember(Blossom s) {
     	
     	List<Output> outputOfMember = outputService.findOutputByMember(selectedMember.getId().intValue());
     	List<Output> outputOfSpecificStrain = outputOfMember.stream().filter(e -> e.getEntityId() == s.getId().intValue()).toList();
@@ -789,7 +789,7 @@ public class ÜbersichtView extends FlexLayout {
     	strainInfoDialog.getFooter().add(cancelButton);
     }
     
-    private void initStrainInfoDialog(Strain strain) {    	
+    private void initStrainInfoDialog(Blossom strain) {    	
     	strainNameField.setValue(strain.getName());
     	strainNameField.setEnabled(false);
     	

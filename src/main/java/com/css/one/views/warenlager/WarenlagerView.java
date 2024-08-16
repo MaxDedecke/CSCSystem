@@ -29,13 +29,13 @@ import com.css.one.data.Location;
 import com.css.one.data.Output;
 import com.css.one.data.Person;
 import com.css.one.data.Seed;
-import com.css.one.data.Strain;
+import com.css.one.data.Blossom;
 import com.css.one.services.CuttingService;
 import com.css.one.services.LocationService;
 import com.css.one.services.OutputService;
 import com.css.one.services.PersonService;
 import com.css.one.services.SeedService;
-import com.css.one.services.StrainService;
+import com.css.one.services.BlossomService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Unit;
@@ -74,7 +74,7 @@ public class WarenlagerView extends Div {
     private static final long serialVersionUID = 5652277988730640569L;
     private OutputService outputService;
     private PersonService personService;
-    private StrainService strainService;
+    private BlossomService strainService;
     private LocationService locationService;
     private CuttingService cuttingService;
     private SeedService seedService;
@@ -84,7 +84,7 @@ public class WarenlagerView extends Div {
     Dialog addStrainDialog;
     Dialog addOutputDialog;
     
-	Grid<Strain> strainGrid = new Grid<Strain>();
+	Grid<Blossom> strainGrid = new Grid<Blossom>();
 	Grid<Output> outputGrid = new Grid<Output>();
 	Grid<Cutting> cuttingsGrid = new Grid<Cutting>();
 	Grid<Seed> seedsGrid = new Grid<Seed>();
@@ -99,8 +99,8 @@ public class WarenlagerView extends Div {
 	
 	ComboBox<Person> responsiblePersonOne;
 	ComboBox<Person> responsiblePersonTwo;
-	ComboBox<Strain> comboboxCuttingsOrigins = new ComboBox<Strain>("Mutterpflanze");
-	ComboBox<Strain> comboboxSeedsOrigins = new ComboBox<Strain>("Mutterpflanze");
+	ComboBox<Blossom> comboboxCuttingsOrigins = new ComboBox<Blossom>("Mutterpflanze");
+	ComboBox<Blossom> comboboxSeedsOrigins = new ComboBox<Blossom>("Mutterpflanze");
 	ComboBox<Person> comboBoxResponsibleForSeed = new ComboBox<Person>("Verantwortlicher");
 
 	ComboBox<GrowStatus> comboxCuttingStatus = new ComboBox<GrowStatus>("Status");
@@ -112,14 +112,14 @@ public class WarenlagerView extends Div {
 	H2 amountCuttings = new H2("0 Stück");
 	H2 amountSeeds = new H2("0 Stück");
 	
-	List<Strain> allStrainsByAssociation = new ArrayList<>();
+	List<Blossom> allStrainsByAssociation = new ArrayList<>();
     List<Output> outputAssociation = new ArrayList<>();
     
     Dialog changeStrainStatusDialog = new Dialog();
     Dialog addCuttingsDialog = new Dialog();
     Dialog addSeedsDialog = new Dialog();
     
-    Strain changeStrain;
+    Blossom changeStrain;
     Cutting changeCutting;
     Seed changeSeed;
     File pathToCertificate;
@@ -156,7 +156,7 @@ public class WarenlagerView extends Div {
 		STRAIN, CUTTING, SEED
 	}
     
-	public WarenlagerView(StrainService strainService, OutputService outputService, PersonService personService, LocationService locationService,
+	public WarenlagerView(BlossomService strainService, OutputService outputService, PersonService personService, LocationService locationService,
 			CuttingService cuttingService, SeedService seedService) {
 		this.strainService = strainService;
 		this.outputService = outputService;
@@ -632,7 +632,7 @@ public class WarenlagerView extends Div {
 		}
 	}
 	
-	private void openDialogForEdit(Strain strain) {
+	private void openDialogForEdit(Blossom strain) {
 		
 		
 		if(strain.getDateFinished() != null) {
@@ -1138,11 +1138,11 @@ public class WarenlagerView extends Div {
 
 	private void addNewStrain(String name, LocalDateTime dateBegin, LocalDateTime dateEnd, NumberField strainInfoAmount, NumberField strainInfoThc, ComboBox<GrowStatus> statusBox) {
 		
-		Strain newStrain;
+		Blossom newStrain;
 		if (changeStrain != null) {
 			newStrain = changeStrain;
 		} else {			
-			newStrain = new Strain();
+			newStrain = new Blossom();
 		}
 		
 		newStrain.setStrainNumber(Integer.valueOf(numberField.getValue()));
@@ -1189,7 +1189,7 @@ public class WarenlagerView extends Div {
 		this.outputGrid.setItems(outputAssociation.stream().filter(e -> !e.isOutdated()).toList());
 		cuttingsGrid.setItems(cuttingService.findAllByAssociation(associationId));
 		double generalAmount = 0;
-		for(Strain strain : allStrainsByAssociation) {
+		for(Blossom strain : allStrainsByAssociation) {
 			generalAmount = generalAmount + strain.getAmountGramm();
 		}
 		
