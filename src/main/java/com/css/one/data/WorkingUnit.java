@@ -4,11 +4,18 @@ import java.time.LocalDate;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class WorkingUnit extends AbstractEntity {
+public class WorkingUnit {
 	
+ 	@Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+ 	
 	private Long personId;
 	private String personName;
 	
@@ -31,6 +38,13 @@ public class WorkingUnit extends AbstractEntity {
     private String note;
     
     private int associationId;
+    
+    public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
     
     public void setPersonId(Long personId) {
     	this.personId = personId;

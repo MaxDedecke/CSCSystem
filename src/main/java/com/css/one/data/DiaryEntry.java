@@ -4,12 +4,20 @@ import java.time.LocalDate;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class DiaryEntry extends AbstractEntity {
+public class DiaryEntry {
 	
- 	private int associationId;
+ 	@Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+ 	
+
+	private int associationId;
  	private LocalDate date;
 	private String text;
 	
@@ -24,6 +32,14 @@ public class DiaryEntry extends AbstractEntity {
 	@Nullable
 	@ManyToOne
 	private Cutting cutting;
+
+	public Long getId() {
+		return id;
+	}
+	
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getText() {
 		return text;

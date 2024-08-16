@@ -7,17 +7,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Version;
 
 @Entity
 public class Transaction {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idgenerator")
-	// The initial value is to account for data.sql demo data ids
-	@SequenceGenerator(name = "idgenerator", initialValue = 1000)
-	private Long id;
+ 	@Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
 	@Version
 	private int version;

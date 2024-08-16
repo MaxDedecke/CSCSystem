@@ -7,14 +7,21 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import java.util.Set;
 
 @Entity
 @Table(name = "application_user")
-public class User extends AbstractEntity {
+public class User {
 
+ 	@Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+ 	
     private String username;
     private String name;
     @JsonIgnore
@@ -27,6 +34,13 @@ public class User extends AbstractEntity {
     private byte[] profilePicture;
     
     private int associationId;
+    
+    public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
 
     public int getAssociationId() {
 		return associationId;

@@ -2,12 +2,19 @@ package com.css.one.data;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.Email;
 import java.time.LocalDate;
 
 @Entity
-public class Person extends AbstractEntity {
+public class Person {
 	
+ 	@Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+ 	
     private int memberNumber;
     private String firstName;
     private String lastName;
@@ -20,6 +27,13 @@ public class Person extends AbstractEntity {
     private LocalDate dateOfRegistration;
     @Nullable
     private LocalDate dateOfHigherRole;
+    
+    public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
     
     public String getFirstName() {
         return firstName;

@@ -6,11 +6,18 @@ import io.micrometer.common.lang.Nullable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
 @Entity
-public class LawInfo extends AbstractEntity{
+public class LawInfo {
+	
+	@Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+ 	private Long id;
 	
 	@OneToOne
 	Association association;
@@ -31,6 +38,13 @@ public class LawInfo extends AbstractEntity{
 	@Nullable
 	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true) 
 	List<Person> suspects;
+	
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
 	
 	public String getAttorneyOrgName() {
 		return attorneyOrgName;

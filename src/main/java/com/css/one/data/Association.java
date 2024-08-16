@@ -5,12 +5,19 @@ import java.util.List;
 
 import io.micrometer.common.lang.Nullable;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 
 @Entity
-public class Association extends AbstractEntity {
+public class Association {
 	
-	 	private String name;
+	 	@Id
+	    @GeneratedValue(strategy = GenerationType.AUTO)
+	 	private Long id;
+
+		private String name;
 	 	private long number;
 	 	private String city;
 	    private String street;
@@ -25,6 +32,13 @@ public class Association extends AbstractEntity {
 		@OneToMany
 	    private List<Location> locations;
 	    
+		
+		public Long getId() {
+			return id;
+		}
+		public void setId(Long id) {
+			this.id = id;
+		}
 		public String getName() {
 			return name;
 		}
