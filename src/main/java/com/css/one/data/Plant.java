@@ -8,7 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-public class Plant {
+public class Plant implements EntityWrapper{
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -43,6 +43,18 @@ public class Plant {
 	public void setDateOfExistense(LocalDate dateOfExistense) {
 		this.dateOfExistense = dateOfExistense;
 	}
-	
-	
+
+	@Override
+	public LocalDate getErfasst() {
+		return getDateOfExistense();
+	}
+	@Override
+	public String getNummer() {
+		return String.valueOf(getId());
+
+	}
+	@Override
+	public boolean isCharge() {
+		return false;
+	}
 }

@@ -229,3 +229,9 @@ vaadin-upload::part(drop-label) {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.warenlager-view .button-category-1 {
+  background-color: var(--lumo-contrast-5pct);
+  border-color: #8ABD3E;
+  color: #8ABD3E;
+}

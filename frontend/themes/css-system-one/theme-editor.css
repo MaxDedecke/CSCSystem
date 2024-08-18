@@ -7,14 +7,7 @@
   margin-right:12px;
 }
 
-body {
-    font-family: 'Tomorrow', sans-serif;
-}
-
-vaadin-button {
-	    font-family: 'Tomorrow', sans-serif;
-	
-}
+body { font-family:'Tomorrow',sans-serif; }
 
 h3.diary-view-h3-1 { font-weight:bold; }
 
@@ -24,9 +17,18 @@ vaadin-app-layout.main-layout-app-layout-1 { background-color:rgb(255,255,255); 
 
 vaadin-app-layout::part(navbar) { background-color:rgb(255,255,255); }
 
+vaadin-button {
+  background-color:rgba(24,102,32,0.05);
+  border-color:rgba(0,219,61,1);
+  border-radius:var(--lumo-border-radius-l);
+  font-family:'Tomorrow',sans-serif;
+}
+
 vaadin-button.diary-view-button-1 { margin-top:37px; }
 
 vaadin-button.diary-view-button-1::part(label) { color:#8ABD3E; }
+
+vaadin-checkbox { font-family:'Tomorrow',sans-serif; }
 
 vaadin-checkbox label { color:var(--lumo-body-text-color); }
 
@@ -34,45 +36,22 @@ vaadin-checkbox::part(checkbox)::after { color:rgb(255,255,255); }
 
 vaadin-checkbox[checked]::part(checkbox) { background-color:#8ABD3E; }
 
+vaadin-combo-box { font-family:'Tomorrow',sans-serif; }
+
 vaadin-combo-box.diary-view-combo-box-1::part(label) { color:#8ABD3E; }
 
 vaadin-combo-box::part(label) { color:#8ABD3E; }
+
+vaadin-date-time-picker { font-family:'Tomorrow',sans-serif; }
 
 vaadin-date-time-picker.finanzen-view-date-time-picker-1::part(label) { color:#8ABD3E; }
 
 vaadin-date-time-picker::part(label) { color:#8ABD3E; }
 
-vaadin-checkbox {
-	font-family: 'Tomorrow', sans-serif;
-}
-
-vaadin-text {
-  font-family: 'Tomorrow', sans-serif;
-}
-
-vaadin-tab {
-	  font-family: 'Tomorrow', sans-serif;
-}
-vaadin-text-area {
-	 font-family: 'Tomorrow', sans-serif;
-}
-
-vaadin-combo-box {
-	font-family: 'Tomorrow', sans-serif;
-}
-
-vaadin-date-time-picker {
-	 font-family: 'Tomorrow', sans-serif;
-}
-
-vaadin-dialog-overlay::part(header) {
-	font-family: 'Tomorrow', sans-serif;
-}
-
 vaadin-details {
   border-color:#8ABD3E;
   border-width:2px;
-  font-family: 'Tomorrow', sans-serif;
+  font-family:'Tomorrow',sans-serif;
 }
 
 vaadin-details-summary.diary-view-details-summary-1 { color:#8ABD3E; }
@@ -85,12 +64,14 @@ vaadin-details.diary-view-details-summary-1 {
   padding-left:var(--lumo-space-xs);
 }
 
+vaadin-dialog-overlay::part(header) { font-family:'Tomorrow',sans-serif; }
+
 vaadin-grid {
   background:rgba(255,255,255,0.65);
   border-color:rgba(255,255,255,0.65);
   border-radius:10px;
   border-width:0px;
-  font-family: 'Tomorrow', sans-serif;
+  font-family:'Tomorrow',sans-serif;
 }
 
 vaadin-grid::-webkit-scrollbar-thumb {
@@ -128,6 +109,22 @@ vaadin-horizontal-layout.diary-view-horizontal-layout-1 {
   padding-right:8px;
 }
 
+vaadin-horizontal-layout.rechtliches-box-horizontal {
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #8ABD3E;
+  flex-direction:row;
+  gap:var(--lumo-space-xs);
+  justify-content:center;
+  margin-bottom:8px;
+  margin-left:8px;
+  margin-top:8px;
+  padding-bottom:none;
+}
+
 vaadin-horizontal-layout.uebersicht-view-horizontal-layout-1 {
   background:rgba(191,191,191,0.08);
   border-color:#000000;
@@ -136,112 +133,132 @@ vaadin-horizontal-layout.uebersicht-view-horizontal-layout-1 {
   border:thick;
   box-shadow:2px 2px 5px #8ABD3E;
 }
-vaadin-login-overlay-wrapper {
-	  font-family: 'Tomorrow', sans-serif;
-	
-}
+
+vaadin-icon { color:#8ABD3E; }
+
+vaadin-login-overlay-wrapper { font-family:'Tomorrow',sans-serif; }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-button[theme~="submit"] { background-color:#8ABD3E; }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper { background-color:rgba(130,130,130,1); }
 
-vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(helper-text) { 
-	color:rgba(255,255,255,0.97); 
-	margin-left: 90px;
-	font-family: 'Tomorrow', sans-serif;
+vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(helper-text) {
+  color:rgba(255,255,255,0.97);
+  font-family:'Tomorrow',sans-serif;
+  margin-left:90px;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(input-field) {
   background-color:rgba(206,247,143,0.5);
   color:rgba(255,255,255,1);
+  font-family:'Tomorrow',sans-serif;
   font-weight:bold;
-  font-family: 'Tomorrow', sans-serif;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(input-field)[selected] {
   background-color:rgba(206,247,143,0.5);
   color:rgba(255,255,255,1);
+  font-family:'Tomorrow',sans-serif;
   font-weight:bold;
-  font-family: 'Tomorrow', sans-serif;
 }
 
-vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(label) { 
-	color:rgba(252,252,252,1);
-	font-family: 'Tomorrow', sans-serif;
+vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(label) {
+  color:rgba(252,252,252,1);
+  font-family:'Tomorrow',sans-serif;
 }
 
-vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper::part(error-message-description) { 
-	color:rgba(252,252,252,1);
-	font-family: 'Tomorrow', sans-serif;
-	 }
+vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper::part(error-message-description) {
+  color:rgba(252,252,252,1);
+  font-family:'Tomorrow',sans-serif;
+}
 
-vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper::part(error-message-title) { 
-	color:rgba(0,0,0,1); 
-	font-family: 'Tomorrow', sans-serif;
-	}
+vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper::part(error-message-title) {
+  color:rgba(0,0,0,1);
+  font-family:'Tomorrow',sans-serif;
+}
 
-vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper::part(form-title) { 
-	color:rgba(255,255,255,1);
-	margin-left: 90px; 
-	font-family: 'Tomorrow', sans-serif;
-	}
+vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper::part(form-title) {
+  color:rgba(255,255,255,1);
+  font-family:'Tomorrow',sans-serif;
+  margin-left:90px;
+}
 
-vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-password-field::part(reveal-button) { 
-	color:rgba(255,255,255,1);
-	font-family: 'Tomorrow', sans-serif;
-	 }
+vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-password-field::part(reveal-button) {
+  color:rgba(255,255,255,1);
+  font-family:'Tomorrow',sans-serif;
+}
 
-vaadin-login-overlay-wrapper.login-view-login-overlay-1::part(backdrop) { 
-	background-color:rgba(250,0,0,0);
-	font-family: 'Tomorrow', sans-serif;
-	 }
+vaadin-login-overlay-wrapper.login-view-login-overlay-1::part(backdrop) {
+  background-color:rgba(250,0,0,0);
+  font-family:'Tomorrow',sans-serif;
+}
 
-vaadin-login-overlay-wrapper.login-view-login-overlay-1::part(brand) { 
-	background-color:rgba(130,130,130,1);
-	font-family: 'Tomorrow', sans-serif;
-	 }
+vaadin-login-overlay-wrapper.login-view-login-overlay-1::part(brand) {
+  background-color:rgba(130,130,130,1);
+  font-family:'Tomorrow',sans-serif;
+}
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1::part(card) {
   background-color:rgba(232,0,0,0);
   border-color:rgba(242,0,0,0);
-  font-family: 'Tomorrow', sans-serif;
+  font-family:'Tomorrow',sans-serif;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1::part(description) {
   color:rgba(255,254,254,1);
+  font-family:'Tomorrow',sans-serif;
   font-size:var(--lumo-font-size-xl);
   font-weight:bold;
-  font-family: 'Tomorrow', sans-serif;
 }
 
-vaadin-login-overlay-wrapper::part(backdrop) { 
-	background-color:rgba(247,22,22,0);
-	font-family: 'Tomorrow', sans-serif;
-	 }
+vaadin-login-overlay-wrapper::part(backdrop) {
+  background-color:rgba(247,22,22,0);
+  font-family:'Tomorrow',sans-serif;
+}
 
 vaadin-login-overlay-wrapper::part(card) {
   background-color:rgba(255,0,0,0);
   border-color:rgba(227,0,0,0);
-  margin-left: 90px;
-  font-family: 'Tomorrow', sans-serif;
+  font-family:'Tomorrow',sans-serif;
+  margin-left:90px;
 }
 
 vaadin-menu-bar-overlay.main-layout-menu-bar-1 vaadin-menu-bar-item {
   background-color:rgb(255,255,255);
+  font-family:'Tomorrow',sans-serif;
   font-weight:bold;
-  font-family: 'Tomorrow', sans-serif;
-}
-
-vaadin-text-field {
-	  font-family: 'Tomorrow', sans-serif;
-	
 }
 
 vaadin-menu-bar-overlay.main-layout-menu-bar-1::part(overlay) { background-color:rgba(247,11,11,1); }
 
+vaadin-tab { font-family:'Tomorrow',sans-serif; }
+
+vaadin-text { font-family:'Tomorrow',sans-serif; }
+
+vaadin-text-area { font-family:'Tomorrow',sans-serif; }
+
+vaadin-text-field { font-family:'Tomorrow',sans-serif; }
+
 vaadin-text-field.finanzen-view-text-field-1::part(label) { color:#8ABD3E; }
 
 vaadin-text-field::part(label) { color:#8ABD3E; }
+
+vaadin-vertical-layout.bestand-box {
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #8ABD3E;
+  margin-bottom:8px;
+  margin-left:8px;
+  margin-top:8px;
+  padding-bottom:8px;
+  padding-bottom:none;
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:8px;
+}
 
 vaadin-vertical-layout.diary-view-button-1 { background-color:rgb(255,255,255); }
 
@@ -259,6 +276,25 @@ vaadin-vertical-layout.diary-view-vertical-layout-2 {
   padding:none;
 }
 
+vaadin-vertical-layout.rechtliches-box {
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #8ABD3E;
+  flex-direction:column;
+  gap:var(--lumo-space-xs);
+  margin-bottom:8px;
+  margin-left:8px;
+  margin-top:8px;
+  padding-bottom:8px;
+  padding-bottom:none;
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:8px;
+}
+
 vaadin-vertical-layout.uebersicht-box {
   background:rgba(191,191,191,0.08);
   border-color:#000000;
@@ -273,25 +309,6 @@ vaadin-vertical-layout.uebersicht-box {
   padding-left:8px;
   padding-right:8px;
   padding-top:none;
-}
-
-vaadin-vertical-layout.rechtliches-box {
-  background:rgba(191,191,191,0.08);
-  border-color:#000000;
-  border-radius:10px;
-  border-width:10px;
-  border:thick;
-  box-shadow:2px 2px 5px #8ABD3E;
-  gap:var(--lumo-space-xs);
-  margin-bottom:8px;
-  margin-left: 8px;
-  margin-top: 8px;
-  padding-bottom:none;
-  flex-direction:column;
-  padding-left:8px;
-  padding-right:8px;
-  padding-top:8px;
-  padding-bottom: 8px;
 }
 
 vaadin-vertical-layout.uebersicht-box-grid {

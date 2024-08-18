@@ -552,10 +552,11 @@ public class RechtlichesView extends FlexLayout {
 		Button buttonChangeAttorney = new Button("bearbeiten");
 		buttonChangeAttorney.addClickListener(e -> {
 			if(this.info != null) {
-				nameField.setValue(info.getAttorneyName());
-				phoneField.setValue(info.getAttorneyPhone());
-				emailField.setValue(info.getAttorneyEmail());
-				orgNameField.setValue(info.getAttorneyOrgName());
+				
+				nameField.setValue(info.getAttorneyName() == null ? "" : info.getAttorneyName());
+				phoneField.setValue(info.getAttorneyPhone() == null ? "" : info.getAttorneyPhone());
+				emailField.setValue(info.getAttorneyEmail() == null ? "" : info.getAttorneyEmail());
+				orgNameField.setValue(info.getAttorneyOrgName() == null ? "" : info.getAttorneyOrgName());
 			}
 			attorneyInfoDialog.open();
 		});
