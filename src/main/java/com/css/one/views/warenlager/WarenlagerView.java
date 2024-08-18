@@ -742,8 +742,8 @@ public class WarenlagerView extends Div {
 		saveButton.addClassName("save-button");
 		
 		Button cancelButton = new Button("Abbrechen", e -> {
-			clearStrainDialog();
 			addStrainDialog.close();	
+			clearStrainDialog();
 			deleteStrainButton.setEnabled(true);
 		});
 		cancelButton.addClassNames("cancel-button");
