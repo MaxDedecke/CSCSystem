@@ -209,22 +209,22 @@ vaadin-upload::part(drop-label) {
   color: white;
 }
 
-.warenlager-view vaadin-dialog-overlay .save-button {
-  background-color: #8ABD3E;
-  color: white;
-}
-
 .warenlager-view vaadin-dialog-overlay .cancel-button:hover {
   background-color: rgb(192, 192, 192);
   color: white;
 }
 
-.warenlager-view vaadin-dialog-overlay .save-button:hover {
-  background-color: #88b149;
+.warenlager-view vaadin-dialog-overlay .save-button {
+  background-color: #8ABD3E;
   color: white;
 }
 
-.warenlager-view vaadin-dialog-overlay .save-button[disabled] {
+.warenlager-view vaadin-dialog-overlay .save-button:hover {
+  background-color: #808080;
+  color: white;
+}
+
+.warenlager-view vaadin-dialog vaadin-button.save-button[disabled] {
   background-color: rgb(192, 192, 192);
   opacity: 0.5;
   cursor: not-allowed;

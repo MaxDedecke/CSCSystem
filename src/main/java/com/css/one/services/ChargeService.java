@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.css.one.data.Charge;
 import com.css.one.data.ChargeRepository;
+import com.css.one.data.Plant;
 
 @Service
 public class ChargeService {
@@ -51,10 +52,13 @@ public class ChargeService {
     	return repository.findAll();
     }
     
-//    public List<Plant> findOutputByMember(int personId) {
-//    	return repository.findAll().stream().filter(e -> e.getPersonId() == personId).toList();
-//    }
-//    
+	public Optional<Charge> findChargeByPlant(int associationId, Plant plant) {
+		return repository.findAll().stream()
+				.filter(e -> e.getAssociationId() == associationId
+						&& e.getPlants().stream().filter(p -> p.getId().equals(plant.getId())).findAny().isPresent())
+				.findAny();
+	}
+    
 //    public List<Plant> findOutputByStrain(int strainId) {
 //    	return repository.findAll().stream().filter(e -> e.getEntityId() == strainId).toList();
 //    }
