@@ -1,11 +1,14 @@
 package com.css.one.data;
 
 import java.time.LocalDate;
+import java.util.List;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Plant implements EntityWrapper{
@@ -19,6 +22,32 @@ public class Plant implements EntityWrapper{
 	String name;
 	LocalDate dateOfExistense;
 	
+ 	private GrowStatus status;
+ 	
+	@Nullable
+	@ManyToOne
+	private Location growLocation;
+	
+	private List<String> tags;
+	
+	public List<String> getTags() {
+		return tags;
+	}
+	public void setTags(List<String> tags) {
+		this.tags = tags;
+	}
+	public GrowStatus getStatus() {
+		return status;
+	}
+	public void setStatus(GrowStatus status) {
+		this.status = status;
+	}
+	public Location getGrowLocation() {
+		return growLocation;
+	}
+	public void setGrowLocation(Location growLocation) {
+		this.growLocation = growLocation;
+	}
 	public Long getId() {
 		return id;
 	}
