@@ -15,7 +15,7 @@ import jakarta.persistence.OneToMany;
 public class Charge implements EntityWrapper {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.TABLE)
 	private Long id;
 	
 	String name;
@@ -68,5 +68,13 @@ public class Charge implements EntityWrapper {
 	@Override
 	public boolean isCharge() {
 		return true;
+	}
+	@Override
+	public Location getLocation() {
+		return null;
+	}
+	@Override
+	public GrowStatus getStatus() {
+		return null;
 	}
 }

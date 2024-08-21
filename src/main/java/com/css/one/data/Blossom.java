@@ -38,6 +38,17 @@ public class Blossom extends OutputEntity {
 		@ManyToOne
 		private Location growLocation;
 		
+		@ManyToOne
+		@Nullable
+	 	private Plant motherPlant;
+		
+		public Plant getMotherPlant() {
+			return motherPlant;
+		}
+
+		public void setMotherPlant(Plant motherPlant) {
+			this.motherPlant = motherPlant;
+		}
 		public String getPathOfCertificate() {
 			return pathOfCertificate;
 		}

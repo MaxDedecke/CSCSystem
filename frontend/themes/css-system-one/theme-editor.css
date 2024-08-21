@@ -121,8 +121,24 @@ vaadin-horizontal-layout.rechtliches-box-horizontal {
   justify-content:center;
   margin-bottom:8px;
   margin-left:8px;
-  margin-top:8px;
   margin-right:8px;
+  margin-top:8px;
+  padding-bottom:none;
+}
+
+vaadin-horizontal-layout.rechtliches-box-horizontal-start {
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #8ABD3E;
+  flex-direction:row;
+  gap:var(--lumo-space-xs);
+  margin-bottom:8px;
+  margin-left:8px;
+  margin-right:8px;
+  margin-top:8px;
   padding-bottom:none;
 }
 
@@ -146,7 +162,6 @@ vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(helper-text) {
   color:rgba(255,255,255,0.97);
   font-family:'Tomorrow',sans-serif;
-  margin-left:90px;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(input-field) {
@@ -221,7 +236,6 @@ vaadin-login-overlay-wrapper::part(card) {
   background-color:rgba(255,0,0,0);
   border-color:rgba(227,0,0,0);
   font-family:'Tomorrow',sans-serif;
-  margin-left:90px;
 }
 
 vaadin-menu-bar-overlay.main-layout-menu-bar-1 vaadin-menu-bar-item {
@@ -230,7 +244,24 @@ vaadin-menu-bar-overlay.main-layout-menu-bar-1 vaadin-menu-bar-item {
   font-weight:bold;
 }
 
+vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-button vaadin-menu-bar-item vaadin-icon {
+	color: rgb(255,255,255);
+}
+
 vaadin-menu-bar-overlay.main-layout-menu-bar-1::part(overlay) { background-color:rgba(247,11,11,1); }
+
+vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item { color:#8ABD3E; }
+
+vaadin-menu-bar-overlay.warenlager-view-menu-bar-1::part(overlay) { background-color:#efefef; }
+
+vaadin-menu-bar.warenlager-view-menu-bar-1 vaadin-menu-bar-button {
+  --lumo-button-size:var(--lumo-size-m);
+  background-color:rgba(191,191,191,0.08);
+  border-color:#8ABD3E;
+  color:#8ABD3E;
+}
+
+vaadin-menu-bar.warenlager-view-menu-bar-1 vaadin-menu-bar-button vaadin-menu-bar-item { color:#8ABD3E; }
 
 vaadin-tab { font-family:'Tomorrow',sans-serif; }
 

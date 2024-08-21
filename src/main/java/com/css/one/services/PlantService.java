@@ -50,10 +50,6 @@ public class PlantService {
     public List<Plant> getAllAsList() {
     	return repository.findAll();
     }
-    
-//    public List<Plant> findOutputByMember(int personId) {
-//    	return repository.findAll().stream().filter(e -> e.getPersonId() == personId).toList();
-//    }
 //    
 //    public List<Plant> findOutputByStrain(int strainId) {
 //    	return repository.findAll().stream().filter(e -> e.getEntityId() == strainId).toList();

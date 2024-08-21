@@ -44,7 +44,7 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         
         VerticalLayout plant = new VerticalLayout();
         plant.setWidthFull();
-        plant.addClassNames(LumoUtility.JustifyContent.CENTER);
+        plant.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.Left.LARGE);
         
         StreamResource imageResource = new StreamResource("CLOS.png",
                 () -> getClass().getResourceAsStream("/CLOS.png"));
@@ -56,12 +56,10 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         plant.add(logoImage);
   
         setTitle(plant); 
-        i18n.getForm().setPassword("Passwort");
         
         setForgotPasswordButtonVisible(false);
         setOpened(true); 
         addClassName("login-view-login-overlay-1");
-
     }
 
     @Override

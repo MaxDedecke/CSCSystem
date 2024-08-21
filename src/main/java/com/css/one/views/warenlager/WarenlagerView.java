@@ -58,10 +58,14 @@ import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
@@ -75,7 +79,6 @@ import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.theme.lumo.LumoIcon;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
@@ -113,14 +116,15 @@ public class WarenlagerView extends Div {
 	Checkbox isFreshCuttingBox;
 	Checkbox isFreshSeedBox;
 	Checkbox singlePlantBox;
-	
+	Checkbox setCustomSettingsBox = new Checkbox("Global");
+
 	DateTimePicker dateHarvested;
 	ComboBox<Location> locationBox;
 	
 	ComboBox<Person> responsiblePersonOne;
 	ComboBox<Person> responsiblePersonTwo;
-	ComboBox<Blossom> comboboxCuttingsOrigins = new ComboBox<Blossom>("Mutterpflanze");
-	ComboBox<Blossom> comboboxSeedsOrigins = new ComboBox<Blossom>("Mutterpflanze");
+	ComboBox<Plant> comboboxCuttingsOrigins = new ComboBox<Plant>("Mutterpflanze");
+	ComboBox<Plant> comboboxSeedsOrigins = new ComboBox<Plant>("Mutterpflanze");
 	ComboBox<Person> comboBoxResponsibleForSeed = new ComboBox<Person>("Verantwortlicher");
 
 	ComboBox<GrowStatus> comboxCuttingStatus = new ComboBox<GrowStatus>("Status");
@@ -148,7 +152,8 @@ public class WarenlagerView extends Div {
     Plant editPlant;
     
 	Button updatePlantButton = new Button("update");
-    
+	Button saveChargeButton;
+	
     File pathToCertificate;
     InputStream streamCertificate;
     String directoryPath;
@@ -169,6 +174,8 @@ public class WarenlagerView extends Div {
 	private NumberField chargeAmountPlantsField = new NumberField("Anzahl Pflanzen");		
 	private TextField chargeNumberField = new TextField("Nummer");
 	private TextField plantNameField = new TextField("Name");
+    private ComboBox<Location> plantLocationBox = new ComboBox<Location>("Standort");
+    private ComboBox<GrowStatus> plantStatusBox = new ComboBox<GrowStatus>("Status");
     
     private TextField cuttingNumberField;
     private TextField cuttingNameField;
@@ -244,14 +251,19 @@ public class WarenlagerView extends Div {
 		layout.add(createChargeDialogComponent());
 		wrapper.add(headerLayout, layout);
 		
-		Button saveButton = new Button("Hinzufügen", e -> {
+		saveChargeButton = new Button("Hinzufügen", e -> {
 
 			if (!chargeNameField.isEmpty()) {
 				if (!chargeNumberField.isEmpty()) {
 					if (!chargeAmountPlantsField.isEmpty()) {
-						addNewCharge();
-						addChargeDialog.close();
-						clearChargeDialog();
+						if (!tmpPlants.isEmpty()) {
+							addNewCharge();
+							addChargeDialog.close();
+							refreshGrid(ViewStatus.CHARGE);
+							clearChargeDialog();
+						} else {
+							Notification.show("Eine Charge muss mindestens eine Pflanze beinhalten!");
+						}
 					} else {
 						Notification.show("Wieviele Pflanzen hat die Charge ?");
 					}
@@ -263,7 +275,8 @@ public class WarenlagerView extends Div {
 			}
 
 		});
-		saveButton.addClassNames("save-button");
+		saveChargeButton.addClassNames("save-button");
+		saveChargeButton.setEnabled(false);
 		
 		Button cancelButton = new Button("Abbrechen", e -> {
 			clearChargeDialog();
@@ -289,7 +302,7 @@ public class WarenlagerView extends Div {
 		
 		addChargeDialog.getFooter().add(deleteCuttingButton);
 		addChargeDialog.getFooter().add(cancelButton);
-		addChargeDialog.getFooter().add(saveButton);
+		addChargeDialog.getFooter().add(saveChargeButton);
 	
 		addChargeDialog.add(wrapper);
 	}
@@ -297,12 +310,21 @@ public class WarenlagerView extends Div {
 	private void addNewCharge() {
 
 		List<Plant> includedPlants = new ArrayList<>();
-		tmpPlants.forEach(e -> {
-			e.setId(0L);
-			includedPlants.add(plantService.update(e));
-		});
 		
-		Charge charge = new Charge();
+		Charge charge;
+		
+		if(changeCharge != null) {
+			charge = changeCharge;
+			tmpPlants.forEach(e -> {
+				includedPlants.add(plantService.update(e));
+			});
+		} else {
+			charge = new Charge();	
+			tmpPlants.forEach(e -> {
+				e.setId(0L);
+				includedPlants.add(plantService.update(e));
+			});
+		}
 		
 		charge.setAssociationId(associationId);
 		charge.setDateOfExistense(chargeRegDate.getValue() != chargeRegDate.getEmptyValue() ? chargeRegDate.getValue() : LocalDate.now());
@@ -317,7 +339,9 @@ public class WarenlagerView extends Div {
 		this.chargeRegDate.setValue(LocalDate.now());
 		this.chargeAmountPlantsField.setValue(chargeAmountPlantsField.getEmptyValue());
 		this.plantNameField.setValue(plantNameField.getEmptyValue());
-		
+		this.plantLocationBox.setValue(plantLocationBox.getEmptyValue());
+		this.plantStatusBox.setValue(plantStatusBox.getEmptyValue());
+		setCustomSettingsBox.setEnabled(true);
 		refreshPlantsGrid(0);
 	}
 	
@@ -364,45 +388,90 @@ public class WarenlagerView extends Div {
 	private Component createChargeDialogComponent() {
 		
 		HorizontalLayout mainLayout = new HorizontalLayout();
+		mainLayout.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		
+		H3 headerCharge = new H3("Charge - Details");
+		headerCharge.addClassNames(LumoUtility.Margin.MEDIUM);
+		VerticalLayout firstWrapper = new VerticalLayout();
 		VerticalLayout chargeWrapperLayout = new VerticalLayout();
+		firstWrapper.addClassNames("bottom-layout", "bestand-box");
 		FormLayout layout = new FormLayout();
 		layout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1));
-
-		chargeWrapperLayout.addClassNames("bestand-box");
 		
 		chargeNumberField.setEnabled(false);
 		chargeNumberField.setValue(String.valueOf((chargeService.count() + 1)));
 		chargeRegDate.setValue(LocalDate.now());
-		
-		chargeAmountPlantsField.addValueChangeListener(e -> {
-			if(e.getValue() != null) {				
-				refreshPlantsGrid(e.getValue().intValue());
-			}
-		});
-		
-		
+			
 		chargeNumberField.setWidthFull();
 		chargeNameField.setWidthFull();
 		chargeRegDate.setWidthFull();
 		chargeAmountPlantsField.setWidthFull();
+		chargeAmountPlantsField.setAllowedCharPattern("[0-9/]");
 		
 		layout.add(chargeNumberField, chargeNameField, chargeRegDate, chargeAmountPlantsField);
 		
 		Button firstStepButton = new Button("übernehmen");
 		firstStepButton.addClassName("save-button");
 		firstStepButton.setWidthFull();
+		firstStepButton.addClickListener(e -> {
+			
+			if(chargeNameField.getValue() != null) {	
+				if(chargeAmountPlantsField.getValue() != null) {					
+					refreshPlantsGrid(chargeAmountPlantsField.getValue().intValue());	
+					saveChargeButton.setEnabled(true);
+				} else {
+					Notification.show("Die Anzahl der Pflanzen muss angegeben sein.");
+				}
+			} else {
+				Notification.show("Die Charge muss zuerst einen Namen haben.");
+			}
+		});
 		
-		chargeWrapperLayout.setMaxWidth(400, Unit.PIXELS);
-		chargeWrapperLayout.add(layout, firstStepButton);
+		chargeWrapperLayout.add(layout);
+		firstWrapper.add(headerCharge, chargeWrapperLayout, firstStepButton);
+		firstWrapper.setMaxWidth(400, Unit.PIXELS);
+		VerticalLayout secondLayout = new VerticalLayout();
+		secondLayout.addClassNames(LumoUtility.Margin.NONE, 
+				LumoUtility.Padding.NONE, LumoUtility.FlexDirection.COLUMN, LumoUtility.Display.FLEX, LumoUtility.AlignItems.START);
+		
+		HorizontalLayout globalSettingsLayout = new HorizontalLayout();
+		globalSettingsLayout.addClassNames("rechtliches-box-horizontal-start");
+		globalSettingsLayout.setWidthFull();
+		
+		VerticalLayout checkBoxWrapper = new VerticalLayout();
+		checkBoxWrapper.setAlignItems(Alignment.CENTER);
+		checkBoxWrapper.setJustifyContentMode(JustifyContentMode.CENTER);
+		checkBoxWrapper.add(setCustomSettingsBox);
+		checkBoxWrapper.setSizeUndefined();
+		
+		setCustomSettingsBox.addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Top.SMALL);
+		ComboBox<Location> globalLocationBox = new ComboBox<Location>("Standort");
+		List<Location> locationsByAssociation = locationService.findAllByAssociation(associationId);
+		globalLocationBox.setItems(locationsByAssociation);
+		globalLocationBox.setValue(locationsByAssociation.size() > 0 ? globalLocationBox.getListDataView().getItem(0) : globalLocationBox.getEmptyValue());
+		globalLocationBox.setItemLabelGenerator(e -> e.getName());
+		globalLocationBox.setEnabled(false);
+	
+		ComboBox<GrowStatus> globalStatusBox = new ComboBox<GrowStatus>("Status");
+		globalStatusBox.setItems(GrowStatus.values());
+		globalStatusBox.setItemLabelGenerator(e -> e.getLabel());
+		globalStatusBox.setValue(globalStatusBox.getListDataView().getItem(0));
+		globalStatusBox.setEnabled(false);
+		globalSettingsLayout.add(checkBoxWrapper, globalLocationBox, globalStatusBox);
+		
+		setCustomSettingsBox.addValueChangeListener(e -> {
+			globalLocationBox.setEnabled(e.getValue());
+			globalStatusBox.setEnabled(e.getValue());
+		});
 		
 		HorizontalLayout plantWrapper = new HorizontalLayout();
 		plantWrapper.addClassNames("rechtliches-box-horizontal");
+		plantWrapper.setWidthFull();
 		
 		plantGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 		plantGrid.addColumn(e -> e.getName()).setHeader("Name").setAutoWidth(true);
 		plantGrid.setMinWidth(300, Unit.PIXELS);
-		plantGrid.setMinHeight(400, Unit.PIXELS);		
+		plantGrid.setMinHeight(400, Unit.PIXELS);
 		plantGrid.setSelectionMode(SelectionMode.SINGLE);
 		
 		plantGrid.addSelectionListener(e -> {
@@ -411,29 +480,52 @@ public class WarenlagerView extends Div {
 				plantNameField.setEnabled(true);
 				updatePlantButton.setEnabled(true);
 				plantNameField.setValue(plant.getName());
+				plantLocationBox.setEnabled(true);
+				plantLocationBox.setValue(plant.getGrowLocation() == null ? plantLocationBox.getEmptyValue() : plant.getGrowLocation());
+				plantStatusBox.setEnabled(true);
+				plantStatusBox.setValue(plant.getStatus() == null ? plantStatusBox.getEmptyValue() : plant.getStatus());
 				editPlant = plant;
 			}, () -> {
 				plantNameField.setEnabled(false);
 				plantNameField.setValue(plantNameField.getEmptyValue());
+				plantLocationBox.setEnabled(false);
+				plantStatusBox.setEnabled(false);
 				editPlant = null;
 			});
 			
 		});
 		
+		H3 headerPlant = new H3("Pflanze - Details");
+		VerticalLayout formLayoutWrapper = new VerticalLayout();
 		FormLayout plantLayout = new FormLayout();
-		plantLayout.addClassName(LumoUtility.Margin.Right.XSMALL);
+		plantLayout.addClassNames(LumoUtility.Margin.Right.XSMALL);
 		plantNameField.setEnabled(false);
+		formLayoutWrapper.addClassName("bottom-layout");
+		
+		plantStatusBox.setItems(GrowStatus.values());
+		plantStatusBox.setItemLabelGenerator(e -> e.getLabel());
+		
+		plantLocationBox.setItems(locationService.findAllByAssociation(associationId));
+		plantLocationBox.setItemLabelGenerator(e -> e.getName());
 		
 		updatePlantButton.setEnabled(false);
 		updatePlantButton.addClassNames("save-button", LumoUtility.Margin.Top.MEDIUM);
+		updatePlantButton.setWidthFull();
 		updatePlantButton.addClickListener(e -> {
-						
-			Plant tmpPlant = new Plant();
-			tmpPlant.setId(0L);
-			tmpPlant.setDateOfExistense(LocalDate.now());
-			tmpPlant.setAssociationId(associationId);
-			tmpPlant.setName(plantNameField.getValue());
+			Plant tmpPlant;
 			
+			if(changeCharge != null) {
+				tmpPlant = editPlant;
+			} else {	
+				tmpPlant = new Plant();
+				tmpPlant.setId(0L);
+				tmpPlant.setDateOfExistense(LocalDate.now());
+				tmpPlant.setAssociationId(associationId);
+			}
+			
+			tmpPlant.setName(plantNameField.getValue());
+			tmpPlant.setGrowLocation(plantLocationBox.getValue());
+			tmpPlant.setStatus(plantStatusBox.getValue());
 			tmpPlants.removeIf(p -> p.getNummer().equals(editPlant.getNummer()));
 			
 			tmpPlants.add(tmpPlant);
@@ -443,11 +535,14 @@ public class WarenlagerView extends Div {
 			editPlant = null;
 		});
 		
-		plantLayout.add(plantNameField, updatePlantButton);
+		plantLayout.add(plantNameField, plantStatusBox, plantLocationBox);
 		plantLayout.setMinWidth(300, Unit.PIXELS);
+		plantLayout.setHeightFull();
+		formLayoutWrapper.add(headerPlant, plantLayout, updatePlantButton);
 		
-		plantWrapper.add(plantGrid, plantLayout);
-		mainLayout.add(chargeWrapperLayout, plantWrapper);
+		plantWrapper.add(plantGrid, formLayoutWrapper);
+		secondLayout.add(globalSettingsLayout, plantWrapper);
+		mainLayout.add(firstWrapper, secondLayout);
 		mainLayout.setFlexGrow(1, chargeWrapperLayout, plantWrapper);
 		return mainLayout;
 	}
@@ -503,9 +598,9 @@ public class WarenlagerView extends Div {
 			avatar.setWidth("64px");
 			avatar.getElement().setAttribute("tabindex", "-1");
 						
-			Span fullName = new Span(entity.isCharge() ? "Nummer der Charge: " + entity.getNummer() : "Nummer der Pflanze: " + entity.getNummer());
+			Span fullName = new Span("Nummer: " + entity.getNummer());
 
-		    Span profession = new Span(entity.isCharge() ? "Name der Charge: " + entity.getName() : "Name der Pflanze: " + entity.getName());
+		    Span profession = new Span("Name: " + entity.getName());
 		    profession.getStyle()
 		            .set("color", "var(--lumo-secondary-text-color)")
 		            .set("font-size", "var(--lumo-font-size-s)");
@@ -522,31 +617,53 @@ public class WarenlagerView extends Div {
 		}).setHeader("Nummer");
 
 		chargeGrid.addColumn(e -> renderDate(e.getErfasst())).setHeader("Erfasst am");
+		chargeGrid.addColumn(e -> e.getStatus() == null ? "-" : e.getStatus().getLabel()).setHeader("Status");
+		chargeGrid.addColumn(e -> e.getLocation() == null ? "-" : e.getLocation().getName()).setHeader("Standort");
 		
 		chargeGrid.addComponentColumn(entity -> {
-			Button icon = new Button(LumoIcon.EDIT.create());
-			icon.addClassName("save-button");
-			icon.addSingleClickListener(e -> {
+			MenuBar menuBar = new MenuBar();
+			menuBar.setOverlayClassName("warenlager-view-menu-bar-1");
+			menuBar.addClassName("warenlager-view-menu-bar-1");
+			
+			menuBar.addItem("Charge bearbeiten", event -> {
 				setValuesInChargePopup(entity);
 				addChargeDialog.open();
 			});
-			return icon;
-		});
-		
+			if (!entity.isCharge()) {
+				menuBar.addItem("Pflanzen bearbeiten", event -> {
+					Notification.show("Popup kommt noch.");
+				});
+				menuBar.addItem("Status ändern", event -> {
+					Notification.show("Popup kommt noch.");
+				});
+			} else {
+				menuBar.addItem("Status für alle ändern", event -> {
+					Notification.show("Popup kommt noch.");
+				});
+			}
+			return menuBar;
+		}).setWidth("70px").setFlexGrow(0);
+
 		refreshGrid(ViewStatus.CHARGE);
 		wrapper.add(chargeGrid);
 		tabSheet.add("Pflanze(n)", wrapper);
 	}
 	
-	private void setValuesInChargePopup(EntityWrapper wrapper) {
+	private void setValuesInChargePopup(EntityWrapper wrapper) { 
+		
+		setCustomSettingsBox.setEnabled(false);
 		if(wrapper.isCharge()) {			
 			this.chargeNameField.setValue(wrapper.getName());
 			this.chargeNumberField.setValue(wrapper.getNummer());
 			Optional<Charge> optionalCharge = chargeService.get(Long.valueOf(wrapper.getNummer()));
-			optionalCharge.ifPresent(e -> {
+			optionalCharge.ifPresentOrElse(e -> {
+				this.changeCharge = e;
 				List<Plant> plants = e.getPlants();
 				this.plantGrid.setItems(plants);
+				tmpPlants = plants;
 				this.chargeAmountPlantsField.setValue((double)plants.size());
+			}, () -> {
+				this.changeCharge = null;
 			});
 			
 		} else {
@@ -554,17 +671,23 @@ public class WarenlagerView extends Div {
 			optionalPlant.ifPresentOrElse(e -> {
 				Optional<Charge> chargeByPlant = chargeService.findChargeByPlant(associationId, e);
 				if(chargeByPlant.isPresent()) {
+					this.changeCharge = chargeByPlant.get();
 					this.chargeNameField.setValue(chargeByPlant.get().getName());
 					this.chargeNumberField.setValue(chargeByPlant.get().getNummer());
 					this.chargeAmountPlantsField.setValue((double)chargeByPlant.get().getPlants().size());
+					this.plantLocationBox.setValue(e.getGrowLocation());
+					this.plantStatusBox.setValue(e.getStatus());
 					this.plantGrid.setItems(chargeByPlant.get().getPlants());
 					this.plantGrid.select(e);
+					tmpPlants = chargeByPlant.get().getPlants();
 				} else {
+					this.changeCharge = null;
 					this.chargeNameField.setValue("Es konnte keine Charge gefunden werden.");
 					this.chargeNumberField.setValue("Es konnte keine Charge gefunden werden.");
 					this.chargeAmountPlantsField.setValue((double)0);
 				}
 			}, () -> {
+				this.changeCharge = null;
 				this.chargeNameField.setValue("Es konnte keine Charge gefunden werden.");
 				this.chargeNumberField.setValue("Es konnte keine Charge gefunden werden.");
 				this.chargeAmountPlantsField.setValue((double)0);
@@ -611,7 +734,7 @@ public class WarenlagerView extends Div {
 				.setHeader("Verantwortlicher").setAutoWidth(true).setSortable(true);
 		seedsGrid
 				.addColumn(p -> p.getMotherPlant() == null ? "-"
-						: p.getMotherPlant().getName() + " (" + p.getMotherPlant().getStrainNumber() + ")")
+						: p.getMotherPlant().getName() + " (" + p.getMotherPlant().getNummer() + ")")
 				.setHeader("Mutterpflanze").setAutoWidth(true).setSortable(true);
 		seedsGrid.addColumn(p -> p.getAmountOfSeeds()).setHeader("Menge").setAutoWidth(true).setSortable(true);
 		seedsGrid.addColumn(p -> p.getPrice()).setHeader("Preis").setAutoWidth(true).setSortable(true);
@@ -770,7 +893,7 @@ public class WarenlagerView extends Div {
 		seedPriceField.setValue("");
 		comboBoxResponsibleForSeed.setValue(comboBoxResponsibleForSeed.getEmptyValue());
 		comboBoxLocationSeed.setValue(comboBoxLocationSeed.getEmptyValue());
-		
+		saveChargeButton.setEnabled(false);
 		isFreshSeedBox.setValue(false);
 		changeSeed = null;
 	}
@@ -781,8 +904,8 @@ public class WarenlagerView extends Div {
 		seedNumberField = new TextField("Eindeutige Nummer");
 		seedNumberField.setEnabled(false);
 		seedNumberField.setValue(String.valueOf(seedService.getFreeSeedNumber(associationId)));
-		comboboxSeedsOrigins.setItems(strainService.findAllByAssociation(associationId));
-		comboboxSeedsOrigins.setItemLabelGenerator(e -> e.getName() + " (" + e.getStrainNumber() + ")");
+		comboboxSeedsOrigins.setItems(plantService.findAllByAssociation(associationId));
+		comboboxSeedsOrigins.setItemLabelGenerator(e -> e.getName() + " (" + e.getNummer() + ")");
 		
 		seedNameField = new TextField("Name");
 		
@@ -845,7 +968,7 @@ public class WarenlagerView extends Div {
 				.setSortable(true);
 		cuttingsGrid
 				.addColumn(p -> p.getMotherPlant() == null ? "-"
-						: p.getMotherPlant().getName() + " (" + p.getMotherPlant().getStrainNumber() + ")")
+						: p.getMotherPlant().getName() + " (" + p.getMotherPlant().getNummer() + ")")
 				.setHeader("Mutterpflanze").setAutoWidth(true).setSortable(true);
 		cuttingsGrid.addColumn(p -> p.getAmountOfCuttings()).setHeader("Menge").setAutoWidth(true).setSortable(true);
 		cuttingsGrid.addColumn(p -> p.getStatus().getLabel()).setHeader("Status").setAutoWidth(true).setSortable(true);
@@ -1244,6 +1367,7 @@ public class WarenlagerView extends Div {
 	}
  	
 	private void clearCuttingsDialog() {
+		
 		this.cuttingNumberField.setValue(String.valueOf(cuttingService.getFreeCuttingNumber(associationId)));
 		this.cuttingNameField.setValue("");
 		this.cuttingsPriceField.setValue("");
@@ -1275,7 +1399,6 @@ public class WarenlagerView extends Div {
 		cutting.setMotherPlant(comboboxCuttingsOrigins.getValue());
 		cutting.setName(cuttingNameField.getValue());
 		cutting.setStatus(comboxCuttingStatus.getValue());
-		
 		cutting.setGrowLocation(comboBoxLocationCutting.getValue());
 		cutting.setPrice(Double.valueOf(cuttingsPriceField.getValue()));
 		cutting.setResponsiblePerson(comboBoxResponsibleForCutting.getValue());
@@ -1291,8 +1414,8 @@ public class WarenlagerView extends Div {
 		cuttingNumberField = new TextField("Eindeutige Nummer");
 		cuttingNumberField.setEnabled(false);
 		cuttingNumberField.setValue(String.valueOf(cuttingService.getFreeCuttingNumber(associationId)));
-		comboboxCuttingsOrigins.setItems(strainService.findAllByAssociation(associationId));
-		comboboxCuttingsOrigins.setItemLabelGenerator(e -> e.getName() + " (" + e.getStrainNumber() + ")");
+		comboboxCuttingsOrigins.setItems(plantService.findAllByAssociation(associationId));
+		comboboxCuttingsOrigins.setItemLabelGenerator(e -> e.getName() + " (" + e.getNummer() + ")");
 		
 		cuttingNameField = new TextField("Name");
 		cuttingPlantDate = new DateTimePicker("Datum des Pflanzens");

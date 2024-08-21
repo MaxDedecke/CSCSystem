@@ -14,7 +14,7 @@ import jakarta.persistence.ManyToOne;
 public class Plant implements EntityWrapper{
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.TABLE)
 	private Long id;
 	
 	private int associationId;
@@ -85,5 +85,9 @@ public class Plant implements EntityWrapper{
 	@Override
 	public boolean isCharge() {
 		return false;
+	}
+	@Override
+	public Location getLocation() {
+		return getGrowLocation();
 	}
 }

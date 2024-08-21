@@ -14,7 +14,7 @@ public class Seed extends OutputEntity {
  	private Person responsiblePerson;
 
 	@ManyToOne
- 	private Blossom motherPlant;
+ 	private Plant motherPlant;
 	
 	@Nullable
 	@ManyToOne
@@ -52,11 +52,11 @@ public class Seed extends OutputEntity {
 		this.responsiblePerson = responsiblePerson;
 	}
 
-	public Blossom getMotherPlant() {
+	public Plant getMotherPlant() {
 		return motherPlant;
 	}
 
-	public void setMotherPlant(Blossom motherPlant) {
+	public void setMotherPlant(Plant motherPlant) {
 		this.motherPlant = motherPlant;
 	}
 }

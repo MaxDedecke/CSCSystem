@@ -7,4 +7,6 @@ public interface EntityWrapper {
 	public String getName();
 	public LocalDate getErfasst();
 	public boolean isCharge();
+	public Location getLocation();
+	public GrowStatus getStatus();
 }

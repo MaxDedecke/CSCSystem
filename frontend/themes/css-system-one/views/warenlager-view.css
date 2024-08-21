@@ -37,12 +37,22 @@ vaadin-grid {
   width: 400px;
 }
 
+.warenlager-view vaadin-menu-bar-item::part(icon) {
+    color: green; /* Färbt das Icon blau */
+}
+
 vaadin-vertical-layout {
   box-sizing: border-box;
   padding: none;
 }
 
-
+.warenlager-view .bottom-layout {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+    width: 100%;
+}
 
 .warenlager-view .editor {
   flex-grow: 1;

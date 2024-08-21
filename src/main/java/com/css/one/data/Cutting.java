@@ -19,7 +19,7 @@ public class Cutting extends OutputEntity {
 
 	@ManyToOne
 	@Nullable
- 	private Blossom motherPlant;
+ 	private Plant motherPlant;
  	
 	@Nullable
 	@ManyToOne
@@ -65,11 +65,11 @@ public class Cutting extends OutputEntity {
 		this.amountOfCuttings = amountOfCuttings;
 	}
 
-	public Blossom getMotherPlant() {
+	public Plant getMotherPlant() {
 		return motherPlant;
 	}
 
-	public void setMotherPlant(Blossom motherPlant) {
+	public void setMotherPlant(Plant motherPlant) {
 		this.motherPlant = motherPlant;
 	}
 
