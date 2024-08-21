@@ -42,6 +42,28 @@ vaadin-combo-box.diary-view-combo-box-1::part(label) { color:#8ABD3E; }
 
 vaadin-combo-box::part(label) { color:#8ABD3E; }
 
+vaadin-date-picker-overlay.waiting-list-view-date-picker-1 vaadin-date-picker-year::part(year-number) { color:#8ABD3E; }
+
+vaadin-date-picker-overlay.waiting-list-view-date-picker-1 vaadin-month-calendar::part(date) { color:#8ABD3E; }
+
+vaadin-date-picker-overlay.waiting-list-view-date-picker-1 vaadin-month-calendar::part(month-header) { color:#8ABD3E; }
+
+vaadin-date-picker-overlay.waiting-list-view-date-picker-1 vaadin-month-calendar::part(weekday) {
+  color:#8ABD3E;
+  font-weight:bold;
+}
+
+vaadin-date-picker-overlay.waiting-list-view-date-picker-1::part(overlay) {
+  border-color:#8ABD3E;
+  border-radius:var(--lumo-border-radius-l);
+}
+
+vaadin-date-picker.waiting-list-view-date-picker-1::part(helper-text) { color:#8ABD3E; }
+
+vaadin-date-picker.waiting-list-view-date-picker-1::part(label) { color:#8ABD3E; }
+
+vaadin-date-picker.waiting-list-view-date-picker-1::part(toggle-button) { color:#8ABD3E; }
+
 vaadin-date-time-picker { font-family:'Tomorrow',sans-serif; }
 
 vaadin-date-time-picker.finanzen-view-date-time-picker-1::part(label) { color:#8ABD3E; }
@@ -244,11 +266,9 @@ vaadin-menu-bar-overlay.main-layout-menu-bar-1 vaadin-menu-bar-item {
   font-weight:bold;
 }
 
-vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-button vaadin-menu-bar-item vaadin-icon {
-	color: rgb(255,255,255);
-}
-
 vaadin-menu-bar-overlay.main-layout-menu-bar-1::part(overlay) { background-color:rgba(247,11,11,1); }
+
+vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-button vaadin-menu-bar-item vaadin-icon { color:rgb(255,255,255); }
 
 vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item { color:#8ABD3E; }
 

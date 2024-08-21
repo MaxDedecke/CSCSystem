@@ -388,6 +388,8 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		phone = new TextField("Telefonnummer");
         phone.setAllowedCharPattern("[0-9/]");
 		dateOfBirth = new DatePicker("Geburtstag");
+		dateOfBirth.setOverlayClassName("waiting-list-view-date-picker-1");
+		dateOfBirth.addClassName("waiting-list-view-date-picker-1");
 
 		formLayout.add(firstName, lastName, email, phone, dateOfBirth);
 

@@ -62,7 +62,6 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.menubar.MenuBar;
-import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
@@ -342,12 +341,15 @@ public class WarenlagerView extends Div {
 		this.plantLocationBox.setValue(plantLocationBox.getEmptyValue());
 		this.plantStatusBox.setValue(plantStatusBox.getEmptyValue());
 		setCustomSettingsBox.setEnabled(true);
+		setCustomSettingsBox.setValue(false);
+		
 		refreshPlantsGrid(0);
 	}
 	
 	private void refreshPlantsGrid(int amount) {
 		
 		int count;
+    	List<Location> locationsByAssociation = locationService.findAllByAssociation(associationId);
 
 		if (!tmpPlants.isEmpty()) {
 			count = tmpPlants.size();
@@ -367,6 +369,8 @@ public class WarenlagerView extends Div {
 					p.setDateOfExistense(LocalDate.now());
 					p.setName(chargeNameField.getValue() + "_" + (count + i));
 					p.setId(Integer.toUnsignedLong(count + i));
+					p.setStatus(GrowStatus.NEW);
+					p.setGrowLocation(locationsByAssociation.get(0));
 					tmpPlants.add(p);
 				}
 			}
@@ -379,6 +383,8 @@ public class WarenlagerView extends Div {
 				p.setDateOfExistense(LocalDate.now());
 				p.setName(chargeNameField.getValue() + "_" + (count + i));
 				p.setId(Integer.toUnsignedLong(count + i));
+				p.setStatus(GrowStatus.NEW);
+				p.setGrowLocation(locationsByAssociation.get(0));
 				tmpPlants.add(p);
 			}
 		}
@@ -451,12 +457,25 @@ public class WarenlagerView extends Div {
 		globalLocationBox.setValue(locationsByAssociation.size() > 0 ? globalLocationBox.getListDataView().getItem(0) : globalLocationBox.getEmptyValue());
 		globalLocationBox.setItemLabelGenerator(e -> e.getName());
 		globalLocationBox.setEnabled(false);
+		globalLocationBox.addValueChangeListener(e -> {
+			tmpPlants.forEach(p -> {
+				p.setGrowLocation(e.getValue());
+			});
+			plantGrid.setItems(tmpPlants);
+		});
 	
 		ComboBox<GrowStatus> globalStatusBox = new ComboBox<GrowStatus>("Status");
 		globalStatusBox.setItems(GrowStatus.values());
 		globalStatusBox.setItemLabelGenerator(e -> e.getLabel());
 		globalStatusBox.setValue(globalStatusBox.getListDataView().getItem(0));
 		globalStatusBox.setEnabled(false);
+		globalStatusBox.addValueChangeListener(e -> {
+			tmpPlants.forEach(p -> {
+				p.setStatus(e.getValue());
+			});
+			plantGrid.setItems(tmpPlants);
+		});
+		
 		globalSettingsLayout.add(checkBoxWrapper, globalLocationBox, globalStatusBox);
 		
 		setCustomSettingsBox.addValueChangeListener(e -> {
