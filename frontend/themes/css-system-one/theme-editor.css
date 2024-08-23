@@ -42,6 +42,12 @@ vaadin-combo-box.diary-view-combo-box-1::part(label) { color:#8ABD3E; }
 
 vaadin-combo-box::part(label) { color:#8ABD3E; }
 
+vaadin-date-picker-overlay vaadin-date-picker-year::part(year-number) { color:#8ABD3E; }
+
+vaadin-date-picker-overlay vaadin-month-calendar::part(month-header) { color:#8ABD3E; }
+
+vaadin-date-picker-overlay vaadin-month-calendar::part(weekday) { color:#8ABD3E; }
+
 vaadin-date-picker-overlay.waiting-list-view-date-picker-1 vaadin-date-picker-year::part(year-number) { color:#8ABD3E; }
 
 vaadin-date-picker-overlay.waiting-list-view-date-picker-1 vaadin-month-calendar::part(date) { color:#8ABD3E; }
@@ -64,6 +70,10 @@ vaadin-date-picker.waiting-list-view-date-picker-1::part(label) { color:#8ABD3E;
 
 vaadin-date-picker.waiting-list-view-date-picker-1::part(toggle-button) { color:#8ABD3E; }
 
+vaadin-date-picker::part(label) { color:#8ABD3E; }
+
+vaadin-date-picker::part(toggle-button) { color:#8ABD3E; }
+
 vaadin-date-time-picker { font-family:'Tomorrow',sans-serif; }
 
 vaadin-date-time-picker.finanzen-view-date-time-picker-1::part(label) { color:#8ABD3E; }
@@ -85,8 +95,6 @@ vaadin-details.diary-view-details-summary-1 {
   margin-right:12px;
   padding-left:var(--lumo-space-xs);
 }
-
-vaadin-dialog-overlay::part(header) { font-family:'Tomorrow',sans-serif; }
 
 vaadin-grid {
   background:rgba(255,255,255,0.65);
@@ -113,7 +121,7 @@ vaadin-grid::part(header-cell) {
   background-color:rgba(247,247,247,1);
   border-bottom:none;
   border-radius:10px;
-  color:var(--lumo-success-text-color);
+  color:rgba(69,37,18,1);
 }
 
 vaadin-grid::part(selected-row-cell) { background-color:rgba(134,176,72,0.38); }
@@ -282,6 +290,10 @@ vaadin-menu-bar.warenlager-view-menu-bar-1 vaadin-menu-bar-button {
 }
 
 vaadin-menu-bar.warenlager-view-menu-bar-1 vaadin-menu-bar-button vaadin-menu-bar-item { color:#8ABD3E; }
+
+vaadin-number-field.warenlager-view-number-field-1::part(label) { color:#8ABD3E; }
+
+vaadin-number-field::part(label) { color:#8ABD3E; }
 
 vaadin-tab { font-family:'Tomorrow',sans-serif; }
 

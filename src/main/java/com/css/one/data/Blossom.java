@@ -14,10 +14,7 @@ import jakarta.persistence.ManyToOne;
 public class Blossom extends OutputEntity {
 	
     	private int strainNumber;
-	 	private LocalDate datePlanted;
-	 	private GrowStatus status;
-	 	private int amountOfPlants;
-	 	
+	 	private GrowStatus status;	 	
 	 	@Nullable
 	 	private String pathOfCertificate;
 	 	
@@ -32,7 +29,7 @@ public class Blossom extends OutputEntity {
 	 	private List<Person> weighedByMembers;
 	 	
 		@Nullable
-	 	private LocalDate dateFinished;
+	 	private LocalDate dateHarvested;
 		
 		@Nullable
 		@ManyToOne
@@ -74,17 +71,11 @@ public class Blossom extends OutputEntity {
 		public void setAmountGramm(double amount) {
 			this.amountGramm = amount;
 		}
-		public LocalDate getDatePlanted() {
-			return datePlanted;
+		public LocalDate getDateHarvested() {
+			return dateHarvested;
 		}
-		public void setDatePlanted(LocalDate datePlanted) {
-			this.datePlanted = datePlanted;
-		}
-		public LocalDate getDateFinished() {
-			return dateFinished;
-		}
-		public void setDateFinished(LocalDate dateFinished) {
-			this.dateFinished = dateFinished;
+		public void setDateHarvested(LocalDate dateHarvested) {
+			this.dateHarvested = dateHarvested;
 		}
 		public double getThc() {
 			return thc;
@@ -97,12 +88,6 @@ public class Blossom extends OutputEntity {
 		}
 		public void setStatus(GrowStatus status) {
 			this.status = status;
-		}
-		public int getAmountOfPlants() {
-			return amountOfPlants;
-		}
-		public void setAmountOfPlants(int amountOfPlants) {
-			this.amountOfPlants = amountOfPlants;
 		}
 		public int getStrainNumber() {
 			return strainNumber;

@@ -590,7 +590,7 @@ public class ÜbersichtView extends FlexLayout {
     	outputMemberGrid.setMinWidth(600, Unit.PIXELS);
     	outputMemberGrid.setMinHeight(200, Unit.PIXELS);
     	outputMemberGrid.addColumn(o -> o.getName()).setAutoWidth(true).setHeader("Sorte");
-    	outputMemberGrid.addColumn(o -> o.getDateFinished()).setAutoWidth(true).setHeader("Datum der Ernte");
+    	outputMemberGrid.addColumn(o -> o.getDateHarvested()).setAutoWidth(true).setHeader("Datum der Ernte");
     	outputMemberGrid.addColumn(o -> resolveOutputOfStrainPerMember(o)).setAutoWidth(true).setHeader("Ausgegebene Menge in Gramm");
 	
     	H2 h2Work = new H2("Arbeitszeiten");
