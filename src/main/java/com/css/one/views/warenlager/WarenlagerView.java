@@ -57,8 +57,11 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -119,6 +122,7 @@ public class WarenlagerView extends Div {
 	ComboBox<Person> responsiblePersonTwo;
 	ComboBox<Plant> comboboxCuttingsOrigins = new ComboBox<Plant>("Mutterpflanze");
 	ComboBox<Plant> comboboxSeedsOrigins = new ComboBox<Plant>("Mutterpflanze");
+	ComboBox<Plant> comboboxBlossomOrigins = new ComboBox<Plant>("Mutterpflanze");
 	ComboBox<Person> comboBoxResponsibleForSeed = new ComboBox<Person>("Verantwortlicher");
 
 	ComboBox<GrowStatus> comboxCuttingStatus = new ComboBox<GrowStatus>("Status");
@@ -139,6 +143,7 @@ public class WarenlagerView extends Div {
     Dialog addSeedsDialog = new Dialog();
     Dialog addChargeDialog = new Dialog();
     Dialog editSinglePlantDialog = new Dialog();
+    Dialog convertPlantDialog = new Dialog();
     
     Blossom changeBlossom;
     Cutting changeCutting;
@@ -146,7 +151,9 @@ public class WarenlagerView extends Div {
     Charge changeCharge;
     Plant editPlant;
     
+    EntityWrapper changeExistingPlant;
     EntityWrapper statusEntity;
+    EntityWrapper convertEntity;
     
 	Button updatePlantButton = new Button("update");
 	Button saveChargeButton;
@@ -165,13 +172,18 @@ public class WarenlagerView extends Div {
     private MoneyField amountPerGramm;
     
 	private TextField chargeNameField = new TextField("Name");
-	private DatePicker chargeRegDate = new DatePicker("Erfassen am");
+	private DatePicker chargeRegDate = new DatePicker("Gepflanzt am");
 	private NumberField chargeAmountPlantsField = new NumberField("Anzahl Pflanzen");
 	private TextField chargeNumberField = new TextField("Nummer");
 	private TextField plantNameField = new TextField("Name");
     private ComboBox<Location> plantLocationBox = new ComboBox<Location>("Standort");
     private ComboBox<GrowStatus> plantStatusBox = new ComboBox<GrowStatus>("Status");
     private ComboBox<GrowStatus> statBox = new ComboBox<GrowStatus>("Status");
+    
+	private TextField plantEditNameField = new TextField("Name der Pflanze");
+	private TextField plantEditNumberField = new TextField("Nummer der Pflanze");
+	private ComboBox<GrowStatus> plantEditStatusBox = new ComboBox<GrowStatus>("Status");
+	private ComboBox<Location> plantEditLocationBox = new ComboBox<Location>("Standort");
 
     private TextField cuttingNumberField;
     private TextField cuttingNameField;
@@ -210,6 +222,7 @@ public class WarenlagerView extends Div {
         
         createChangeStatusDialog();
         createSinglePlantEditDialog();
+        createConvertPlantDialog();
         
         TabSheet tabSheet = new TabSheet();
         tabSheet.addClassNames(LumoUtility.Margin.NONE);
@@ -228,6 +241,46 @@ public class WarenlagerView extends Div {
         add(tabSheet);
     }
 
+	private void createConvertPlantDialog() {
+		
+		VerticalLayout wrapper = new VerticalLayout();
+		addChargeDialog.addClassNames(LumoUtility.MaxWidth.SCREEN_LARGE);
+		
+		VerticalLayout headerLayout = new VerticalLayout();
+		HorizontalLayout headlineLayout = new HorizontalLayout();
+		
+		H2 header = new H2("In Blüten umwandeln");
+		headlineLayout.add(header);
+
+		Hr hr = new Hr();		
+		headerLayout.add(headlineLayout, hr);
+		headerLayout.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		
+		HorizontalLayout layout = new HorizontalLayout();
+		layout.addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.MEDIUM);
+		
+		FormLayout plantDetailsLayout = new FormLayout();
+		
+		layout.add(plantDetailsLayout);
+		wrapper.add(headerLayout, layout);
+		
+		VerticalLayout convertPlantWrapper = new VerticalLayout();
+		
+		Button cancelButton = new Button("zurück");
+		cancelButton.addClassName("cancel-button");	
+		cancelButton.addClickListener(e -> {
+//			clearPlantEditDialog();
+		});
+		
+		Button convertButton = new Button("erstellen");
+		convertButton.addClassName("save-button");
+		
+		convertPlantDialog.getFooter().add(cancelButton);
+		convertPlantDialog.getFooter().add(convertButton);
+		convertPlantDialog.add(wrapper, convertPlantWrapper);
+
+	}
+
 	private void createSinglePlantEditDialog() {
 		VerticalLayout wrapper = new VerticalLayout();
 		addChargeDialog.addClassNames(LumoUtility.MaxWidth.SCREEN_LARGE);
@@ -241,6 +294,7 @@ public class WarenlagerView extends Div {
 
 		Hr hr = new Hr();		
 		headerLayout.add(headlineLayout, hr);
+		headerLayout.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.MEDIUM);
@@ -250,6 +304,20 @@ public class WarenlagerView extends Div {
 		layout.add(plantDetailsLayout);
 		wrapper.add(headerLayout, layout);
 		
+		VerticalLayout plantEditWrapper = new VerticalLayout();
+		FormLayout plantLayout = new FormLayout();		
+		
+		plantEditNumberField.setEnabled(false);
+		
+		plantEditLocationBox.setItems(locationService.findAllByAssociation(associationId));
+		plantEditLocationBox.setItemLabelGenerator(e -> e.getName());
+		
+		plantEditStatusBox.setItems(Arrays.asList(GrowStatus.NEW, GrowStatus.GROWING, GrowStatus.READY));
+		plantEditStatusBox.setItemLabelGenerator(e -> e.getLabel());
+		
+		plantLayout.add(plantEditNameField, plantEditNumberField, plantEditStatusBox, plantEditLocationBox);
+		plantEditWrapper.add(plantLayout);
+		plantEditWrapper.addClassNames(LumoUtility.Margin.Top.NONE, LumoUtility.Padding.Top.NONE);
 		
 		editSinglePlantDialog.addDialogCloseActionListener(e -> {
 			clearPlantEditDialog();
@@ -257,26 +325,66 @@ public class WarenlagerView extends Div {
 		
 		Button updatePlantButton = new Button("update");
 		updatePlantButton.addClassName("save-button");
-		
-		updatePlantButton.addClickListener(e -> {
-				
+		updatePlantButton.addClickListener(e -> {	
+			
+			if(!plantEditNameField.isEmpty()) {
+				if(!plantEditLocationBox.isEmpty()) {
+					if(!plantEditStatusBox.isEmpty()) {
+						if(!plantEditNumberField.isEmpty()) {
+							plantService.get(changeExistingPlant.getId()).ifPresentOrElse(p -> {
+								p.setGrowLocation(plantEditLocationBox.getValue());
+								p.setStatus(plantEditStatusBox.getValue());
+								p.setName(plantEditNameField.getValue());
+								plantService.update(p);
+								
+								Notification show = Notification.show("Details der Pflanze " + p.getName() + " aktualisiert.");
+								
+								show.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+								clearPlantEditDialog();
+								editSinglePlantDialog.close();
+								
+								refreshGrid(ViewStatus.CHARGE);
+								
+							}, () -> {
+								Notification show = Notification.show("Die ursprüngliche Entität konnte nicht gefunden werden.");
+								show.addThemeVariants(NotificationVariant.LUMO_ERROR);
+							});
+						} else {
+							Notification show = Notification.show("Die Nummer einer Pflanze muss angegeben sein.");
+							show.addThemeVariants(NotificationVariant.LUMO_ERROR);
+						}
+					} else {
+						Notification show = Notification.show("Der Status einer Pflanze muss angegeben sein.");
+						show.addThemeVariants(NotificationVariant.LUMO_ERROR);
+					}
+				} else {
+					Notification show = Notification.show("Der Standort einer Pflanze muss angegeben sein.");
+					show.addThemeVariants(NotificationVariant.LUMO_ERROR);
+				}	
+			} else {
+				Notification show = Notification.show("Der Name einer Pflanze muss angegeben sein.");
+				show.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			}
 			clearPlantEditDialog();
 		});
 		
 		Button cancelButton = new Button("zurück");
-		cancelButton.addClassName("cancel-button");
-		
+		cancelButton.addClassName("cancel-button");	
 		cancelButton.addClickListener(e -> {
 			clearPlantEditDialog();
 		});
 		
 		editSinglePlantDialog.getFooter().add(cancelButton);
 		editSinglePlantDialog.getFooter().add(updatePlantButton);
-		
-		editSinglePlantDialog.add(wrapper);
+		editSinglePlantDialog.add(wrapper, plantEditWrapper);
 	}
 
 	private void clearPlantEditDialog() {
+		this.plantEditLocationBox.setValue(plantEditLocationBox.getEmptyValue());
+		this.plantEditNameField.setValue(plantEditNameField.getEmptyValue());
+		this.plantEditNumberField.setValue(plantEditNameField.getEmptyValue());
+		this.plantEditStatusBox.setValue(plantEditStatusBox.getEmptyValue());
+		changeExistingPlant = null;
 		editSinglePlantDialog.close();		
 	}
 
@@ -507,6 +615,7 @@ public class WarenlagerView extends Div {
 		VerticalLayout checkBoxWrapper = new VerticalLayout();
 		checkBoxWrapper.setAlignItems(Alignment.CENTER);
 		checkBoxWrapper.setJustifyContentMode(JustifyContentMode.CENTER);
+		setCustomSettingsBox.addClassNames(LumoUtility.Margin.Top.LARGE);
 		checkBoxWrapper.add(setCustomSettingsBox);
 		checkBoxWrapper.setSizeUndefined();
 		
@@ -525,7 +634,7 @@ public class WarenlagerView extends Div {
 		});
 	
 		ComboBox<GrowStatus> globalStatusBox = new ComboBox<GrowStatus>("Status");
-		globalStatusBox.setItems(GrowStatus.values());
+		globalStatusBox.setItems(Arrays.asList(GrowStatus.NEW, GrowStatus.GROWING, GrowStatus.READY));
 		globalStatusBox.setItemLabelGenerator(e -> e.getLabel());
 		globalStatusBox.setValue(globalStatusBox.getListDataView().getItem(0));
 		globalStatusBox.setEnabled(false);
@@ -693,10 +802,29 @@ public class WarenlagerView extends Div {
 		    row.setAlignItems(Alignment.CENTER);
 		    row.setSpacing(true);
 		    return row;
-		}).setHeader("Nummer");
+		});
 
-		chargeGrid.addColumn(e -> renderDate(e.getErfasst())).setHeader("Erfasst am");
-		chargeGrid.addColumn(e -> e.getStatus() == null ? "" : e.getStatus().getLabel()).setHeader("Status");
+		chargeGrid.addColumn(e -> renderDate(e.getErfasst())).setHeader("Gepflanzt am");		
+		chargeGrid.addComponentColumn(entity -> {
+			Span span = new Span(entity.getStatus() == null ? "" : entity.getStatus().getLabel());
+			
+			if(entity.getStatus() != null) {	
+				if(entity.getStatus() == GrowStatus.NEW) {
+					span.addClassName("span-new");
+
+				} else if(entity.getStatus() == GrowStatus.GROWING) {
+					span.addClassName("span-growing");
+
+				} else if(entity.getStatus() == GrowStatus.READY) {
+					span.addClassName("span-ready");
+
+				} else {
+					span.addClassName("span-harvested");
+				}
+			}
+	        return span;
+		});
+		
 		chargeGrid.addColumn(e -> e.getLocation() == null ? "" : e.getLocation().getName()).setHeader("Standort");
 		
 		chargeGrid.addComponentColumn(entity -> {
@@ -709,7 +837,9 @@ public class WarenlagerView extends Div {
 				addChargeDialog.open();
 			});
 			if (!entity.isCharge()) {
-				menuBar.addItem("Pflanzen bearbeiten", event -> {
+				menuBar.addItem("Pflanze bearbeiten", event -> {
+					changeExistingPlant = entity;
+					prepareSinglePlantDialog();
 					editSinglePlantDialog.open();
 				});
 				menuBar.addItem("Status ändern", event -> {
@@ -717,21 +847,46 @@ public class WarenlagerView extends Div {
 					prepareChangeStatusPopup(entity);
 					changeStatusDialog.open();
 				});
+				if(entity.getStatus() == GrowStatus.READY || entity.getStatus() == GrowStatus.HARVESTED) {
+					menuBar.addItem("Ernten", event -> {
+						convertEntity = entity;
+						prepareNewBlossomStatusPopup(entity);
+						addBlossomDialog.open();
+					});
+				}
 			} else {
 				menuBar.addItem("Status für alle ändern", event -> {
 					statusEntity = entity;
 					prepareChangeStatusPopup(entity);
 					changeStatusDialog.open();
-				});
+				});		
 			}
 			return menuBar;
-		}).setWidth("70px").setFlexGrow(0);
+		}).setWidth("100px").setFlexGrow(0);
 
 		refreshGrid(ViewStatus.CHARGE);
 		wrapper.add(chargeGrid);
 		tabSheet.add("Pflanze(n)", wrapper);
 	}
 	
+	private void prepareNewBlossomStatusPopup(EntityWrapper entity) {
+    	this.nameField.setValue("");
+    	this.dateBlossomHarvested.setValue(LocalDate.now());
+    	this.strainInfoAmount.setValue(0.0);
+    	this.statusBox.setValue(GrowStatus.VERIFYING);
+    	Optional<Plant> optionalBLossom = plantService.get(entity.getId());
+    	optionalBLossom.ifPresent(e -> {    		
+    		this.comboboxBlossomOrigins.setValue(e);
+    	});
+	}
+
+	private void prepareSinglePlantDialog() {
+		this.plantEditLocationBox.setValue(changeExistingPlant.getLocation());
+		this.plantEditNameField.setValue(changeExistingPlant.getName());
+		this.plantEditNumberField.setValue(changeExistingPlant.getNummer());
+		this.plantEditStatusBox.setValue(changeExistingPlant.getStatus());
+	}
+
 	private void setValuesInChargePopup(EntityWrapper wrapper) { 
 		
 		setCustomSettingsBox.setEnabled(false);
@@ -1123,7 +1278,7 @@ public class WarenlagerView extends Div {
 
 		Button addStrainButton = new Button();
 		addStrainButton.addClassNames("button-layout-common");
-		addStrainButton.setText("+ Sorte hinzufügen");
+		addStrainButton.setText("+ Blüten hinzufügen");
 		
 		addStrainButton.addClickListener(e -> {
 			numberField.setValue(String.valueOf(blossomService.getFreeStrainNumber(associationId)));
@@ -1150,24 +1305,36 @@ public class WarenlagerView extends Div {
 		blossomGrid.addColumn(p -> p.getName()).setHeader("Name").setAutoWidth(true).setSortable(true);
 		blossomGrid.addColumn(p -> renderDate(p.getDateHarvested())).setHeader("Geerntet am").setAutoWidth(true).setSortable(true);
 		blossomGrid.addColumn(p -> p.getAmountGramm() == 0 ? "-" : p.getAmountGramm() + " Gramm").setHeader("Vorhandene Menge").setAutoWidth(true).setSortable(true);
-		blossomGrid.addColumn(p -> p.getStatus().getLabel()).setHeader("Status").setAutoWidth(true).setSortable(true);
+		
+		blossomGrid.addComponentColumn(entity -> {
+			Span span = new Span(entity.getStatus() == null ? "" : entity.getStatus().getLabel());
+			
+			if(entity.getStatus() != null) {	
+				if (entity.getStatus() == GrowStatus.VERIFYING) {
+					span.addClassName("span-verifying");
+				} else {
+					span.addClassName("span-output-ready");
+				}
+			}
+	        return span;
+		});
 		
 		blossomGrid.addComponentColumn(item -> {
-			Button button = new Button("Details");
-			button.addClickListener(click -> {
+			Icon icon = new Icon(VaadinIcon.PENCIL);
+			icon.addClickListener(click -> {
 				changeBlossom = item;
 				openDialogForEdit(changeBlossom);
 				addBlossomDialog.open();
 			});
-			button.addClassNames("button-grid-green");
-			return button;
+			icon.addClassNames("edit");
+			return icon;
 		}).setAutoWidth(true);
 		
 		refreshGrid(ViewStatus.STRAIN);
 		
 		wrapper.add(blossomGrid);
 		
-		tabSheet.add("Sorten", wrapper);
+		tabSheet.add("Blüten", wrapper);
 	}
 	
 	private void createChangeStatusDialog() {
@@ -1281,7 +1448,7 @@ public class WarenlagerView extends Div {
 		VerticalLayout headerLayout = new VerticalLayout();
 		HorizontalLayout headlineLayout = new HorizontalLayout();
 		
-		H2 header = new H2("Neue Sorte hinzufügen");
+		H2 header = new H2("Neue Blüten hinzufügen");
 		headlineLayout.add(header);
 		
 		Hr hr = new Hr();		
@@ -1291,7 +1458,7 @@ public class WarenlagerView extends Div {
 		layout.addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.MEDIUM);
 		FormLayout formLayout = createFirstComponent();
 		
-		layout.add(formLayout, createUploadComponent());
+		layout.add(formLayout);
 		addBlossomDialog.add(headerLayout);
 		addBlossomDialog.add(layout);
 		
@@ -1630,18 +1797,18 @@ public class WarenlagerView extends Div {
 		
 		statusBox.addValueChangeListener(e -> {
 			
-			if(e.getValue() == GrowStatus.VERIFYING || e.getValue() == GrowStatus.OUTPUT_READY) {					
-				uploadCertificate.setDropAllowed(true);
-				Button uploadButton = (Button) uploadCertificate.getUploadButton();
-				uploadButton.setEnabled(true);
-				uploadCertificate.setVisible(true);
+//			if(e.getValue() == GrowStatus.VERIFYING || e.getValue() == GrowStatus.OUTPUT_READY) {					
+//				uploadCertificate.setDropAllowed(true);
+//				Button uploadButton = (Button) uploadCertificate.getUploadButton();
+//				uploadButton.setEnabled(true);
+//				uploadCertificate.setVisible(true);
 
-			} else {
-				uploadCertificate.setDropAllowed(false);
-				Button uploadButton = (Button) uploadCertificate.getUploadButton();
-				uploadButton.setEnabled(false);
-				uploadCertificate.setVisible(false);
-			}
+//			} else {
+//				uploadCertificate.setDropAllowed(false);
+//				Button uploadButton = (Button) uploadCertificate.getUploadButton();
+//				uploadButton.setEnabled(false);
+//				uploadCertificate.setVisible(false);
+//			}
 		});
 		
 		locationBox = new ComboBox<>("Standort");
@@ -1673,40 +1840,68 @@ public class WarenlagerView extends Div {
 		amountPerGramm.setLabel("Preis pro Gramm");
 		amountPerGramm.setCurrency("EUR");
 		
-		formLayout.add(numberField, nameField, locationBox, statusBox, dateBlossomHarvested, responsiblePersonOne, responsiblePersonTwo, strainInfoAmount, strainInfoThc, amountPerGramm);
+		comboboxBlossomOrigins.setItems(plantService.findAllByAssociation(associationId));
+		comboboxBlossomOrigins.setItemLabelGenerator(e -> e.getName());
+		
+		formLayout.add(numberField, nameField, locationBox, statusBox, dateBlossomHarvested, responsiblePersonOne,
+				responsiblePersonTwo, strainInfoAmount, strainInfoThc, amountPerGramm, comboboxBlossomOrigins);
 		return formLayout;
 	}
 
 	private void addNewBlossom(String name, LocalDate dateHarvested, NumberField strainInfoAmount, NumberField strainInfoThc, ComboBox<GrowStatus> statusBox) {
 		
-		Blossom newStrain;
+		Blossom newBlossom;
 		if (changeBlossom != null) {
-			newStrain = changeBlossom;
+			newBlossom = changeBlossom;
 		} else {			
-			newStrain = new Blossom();
+			newBlossom = new Blossom();
 		}
 		
-		newStrain.setStrainNumber(Integer.valueOf(numberField.getValue()));
-		newStrain.setName(name);
-		newStrain.setAssociationId(associationId);
-		newStrain.setStatus(statusBox.getValue());
-		newStrain.setGrowLocation(locationBox.getValue());
-		newStrain.setDateHarvested(dateHarvested);
-		newStrain.setAmountGramm(strainInfoAmount.getValue());
-		newStrain.setThc(strainInfoThc.getValue());
-		newStrain.setWeighedByMembers(Arrays.asList(responsiblePersonOne.getValue(), responsiblePersonTwo.getValue()));
+		newBlossom.setStrainNumber(Integer.valueOf(numberField.getValue()));
+		newBlossom.setName(name);
+		newBlossom.setAssociationId(associationId);
+		newBlossom.setStatus(statusBox.getValue());
+		newBlossom.setGrowLocation(locationBox.getValue());
+		newBlossom.setDateHarvested(dateHarvested);
+		newBlossom.setAmountGramm(strainInfoAmount.getValue());
+		newBlossom.setThc(strainInfoThc.getValue());
+		newBlossom.setWeighedByMembers(Arrays.asList(responsiblePersonOne.getValue(), responsiblePersonTwo.getValue()));
+		
+		if(convertEntity != null) {
+			Optional<Plant> optionalPlant = plantService.get(convertEntity.getId());
+			optionalPlant.ifPresentOrElse(e -> {
+				newBlossom.setMotherPlant(e);
+			}, () -> {});
+			
+		}
 		
 		if (amountPerGramm.getValue() != null) {
-			newStrain.setPrice(amountPerGramm.getValue().getNumber().doubleValue());
+			newBlossom.setPrice(amountPerGramm.getValue().getNumber().doubleValue());
 		}
 
 		if (statusBox.getValue().ordinal() > 3 && pathToCertificate != null) {
 			handleFile();
-			newStrain.setPathOfCertificate(pathToCertificate.getAbsolutePath());
+			newBlossom.setPathOfCertificate(pathToCertificate.getAbsolutePath());
 			pathToCertificate = null;
 		}
 		
-		blossomService.update(newStrain);
+		blossomService.update(newBlossom);
+		
+		if (convertEntity != null) {
+			if (convertEntity.getStatus() == GrowStatus.READY) {
+				Optional<Plant> optionalPlant = plantService.get(convertEntity.getId());
+				optionalPlant.ifPresentOrElse(e -> {
+					e.setStatus(GrowStatus.HARVESTED);
+					plantService.update(e);
+					Notification show = Notification.show("Neue Blüten hinzugefügt. Der Status der Pflanze wurde aktualisiert.");
+					show.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+					refreshGrid(ViewStatus.CHARGE);
+				}, () -> {
+				});
+			}
+			convertEntity = null;
+		}
+		
 		refreshGrid(ViewStatus.STRAIN);
 	}
 	

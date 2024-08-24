@@ -59,6 +59,52 @@ vaadin-vertical-layout {
   padding: var(--lumo-space-l);
 }
 
+.warenlager-view .span-new {
+	background-color: #74410e;
+  	color: #FFFFFF;
+  	padding: 16px;
+  	border-radius: 32px;
+}
+
+.warenlager-view .span-growing {
+	background-color: #a35b14;
+  	color: #FFFFFF;
+  	padding: 16px;
+  	border-radius: 32px;
+}
+
+.warenlager-view .span-ready {
+	background-color: #004000;
+  	color: #FFFFFF;
+  	padding: 16px;
+  	border-radius: 32px;
+}
+
+.warenlager-view .span-harvested {
+	background-color: #008040;
+  	color: #FFFFFF;
+  	padding: 16px;
+  	border-radius: 32px;
+}
+
+.warenlager-view .span-verifying {
+	background-color: #0080c0;
+  	color: #FFFFFF;
+  	padding: 16px;
+  	border-radius: 32px;
+}
+
+.warenlager-view .span-output-ready {
+	background-color: #8ABD3E;
+  	color: #FFFFFF;
+  	padding: 16px;
+  	border-radius: 32px;
+}
+
+.warenlager-view .edit {
+	border-radius: 32px;
+}
+
 .warenlager-view .editor vaadin-checkbox {
   padding-top: var(--lumo-space-m);
 }
