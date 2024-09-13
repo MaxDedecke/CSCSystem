@@ -28,14 +28,21 @@ services:
             - ~/docker_data/cscs/application.properties:/application.properties
             - cscs_data:/Data
 
+    mariadb:
+        image: mariadb:latest
+        hostname: mariadb.local
+        restart: unless-stopped
+        env_file: ~/docker_data/mariadb/mariadb.env
+        volumes:
+          - mariadb_data:/var/lib/mysql
+
     joomla:
         image: joomla:latest
         hostname: joomla.local
         restart: always
         env_file: ~/docker_data/joomla/joomla.env
         volumes:
-          - ~/horizon/horizon_demo_package_joomla/:/var/www/html
-          - joomla_data:/var/www/html/tmp
+          - joomla_data:/var/www/html
     
     portainer:
         image: portainer/portainer-ce:latest
@@ -44,7 +51,7 @@ services:
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
           - portainer_data:/data
-    
+
     watchtower:
         image: containrrr/watchtower:latest
         restart: always
@@ -80,7 +87,6 @@ services:
             #certbot
           - ~/docker_data/acme-challenge/:/var/www/certbot/:ro
           - ~/docker_data/certbot/:/etc/nginx/ssl/:ro
-    
     certbot:
         image: certbot/certbot:latest
         volumes:
@@ -92,3 +98,4 @@ volumes:
     portainer_data:
     postgres_data:
     cscs_data:
+    mariadb_data:
