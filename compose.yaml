@@ -64,16 +64,22 @@ services:
           - WATCHTOWER_DISABLE_CONTAINERS=cscsystem-cscs-1
             # Every Day 3:00 in the night
     
-            #    borgbackup:
-            #image: epicdocker/borgbackup:stable
-            #restart: always
-            #volumes:
-            #- joomla_data:/sources/joomla/:ro
-            #- portainer_data:/sources/portainer/:ro
-            #- postgres_data:/sources/postgres/:ro
-            #- ~/docker_data/:/sources/docker_data/:ro
-            #- /mnt/cgs-backup/:/cgs-backup
-            #env_file: ~/docker_data/borgbackup/backup.env
+    borgmatic:
+        image: ghcr.io/borgmatic-collective/borgmatic:latest
+        restart: always
+        env_file: ~/docker_data/borgmatic/borgmatic.env
+        volumes:
+          - ~/borg:/mnt/borg-repository
+          - ~/docker_data/borgmatic/etc:/etc/borgmatic.d/
+          - ~/docker_data/borgmatic/config:/root/.config/borg
+          - ~/docker_data/borgmatic/config:/root/.cache/borg
+          # Data to Backup 
+          - joomla_data:/mnt/src/joomla_data/:ro
+          - cscs_data:/mnt/src/cscs_data/:ro
+          - mariadb_data:/mnt/src/mariadb_data/:ro
+          - portainer_data:/mnt/src/portainer_data/:ro
+          - postgres_data:/mnt/src/postgres_data/:ro
+          - ~/docker_data/:/mnt/src/docker_data/:ro
   
     nginx:
         image: nginx:latest
