@@ -124,7 +124,7 @@ vaadin-grid::part(header-cell) {
   color:rgba(69,37,18,1);
 }
 
-vaadin-grid::part(selected-row-cell) { background-color:rgba(134,176,72,0.38); }
+vaadin-grid::part(selected-row-cell) { background-color:rgba(138,148,123,0.95); }
 
 vaadin-horizontal-layout.diary-view-horizontal-layout-1 {
   background:rgba(191,191,191,0.08);
@@ -284,7 +284,7 @@ vaadin-menu-bar-overlay.warenlager-view-menu-bar-1::part(overlay) { background-c
 
 vaadin-menu-bar.warenlager-view-menu-bar-1 vaadin-menu-bar-button {
   --lumo-button-size:var(--lumo-size-m);
-  background-color:rgba(191,191,191,0.08);
+  background-color:rgba(24,58,102,0);
   border-color:#8ABD3E;
   color:#8ABD3E;
 }

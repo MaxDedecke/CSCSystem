@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
@@ -66,6 +67,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.shared.Tooltip;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -76,6 +78,7 @@ import com.vaadin.flow.component.upload.receivers.FileBuffer;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.lumo.LumoIcon;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
@@ -112,7 +115,7 @@ public class WarenlagerView extends Div {
 	Checkbox isFreshCuttingBox;
 	Checkbox isFreshSeedBox;
 	Checkbox singlePlantBox;
-	Checkbox setCustomSettingsBox = new Checkbox("Global");
+	Checkbox setCustomSettingsBox = new Checkbox("Erweitert");
 
 	DatePicker dateHarvested;
 	ComboBox<Location> locationBox;
@@ -190,6 +193,7 @@ public class WarenlagerView extends Div {
     private DatePicker cuttingPlantDate;
     private TextField cuttingsAmountField;
     private TextField cuttingsPriceField;
+    private TextField patternName;
     
     private TextField seedNameField;
     private TextField seedNumberField;
@@ -249,14 +253,15 @@ public class WarenlagerView extends Div {
 		Button cancelButton = new Button("zurück");
 		cancelButton.addClassName("cancel-button");	
 		cancelButton.addClickListener(e -> {
-//			clearPlantEditDialog();
+			clearAddPlantsDialog();
 			addPlantsDialog.close();
 		});
 		
 		Button addPlantsButton = new Button("hinzufügen");
 		addPlantsButton.addClassName("save-button");
 		addPlantsButton.addClickListener(e -> {
-//			clearPlantEditDialog();
+			savePlantsToCharge();
+			clearAddPlantsDialog();
 			addPlantsDialog.close();
 		});
 		
@@ -264,6 +269,33 @@ public class WarenlagerView extends Div {
 		addPlantsDialog.getFooter().add(addPlantsButton);
 	}
 	
+	private void savePlantsToCharge() {
+		
+		Optional<Charge> charge = chargeService.findAllByAssociation(associationId).stream().filter(e -> e.getId().equals(statusEntity.getId())).findAny();
+		if ((!tmpPlants.isEmpty()) && charge.isPresent()) {
+			
+			Charge tmpCharge = charge.get();
+			List<Plant> finalPlants = new ArrayList<>();
+			tmpPlants.forEach(e -> {
+				finalPlants.add(plantService.update(e));
+			});
+			
+			tmpCharge.setPlants(finalPlants);
+			chargeService.update(tmpCharge);
+		} else {
+			Notification.show("Es muss mindestens eine Pflanze existieren.");
+		}
+	}
+
+	private void clearAddPlantsDialog() {
+		patternName.setValue(patternName.getEmptyValue());
+		chargeAmountPlantsField.setValue(chargeAmountPlantsField.getEmptyValue());
+		plantLocationBox.setValue(plantLocationBox.getListDataView().getItem(0));
+		plantStatusBox.setValue(plantStatusBox.getListDataView().getItem(0));	
+		setCustomSettingsBox.setValue(false);
+		tmpPlants = new ArrayList<Plant>();
+	}
+
 	private void createConvertPlantDialog() {
 		
 		VerticalLayout wrapper = new VerticalLayout();
@@ -408,7 +440,7 @@ public class WarenlagerView extends Div {
 		this.plantEditNumberField.setValue(plantEditNameField.getEmptyValue());
 		this.plantEditStatusBox.setValue(plantEditStatusBox.getEmptyValue());
 		changeExistingPlant = null;
-		editSinglePlantDialog.close();		
+		editSinglePlantDialog.close();	
 	}
 
 	private void createAddChargeDialog() {
@@ -593,11 +625,12 @@ public class WarenlagerView extends Div {
 	}
 	
 	private Component createAddPlantsDialogContent() {
-		
+
 		VerticalLayout amountLayout = new VerticalLayout();
 		amountLayout.addClassNames(LumoUtility.Margin.NONE, 
-				LumoUtility.Padding.NONE, LumoUtility.FlexDirection.COLUMN, LumoUtility.Display.FLEX, LumoUtility.AlignItems.START,  "rechtliches-box");
+				LumoUtility.Padding.NONE, LumoUtility.FlexDirection.COLUMN, LumoUtility.Display.FLEX, LumoUtility.AlignItems.START,  "rechtliches-box", LumoUtility.Width.FULL, LumoUtility.Height.FULL);
 		Button addPlantsForAmountButton = new Button("übernehmen");
+		amountLayout.setHeight(450, Unit.PIXELS);
 		addPlantsForAmountButton.addClassNames("save-button");
 		
 		addPlantsForAmountButton.addClickListener(e -> {
@@ -607,31 +640,42 @@ public class WarenlagerView extends Div {
 			}
 			
 			for(int i = 0; i < amountOfPlants; i++) {
-				tmpPlants.add(new Plant());
+				Plant plant = new Plant();
+				plant.setName(patternName.isEmpty() ? "Pflanze_" + i : patternName.getValue());
+				plant.setAssociationId(associationId);
+				plant.setDateOfExistense(LocalDate.now());
+				if (setCustomSettingsBox.getValue()) {
+					plant.setGrowLocation(plantLocationBox.getValue());
+					plant.setStatus(plantStatusBox.getValue());
+				}
+				tmpPlants.add(plant);
 			}
 			
 			plantGrid.setItems(tmpPlants);
 		});
 		
-		amountLayout.add(chargeAmountPlantsField, addPlantsForAmountButton);
+		ComboBox<Location> globalLocationBox = new ComboBox<Location>("Standort");
+		globalLocationBox.setWidthFull();
+		ComboBox<GrowStatus> globalStatusBox = new ComboBox<GrowStatus>("Status");
+		globalStatusBox.setWidthFull();
+		patternName = new TextField("Name der Pflanzen");
+		patternName.setWidthFull();
+		chargeAmountPlantsField.setWidthFull();
+		addPlantsForAmountButton.setWidthFull();
+		setCustomSettingsBox.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		
+		amountLayout.add(chargeAmountPlantsField, patternName, setCustomSettingsBox, globalLocationBox, globalStatusBox, addPlantsForAmountButton);
 		
 		VerticalLayout secondLayout = new VerticalLayout();
 		secondLayout.addClassNames(LumoUtility.Margin.NONE, 
 				LumoUtility.Padding.NONE, LumoUtility.FlexDirection.COLUMN, LumoUtility.Display.FLEX, LumoUtility.AlignItems.START);
+		secondLayout.setHeight("100%");
 		
 		HorizontalLayout globalSettingsLayout = new HorizontalLayout();
 		globalSettingsLayout.addClassNames("rechtliches-box-horizontal-start");
 		globalSettingsLayout.setWidthFull();
 		
-		VerticalLayout checkBoxWrapper = new VerticalLayout();
-		checkBoxWrapper.setAlignItems(Alignment.CENTER);
-		checkBoxWrapper.setJustifyContentMode(JustifyContentMode.CENTER);
-		setCustomSettingsBox.addClassNames(LumoUtility.Margin.Top.LARGE);
-		checkBoxWrapper.add(setCustomSettingsBox);
-		checkBoxWrapper.setSizeUndefined();
-		
 		setCustomSettingsBox.addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Top.SMALL);
-		ComboBox<Location> globalLocationBox = new ComboBox<Location>("Standort");
 		List<Location> locationsByAssociation = locationService.findAllByAssociation(associationId);
 		globalLocationBox.setItems(locationsByAssociation);
 		globalLocationBox.setValue(locationsByAssociation.size() > 0 ? globalLocationBox.getListDataView().getItem(0) : globalLocationBox.getEmptyValue());
@@ -644,7 +688,6 @@ public class WarenlagerView extends Div {
 			plantGrid.setItems(tmpPlants);
 		});
 	
-		ComboBox<GrowStatus> globalStatusBox = new ComboBox<GrowStatus>("Status");
 		globalStatusBox.setItems(Arrays.asList(GrowStatus.SPROUTING, GrowStatus.NEW_PLANTED, GrowStatus.GROWING, GrowStatus.READY));
 		globalStatusBox.setItemLabelGenerator(e -> e.getLabel());
 		globalStatusBox.setValue(globalStatusBox.getListDataView().getItem(0));
@@ -666,9 +709,9 @@ public class WarenlagerView extends Div {
 		plantWrapper.setWidthFull();
 		
 		plantGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-		plantGrid.addColumn(e -> e.getName()).setHeader("Name").setAutoWidth(true);
+		plantGrid.addColumn(e -> e.getName()).setAutoWidth(true);
 		plantGrid.setMinWidth(300, Unit.PIXELS);
-		plantGrid.setMinHeight(400, Unit.PIXELS);
+		plantGrid.setMinHeight(450, Unit.PIXELS);
 		plantGrid.setSelectionMode(SelectionMode.SINGLE);
 		
 		plantGrid.addSelectionListener(e -> {
@@ -692,9 +735,9 @@ public class WarenlagerView extends Div {
 			
 		});
 		
-		globalSettingsLayout.add(checkBoxWrapper, globalLocationBox, globalStatusBox);
+//		globalSettingsLayout.add(checkBoxWrapper, globalLocationBox, globalStatusBox);
 		
-		H3 headerPlant = new H3("Pflanze - Details");
+		H3 headerPlant = new H3("Details");
 		VerticalLayout formLayoutWrapper = new VerticalLayout();
 		FormLayout plantLayout = new FormLayout();
 		plantLayout.addClassNames(LumoUtility.Margin.Right.XSMALL);
@@ -740,11 +783,50 @@ public class WarenlagerView extends Div {
 		formLayoutWrapper.add(headerPlant, plantLayout, updatePlantButton);
 		
 		plantWrapper.add(plantGrid, formLayoutWrapper);
-		secondLayout.add(globalSettingsLayout, plantWrapper);
+		secondLayout.add(plantWrapper);
 		
+		VerticalLayout finalMainWrapper = new VerticalLayout();
 		HorizontalLayout mainAddPlantsWrapper = new HorizontalLayout();
-		mainAddPlantsWrapper.add(amountLayout, secondLayout);
-		return mainAddPlantsWrapper;
+		
+		VerticalLayout stepOneWrapper = new VerticalLayout();
+		stepOneWrapper.addClassNames(LumoUtility.Margin.NONE, 
+				LumoUtility.Padding.NONE, LumoUtility.FlexDirection.COLUMN, LumoUtility.Display.FLEX, LumoUtility.AlignItems.START);
+		
+		HorizontalLayout innerWrapper = new HorizontalLayout();
+		innerWrapper.addClassNames(LumoUtility.Margin.NONE, 
+				LumoUtility.Padding.NONE);
+		
+		H3 stepOne = new H3("Stritt 1: Angaben zu den Pflanzen");
+		stepOne.addClassName(LumoUtility.Margin.Left.SMALL);
+		
+		Icon icon = VaadinIcon.INFO_CIRCLE.create();
+		Tooltip tooltip = Tooltip.forComponent(icon)
+		        .withText("Dieser Schritt kann mehrmals wiederholt werden, um mehrere Konfigurationen einer Charge zuzuordnern.")
+		        .withPosition(Tooltip.TooltipPosition.TOP_START);
+		icon.setSize("16px");
+		icon.addClassNames(LumoUtility.Margin.Top.SMALL);
+		innerWrapper.add(stepOne, icon);
+		stepOneWrapper.add(innerWrapper);
+		stepOneWrapper.add(amountLayout);
+		
+		VerticalLayout stepTwoWrapper = new VerticalLayout();
+		stepTwoWrapper.addClassNames(LumoUtility.Margin.NONE, 
+				LumoUtility.Padding.NONE, LumoUtility.FlexDirection.COLUMN, LumoUtility.Display.FLEX, LumoUtility.AlignItems.START);
+		
+		H3 stepTwo = new H3("Schritt 2: Individuell anpassen");
+		stepTwo.addClassName(LumoUtility.Margin.Left.SMALL);
+		stepTwoWrapper.add(stepTwo);
+		stepTwoWrapper.add(secondLayout);
+		secondLayout.setHeight(450, Unit.PIXELS);
+		
+		mainAddPlantsWrapper.add(stepOneWrapper, stepTwoWrapper);
+		
+		H2 headerTitle = new H2("Pflanze(n) hinzufügen");
+		headerTitle.addClassName(LumoUtility.Margin.Left.SMALL);
+		
+		finalMainWrapper.add(headerTitle, mainAddPlantsWrapper);
+		
+		return finalMainWrapper;
 	}
 
 	private void createChargeLayout(TabSheet tabSheet) {
@@ -824,6 +906,8 @@ public class WarenlagerView extends Div {
 		
 		chargeGrid.addComponentColumn(entity -> {
 			MenuBar menuBar = new MenuBar();
+			menuBar.setOverlayClassName("warenlager-view-menu-bar-1");
+			menuBar.addClassName("warenlager-view-menu-bar-1");
 			menuBar.setOverlayClassName("warenlager-view-menu-bar-1");
 			menuBar.addClassName("warenlager-view-menu-bar-1");
 			
