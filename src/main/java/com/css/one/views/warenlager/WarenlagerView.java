@@ -20,6 +20,7 @@ import javax.money.Monetary;
 import javax.money.MonetaryAmount;
 
 import org.vaadin.addons.MoneyField;
+import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.data.Blossom;
 import com.css.one.data.Charge;
@@ -42,7 +43,6 @@ import com.css.one.services.SeedService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Unit;
-import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -76,7 +76,6 @@ import com.vaadin.flow.component.upload.receivers.FileBuffer;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
@@ -144,6 +143,7 @@ public class WarenlagerView extends Div {
     Dialog addChargeDialog = new Dialog();
     Dialog editSinglePlantDialog = new Dialog();
     Dialog convertPlantDialog = new Dialog();
+    Dialog addPlantsDialog = new Dialog();
     
     Blossom changeBlossom;
     Cutting changeCutting;
@@ -223,6 +223,7 @@ public class WarenlagerView extends Div {
         createChangeStatusDialog();
         createSinglePlantEditDialog();
         createConvertPlantDialog();
+        createAddPlantsDialog();
         
         TabSheet tabSheet = new TabSheet();
         tabSheet.addClassNames(LumoUtility.Margin.NONE);
@@ -241,6 +242,28 @@ public class WarenlagerView extends Div {
         add(tabSheet);
     }
 
+	private void createAddPlantsDialog() {
+		
+		addPlantsDialog.add(createAddPlantsDialogContent());
+		
+		Button cancelButton = new Button("zurück");
+		cancelButton.addClassName("cancel-button");	
+		cancelButton.addClickListener(e -> {
+//			clearPlantEditDialog();
+			addPlantsDialog.close();
+		});
+		
+		Button addPlantsButton = new Button("hinzufügen");
+		addPlantsButton.addClassName("save-button");
+		addPlantsButton.addClickListener(e -> {
+//			clearPlantEditDialog();
+			addPlantsDialog.close();
+		});
+		
+		addPlantsDialog.getFooter().add(cancelButton);
+		addPlantsDialog.getFooter().add(addPlantsButton);
+	}
+	
 	private void createConvertPlantDialog() {
 		
 		VerticalLayout wrapper = new VerticalLayout();
@@ -395,7 +418,7 @@ public class WarenlagerView extends Div {
 		VerticalLayout headerLayout = new VerticalLayout();
 		HorizontalLayout headlineLayout = new HorizontalLayout();
 		
-		H2 header = new H2("Neue Pflanze(n) hinzufügen");
+		H2 header = new H2("Neue Charge hinzufügen");
 		
 		headlineLayout.add(header);
 
@@ -571,6 +594,27 @@ public class WarenlagerView extends Div {
 	
 	private Component createAddPlantsDialogContent() {
 		
+		VerticalLayout amountLayout = new VerticalLayout();
+		amountLayout.addClassNames(LumoUtility.Margin.NONE, 
+				LumoUtility.Padding.NONE, LumoUtility.FlexDirection.COLUMN, LumoUtility.Display.FLEX, LumoUtility.AlignItems.START,  "rechtliches-box");
+		Button addPlantsForAmountButton = new Button("übernehmen");
+		addPlantsForAmountButton.addClassNames("save-button");
+		
+		addPlantsForAmountButton.addClickListener(e -> {
+			int amountOfPlants = 0;
+			if(!chargeAmountPlantsField.isEmpty()) {
+				amountOfPlants = chargeAmountPlantsField.getValue().intValue();
+			}
+			
+			for(int i = 0; i < amountOfPlants; i++) {
+				tmpPlants.add(new Plant());
+			}
+			
+			plantGrid.setItems(tmpPlants);
+		});
+		
+		amountLayout.add(chargeAmountPlantsField, addPlantsForAmountButton);
+		
 		VerticalLayout secondLayout = new VerticalLayout();
 		secondLayout.addClassNames(LumoUtility.Margin.NONE, 
 				LumoUtility.Padding.NONE, LumoUtility.FlexDirection.COLUMN, LumoUtility.Display.FLEX, LumoUtility.AlignItems.START);
@@ -697,8 +741,10 @@ public class WarenlagerView extends Div {
 		
 		plantWrapper.add(plantGrid, formLayoutWrapper);
 		secondLayout.add(globalSettingsLayout, plantWrapper);
-
-		return secondLayout;
+		
+		HorizontalLayout mainAddPlantsWrapper = new HorizontalLayout();
+		mainAddPlantsWrapper.add(amountLayout, secondLayout);
+		return mainAddPlantsWrapper;
 	}
 
 	private void createChargeLayout(TabSheet tabSheet) {
@@ -712,7 +758,8 @@ public class WarenlagerView extends Div {
 
 		Button addChargeButton = new Button();
 		addChargeButton.addClassNames("button-layout-common");
-		addChargeButton.setText("+ Pflanze(n) hinzufügen");
+		addChargeButton.setText("Charge hinzufügen");
+		addChargeButton.setIcon(VaadinIcon.CUBES.create());
 		addChargeButton.addClickListener(e -> addChargeDialog.open());
 
 		layoutButton.setAlignItems(Alignment.CENTER);
@@ -728,24 +775,12 @@ public class WarenlagerView extends Div {
 		
 		chargeGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 		chargeGrid.addComponentHierarchyColumn(entity -> {
-			Avatar avatar;
-			
+			Component avatar;
 			if(entity.isCharge()) {
-				avatar = new Avatar("");				
-				StreamResource imageResource = new StreamResource("seed.png",
-						() -> getClass().getResourceAsStream("/seed.png"));
-				
-				avatar.setImageResource(imageResource);
+				avatar = VaadinIcon.CUBES.create();
 			} else {
-				avatar = new Avatar("");				
-				StreamResource imageResource = new StreamResource("empty-plant.png",
-						() -> getClass().getResourceAsStream("/empty-plant.png"));
-				
-				avatar.setImageResource(imageResource);
+				avatar = LineAwesomeIcon.CANNABIS_SOLID.create();
 			}
-			
-			avatar.setHeight("64px");
-			avatar.setWidth("64px");
 			avatar.getElement().setAttribute("tabindex", "-1");
 						
 			Span fullName = new Span("Nummer: " + entity.getNummer());
@@ -835,6 +870,11 @@ public class WarenlagerView extends Div {
 					prepareChangeStatusPopup(entity);
 					changeStatusDialog.open();
 				});		
+				
+				menuBar.addItem("Pflanze(n) hinzufügen", event -> {
+					statusEntity = entity;
+					addPlantsDialog.open();
+				});
 			}
 			return menuBar;
 		}).setWidth("100px").setFlexGrow(0);
