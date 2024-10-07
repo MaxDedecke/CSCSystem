@@ -312,7 +312,7 @@ public class WarenlagerView extends Div {
 		plantEditLocationBox.setItems(locationService.findAllByAssociation(associationId));
 		plantEditLocationBox.setItemLabelGenerator(e -> e.getName());
 		
-		plantEditStatusBox.setItems(Arrays.asList(GrowStatus.NEW, GrowStatus.GROWING, GrowStatus.READY));
+		plantEditStatusBox.setItems(Arrays.asList(GrowStatus.NEW_PLANTED, GrowStatus.GROWING, GrowStatus.READY));
 		plantEditStatusBox.setItemLabelGenerator(e -> e.getLabel());
 		
 		plantLayout.add(plantEditNameField, plantEditNumberField, plantEditStatusBox, plantEditLocationBox);
@@ -518,7 +518,7 @@ public class WarenlagerView extends Div {
 					p.setDateOfExistense(LocalDate.now());
 					p.setName(chargeNameField.getValue() + "_" + (count + i));
 					p.setId(Integer.toUnsignedLong(count + i));
-					p.setStatus(GrowStatus.NEW);
+					p.setStatus(GrowStatus.NEW_PLANTED);
 					p.setGrowLocation(locationsByAssociation.get(0));
 					tmpPlants.add(p);
 				}
@@ -532,7 +532,7 @@ public class WarenlagerView extends Div {
 				p.setDateOfExistense(LocalDate.now());
 				p.setName(chargeNameField.getValue() + "_" + (count + i));
 				p.setId(Integer.toUnsignedLong(count + i));
-				p.setStatus(GrowStatus.NEW);
+				p.setStatus(GrowStatus.NEW_PLANTED);
 				p.setGrowLocation(locationsByAssociation.get(0));
 				tmpPlants.add(p);
 			}
@@ -601,7 +601,7 @@ public class WarenlagerView extends Div {
 		});
 	
 		ComboBox<GrowStatus> globalStatusBox = new ComboBox<GrowStatus>("Status");
-		globalStatusBox.setItems(Arrays.asList(GrowStatus.NEW, GrowStatus.GROWING, GrowStatus.READY));
+		globalStatusBox.setItems(Arrays.asList(GrowStatus.SPROUTING, GrowStatus.NEW_PLANTED, GrowStatus.GROWING, GrowStatus.READY));
 		globalStatusBox.setItemLabelGenerator(e -> e.getLabel());
 		globalStatusBox.setValue(globalStatusBox.getListDataView().getItem(0));
 		globalStatusBox.setEnabled(false);
@@ -769,16 +769,15 @@ public class WarenlagerView extends Div {
 		chargeGrid.addComponentColumn(entity -> {
 			Span span = new Span(entity.getStatus() == null ? "" : entity.getStatus().getLabel());
 			
-			if(entity.getStatus() != null) {	
-				if(entity.getStatus() == GrowStatus.NEW) {
+			if (entity.getStatus() != null) {
+				if (entity.getStatus() == GrowStatus.SPROUTING) {
+					span.addClassName("span-sprout");
+				} else if (entity.getStatus() == GrowStatus.NEW_PLANTED) {
 					span.addClassName("span-new");
-
-				} else if(entity.getStatus() == GrowStatus.GROWING) {
+				} else if (entity.getStatus() == GrowStatus.GROWING) {
 					span.addClassName("span-growing");
-
-				} else if(entity.getStatus() == GrowStatus.READY) {
+				} else if (entity.getStatus() == GrowStatus.READY) {
 					span.addClassName("span-ready");
-
 				} else {
 					span.addClassName("span-harvested");
 				}
@@ -809,12 +808,27 @@ public class WarenlagerView extends Div {
 					changeStatusDialog.open();
 				});
 				if(entity.getStatus() == GrowStatus.READY || entity.getStatus() == GrowStatus.HARVESTED) {
-					menuBar.addItem("Ernten", event -> {
+					menuBar.addItem("Blüten ernten", event -> {
 						convertEntity = entity;
 						prepareNewBlossomStatusPopup(entity);
 						addBlossomDialog.open();
 					});
 				}
+				menuBar.addItem("Samen ernten", event -> {
+					convertEntity = entity;
+//					prepareSinglePlantDialog();
+					addSeedsDialog.open();
+				});
+				menuBar.addItem("Klonen", event -> {
+					convertEntity = entity;
+//					prepareSinglePlantDialog();
+					addSeedsDialog.open();
+				});
+				menuBar.addItem("Stecklinge erfassen", event -> {
+					convertEntity = entity;
+//					prepareSinglePlantDialog();
+					addCuttingsDialog.open();
+				});			
 			} else {
 				menuBar.addItem("Status für alle ändern", event -> {
 					statusEntity = entity;
@@ -897,7 +911,7 @@ public class WarenlagerView extends Div {
 	
 	private void prepareChangeStatusPopup(EntityWrapper entity) {
 		List<GrowStatus> stati = new ArrayList<GrowStatus>(Arrays.asList(GrowStatus.values()));
-		stati.removeIf(e -> e == GrowStatus.VERIFYING || e == GrowStatus.OUTPUT_READY);
+		stati.removeIf(e -> e == GrowStatus.VERIFYING || e == GrowStatus.OUTPUT_READY || e == GrowStatus.DESTORYED);
 
 		if (!entity.isCharge() && entity.getStatus() != null) {
 			stati.removeIf(e -> (!(entity.getStatus().compareTo(e) < 0)));
@@ -1599,9 +1613,9 @@ public class WarenlagerView extends Div {
 		cuttingNameField = new TextField("Name");
 		cuttingPlantDate = new DatePicker("Datum des Pflanzens");
 		comboxCuttingStatus.setItems(Arrays.asList(GrowStatus.values()).stream()
-				.filter(e -> (e == GrowStatus.NEW || (e == GrowStatus.GROWING || e == GrowStatus.READY))).toList());
+				.filter(e -> (e == GrowStatus.NEW_PLANTED || (e == GrowStatus.GROWING || e == GrowStatus.READY))).toList());
 		comboxCuttingStatus.setItemLabelGenerator(e -> e.getLabel());
-		comboxCuttingStatus.setValue(GrowStatus.NEW);
+		comboxCuttingStatus.setValue(GrowStatus.NEW_PLANTED);
 		
 		cuttingsAmountField = new TextField("Anzahl Stecklinge");
 		cuttingsAmountField.setAllowedCharPattern("[0-9/]");

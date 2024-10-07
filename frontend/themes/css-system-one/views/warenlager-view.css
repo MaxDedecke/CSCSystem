@@ -18,6 +18,7 @@ vaadin-grid {
   flex-direction: column;
 }
 
+
 .warenlager-view .button-grid-green {
   flex-wrap: wrap;
   display:flex;
@@ -57,6 +58,13 @@ vaadin-vertical-layout {
 .warenlager-view .editor {
   flex-grow: 1;
   padding: var(--lumo-space-l);
+}
+
+.warenlager-view .span-sprout {
+	background-color: #808000;
+  	color: #FFFFFF;
+  	padding: 16px;
+  	border-radius: 32px;
 }
 
 .warenlager-view .span-new {

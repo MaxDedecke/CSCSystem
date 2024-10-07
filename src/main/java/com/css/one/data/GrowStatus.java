@@ -1,12 +1,15 @@
 package com.css.one.data;
 
 public enum GrowStatus {
-	NEW("Neu gepflanzt"), 
+	
+	SPROUTING("Keimen"),
+	NEW_PLANTED("Neu gepflanzt"), 
 	GROWING("Im Wachstum"), 
 	READY("Erntereif"),
 	HARVESTED("Verarbeitet"),
 	VERIFYING("Im Labor"),
-	OUTPUT_READY("Ausgabebereit");
+	OUTPUT_READY("Ausgabebereit"),
+	DESTORYED("Vernichtet");
 	
 	public final String label;
 
