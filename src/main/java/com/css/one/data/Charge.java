@@ -3,6 +3,7 @@ package com.css.one.data;
 import java.time.LocalDate;
 import java.util.List;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -24,6 +25,7 @@ public class Charge implements EntityWrapper {
 	private int associationId;
 
 	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+	@Nullable
 	List<Plant> plants;
 
 	public List<Plant> getPlants() {

@@ -409,31 +409,20 @@ public class WarenlagerView extends Div {
 		wrapper.add(headerLayout, layout);
 		
 		saveChargeButton = new Button("Hinzufügen", e -> {
-
 			if (!chargeNameField.isEmpty()) {
 				if (!chargeNumberField.isEmpty()) {
-					if (!chargeAmountPlantsField.isEmpty()) {
-						if (!tmpPlants.isEmpty()) {
-							addNewCharge();
-							addChargeDialog.close();
-							refreshGrid(ViewStatus.CHARGE);
-							clearChargeDialog();
-						} else {
-							Notification.show("Eine Charge muss mindestens eine Pflanze beinhalten!");
-						}
-					} else {
-						Notification.show("Wieviele Pflanzen hat die Charge ?");
-					}
+					addNewCharge();
+					addChargeDialog.close();
+					refreshGrid(ViewStatus.CHARGE);
+					clearChargeDialog();
 				} else {
 					Notification.show("Jede Charge braucht eine Nummer !");
 				}
 			} else {
 				Notification.show("Jede Charge braucht einen Namen !");
 			}
-
 		});
 		saveChargeButton.addClassNames("save-button");
-		saveChargeButton.setEnabled(false);
 		
 		Button cancelButton = new Button("Abbrechen", e -> {
 			clearChargeDialog();
@@ -444,7 +433,6 @@ public class WarenlagerView extends Div {
 		
 		deleteChargeButton = new Button("Löschen", e -> {
 			if(changeCharge != null) {
-				
 			
 			chargeService.delete(changeCharge.getId());
 			changeCharge.getPlants().forEach(plant -> {
@@ -476,27 +464,26 @@ public class WarenlagerView extends Div {
 
 	private void addNewCharge() {
 
-		List<Plant> includedPlants = new ArrayList<>();
+//		List<Plant> includedPlants = new ArrayList<>();
 		
 		Charge charge;
 		
 		if(changeCharge != null) {
 			charge = changeCharge;
-			tmpPlants.forEach(e -> {
-				includedPlants.add(plantService.update(e));
-			});
+//			tmpPlants.forEach(e -> {
+//				includedPlants.add(plantService.update(e));
+//			});
 		} else {
 			charge = new Charge();	
-			tmpPlants.forEach(e -> {
-				e.setId(0L);
-				includedPlants.add(plantService.update(e));
-			});
+//			tmpPlants.forEach(e -> {
+//				e.setId(0L);
+//				includedPlants.add(plantService.update(e));
+//			});
 		}
 		
 		charge.setAssociationId(associationId);
 		charge.setDateOfExistense(chargeRegDate.getValue() != chargeRegDate.getEmptyValue() ? chargeRegDate.getValue() : LocalDate.now());
 		charge.setName(chargeNameField.getValue());
-		charge.setPlants(includedPlants);
 		
 		chargeService.update(charge);
 	}
@@ -505,12 +492,6 @@ public class WarenlagerView extends Div {
 		this.chargeNameField.setValue(chargeNameField.getEmptyValue());
 		this.chargeRegDate.setValue(LocalDate.now());
 		this.chargeAmountPlantsField.setValue(chargeAmountPlantsField.getEmptyValue());
-		this.plantNameField.setValue(plantNameField.getEmptyValue());
-		this.plantLocationBox.setValue(plantLocationBox.getEmptyValue());
-		this.plantStatusBox.setValue(plantStatusBox.getEmptyValue());
-		setCustomSettingsBox.setEnabled(true);
-		setCustomSettingsBox.setValue(false);
-		
 		refreshPlantsGrid(0);
 	}
 	
@@ -564,11 +545,8 @@ public class WarenlagerView extends Div {
 		HorizontalLayout mainLayout = new HorizontalLayout();
 		mainLayout.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		
-		H3 headerCharge = new H3("Charge - Details");
-		headerCharge.addClassNames(LumoUtility.Margin.MEDIUM);
 		VerticalLayout firstWrapper = new VerticalLayout();
 		VerticalLayout chargeWrapperLayout = new VerticalLayout();
-		firstWrapper.addClassNames("bottom-layout", "bestand-box");
 		FormLayout layout = new FormLayout();
 		layout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1));
 		
@@ -579,31 +557,20 @@ public class WarenlagerView extends Div {
 		chargeNumberField.setWidthFull();
 		chargeNameField.setWidthFull();
 		chargeRegDate.setWidthFull();
-		chargeAmountPlantsField.setWidthFull();
-		chargeAmountPlantsField.setAllowedCharPattern("[0-9/]");
 		
-		layout.add(chargeNumberField, chargeNameField, chargeRegDate, chargeAmountPlantsField);
-		
-		Button firstStepButton = new Button("übernehmen");
-		firstStepButton.addClassName("save-button");
-		firstStepButton.setWidthFull();
-		firstStepButton.addClickListener(e -> {
-			
-			if(chargeNameField.getValue() != null) {	
-				if(chargeAmountPlantsField.getValue() != null) {					
-					refreshPlantsGrid(chargeAmountPlantsField.getValue().intValue());	
-					saveChargeButton.setEnabled(true);
-				} else {
-					Notification.show("Die Anzahl der Pflanzen muss angegeben sein.");
-				}
-			} else {
-				Notification.show("Die Charge muss zuerst einen Namen haben.");
-			}
-		});
+		layout.add(chargeNumberField, chargeNameField, chargeRegDate);
 		
 		chargeWrapperLayout.add(layout);
-		firstWrapper.add(headerCharge, chargeWrapperLayout, firstStepButton);
+		firstWrapper.add(chargeWrapperLayout);
 		firstWrapper.setMaxWidth(400, Unit.PIXELS);
+		
+		mainLayout.add(firstWrapper);
+		mainLayout.setFlexGrow(1, chargeWrapperLayout);
+		return mainLayout;
+	}
+	
+	private Component createAddPlantsDialogContent() {
+		
 		VerticalLayout secondLayout = new VerticalLayout();
 		secondLayout.addClassNames(LumoUtility.Margin.NONE, 
 				LumoUtility.Padding.NONE, LumoUtility.FlexDirection.COLUMN, LumoUtility.Display.FLEX, LumoUtility.AlignItems.START);
@@ -645,8 +612,6 @@ public class WarenlagerView extends Div {
 			plantGrid.setItems(tmpPlants);
 		});
 		
-		globalSettingsLayout.add(checkBoxWrapper, globalLocationBox, globalStatusBox);
-		
 		setCustomSettingsBox.addValueChangeListener(e -> {
 			globalLocationBox.setEnabled(e.getValue());
 			globalStatusBox.setEnabled(e.getValue());
@@ -682,6 +647,8 @@ public class WarenlagerView extends Div {
 			});
 			
 		});
+		
+		globalSettingsLayout.add(checkBoxWrapper, globalLocationBox, globalStatusBox);
 		
 		H3 headerPlant = new H3("Pflanze - Details");
 		VerticalLayout formLayoutWrapper = new VerticalLayout();
@@ -730,26 +697,22 @@ public class WarenlagerView extends Div {
 		
 		plantWrapper.add(plantGrid, formLayoutWrapper);
 		secondLayout.add(globalSettingsLayout, plantWrapper);
-		mainLayout.add(firstWrapper, secondLayout);
-		mainLayout.setFlexGrow(1, chargeWrapperLayout, plantWrapper);
-		return mainLayout;
+
+		return secondLayout;
 	}
 
 	private void createChargeLayout(TabSheet tabSheet) {
 		VerticalLayout wrapper = new VerticalLayout();
 		wrapper.setClassName("grid-wrapper");
-
 		wrapper.setHeightFull();
 		
-		HorizontalLayout horizontalLayout = new HorizontalLayout();
-		
+		HorizontalLayout horizontalLayout = new HorizontalLayout();		
 		VerticalLayout layoutButton = new VerticalLayout();
 		layoutButton.addClassNames(LumoUtility.Padding.Left.NONE);
 
 		Button addChargeButton = new Button();
 		addChargeButton.addClassNames("button-layout-common");
 		addChargeButton.setText("+ Pflanze(n) hinzufügen");
-
 		addChargeButton.addClickListener(e -> addChargeDialog.open());
 
 		layoutButton.setAlignItems(Alignment.CENTER);
@@ -764,7 +727,6 @@ public class WarenlagerView extends Div {
 		wrapper.add(horizontalLayout);
 		
 		chargeGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-		
 		chargeGrid.addComponentHierarchyColumn(entity -> {
 			Avatar avatar;
 			
@@ -787,7 +749,6 @@ public class WarenlagerView extends Div {
 			avatar.getElement().setAttribute("tabindex", "-1");
 						
 			Span fullName = new Span("Nummer: " + entity.getNummer());
-
 		    Span profession = new Span("Name: " + entity.getName());
 		    profession.getStyle()
 		            .set("color", "var(--lumo-secondary-text-color)")
@@ -949,11 +910,9 @@ public class WarenlagerView extends Div {
 	private void createSeedsLayout(TabSheet tabSheet) {
 		VerticalLayout wrapper = new VerticalLayout();
 		wrapper.setClassName("grid-wrapper");
-
 		wrapper.setHeightFull();	
 		
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
-
 		VerticalLayout layoutButton = new VerticalLayout();
 		layoutButton.addClassNames(LumoUtility.Padding.Left.NONE);
 
@@ -1001,9 +960,7 @@ public class WarenlagerView extends Div {
 		
 		
 		refreshGrid(ViewStatus.SEED);
-		
-		wrapper.add(seedsGrid);
-		
+		wrapper.add(seedsGrid);		
 		tabSheet.add("Samen", wrapper);
 	}
 	
@@ -1143,7 +1100,6 @@ public class WarenlagerView extends Div {
 		seedPriceField.setValue("");
 		comboBoxResponsibleForSeed.setValue(comboBoxResponsibleForSeed.getEmptyValue());
 		comboBoxLocationSeed.setValue(comboBoxLocationSeed.getEmptyValue());
-		saveChargeButton.setEnabled(false);
 		isFreshSeedBox.setValue(false);
 		changeSeed = null;
 	}
