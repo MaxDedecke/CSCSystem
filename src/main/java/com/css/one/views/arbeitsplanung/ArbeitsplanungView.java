@@ -287,7 +287,7 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
         category = new ComboBox<WorkingUnitCategory>("Kategorie");
         category.setItems(workingUnitCategoryService.findAllByAssociation(associationId));
         category.setItemLabelGenerator(e -> e.getName());
-        category.setValue(category.getListDataView().getItem(0));
+        category.setValue(category.isEmpty() ? category.getEmptyValue() : category.getListDataView().getItem(0));
         
         startWork = new DateTimePicker();
         startWork.setLabel("Arbeitsbegin");

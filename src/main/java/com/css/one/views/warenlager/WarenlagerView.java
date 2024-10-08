@@ -78,6 +78,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
+import jakarta.xml.bind.annotation.XmlElementDecl.GLOBAL;
 
 @PageTitle("Bestand")
 @Route(value = "waren", layout = MainLayout.class)
@@ -128,7 +129,8 @@ public class WarenlagerView extends Div {
 	H2 amount = new H2("0 Gramm");
 	H2 amountCuttings = new H2("0 Stück");
 	H2 amountSeeds = new H2("0 Stück");
-	
+	H2 headerClonePlant = new H2("Pflanze " + "Pflanze1" + " klonen");
+
 	List<Blossom> allStrainsByAssociation = new ArrayList<>();
     List<Output> outputAssociation = new ArrayList<>();
 	List<Plant> tmpPlants = new ArrayList<>();
@@ -260,6 +262,7 @@ public class WarenlagerView extends Div {
 			savePlantsToCharge();
 			clearAddPlantsDialog();
 			addPlantsDialog.close();
+			refreshGrid(ViewStatus.CHARGE);
 		});
 		
 		addPlantsDialog.getFooter().add(cancelButton);
@@ -287,7 +290,7 @@ public class WarenlagerView extends Div {
 	private void clearAddPlantsDialog() {
 		patternName.setValue(patternName.getEmptyValue());
 		chargeAmountPlantsField.setValue(chargeAmountPlantsField.getEmptyValue());
-		plantLocationBox.setValue(plantLocationBox.getListDataView().getItem(0));
+		plantLocationBox.setValue(plantLocationBox.isEmpty() ? plantLocationBox.getEmptyValue() : plantLocationBox.getListDataView().getItem(0));
 		plantStatusBox.setValue(plantStatusBox.getListDataView().getItem(0));	
 		setCustomSettingsBox.setValue(false);
 		tmpPlants = new ArrayList<Plant>();
@@ -444,15 +447,10 @@ public class WarenlagerView extends Div {
 		VerticalLayout wrapper = new VerticalLayout();
 		addChargeDialog.addClassNames(LumoUtility.MaxWidth.SCREEN_XXLARGE);
 		
-		VerticalLayout headerLayout = new VerticalLayout();
-		HorizontalLayout headlineLayout = new HorizontalLayout();
-		
+		VerticalLayout headerLayout = new VerticalLayout();		
 		H2 header = new H2("Neue Charge hinzufügen");
-		
-		headlineLayout.add(header);
-
 		Hr hr = new Hr();		
-		headerLayout.add(headlineLayout, hr);
+		headerLayout.add(header, hr);
 		
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.MEDIUM);
@@ -492,7 +490,7 @@ public class WarenlagerView extends Div {
 			});
 			
 			addChargeDialog.close();
-			Notification.show("Pfla	nze(n) gelöscht.");
+			Notification.show("Charge und Pflanzen gelöscht.");
 			changeCharge = null;
 			refreshGrid(ViewStatus.CHARGE);
 			clearChargeDialog();
@@ -598,7 +596,6 @@ public class WarenlagerView extends Div {
 		mainLayout.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		
 		VerticalLayout firstWrapper = new VerticalLayout();
-		VerticalLayout chargeWrapperLayout = new VerticalLayout();
 		FormLayout layout = new FormLayout();
 		layout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1));
 		
@@ -612,12 +609,9 @@ public class WarenlagerView extends Div {
 		
 		layout.add(chargeNumberField, chargeNameField, chargeRegDate);
 		
-		chargeWrapperLayout.add(layout);
-		firstWrapper.add(chargeWrapperLayout);
+		firstWrapper.add(layout);
 		firstWrapper.setMaxWidth(400, Unit.PIXELS);
-		
 		mainLayout.add(firstWrapper);
-		mainLayout.setFlexGrow(1, chargeWrapperLayout);
 		return mainLayout;
 	}
 	
@@ -629,6 +623,10 @@ public class WarenlagerView extends Div {
 		Button addPlantsForAmountButton = new Button("übernehmen");
 		amountLayout.setHeight(450, Unit.PIXELS);
 		addPlantsForAmountButton.addClassNames("save-button");
+		ComboBox<Location> globalLocationBox = new ComboBox<Location>("Standort");
+		globalLocationBox.setWidthFull();
+		ComboBox<GrowStatus> globalStatusBox = new ComboBox<GrowStatus>("Status");
+		globalStatusBox.setWidthFull();
 		
 		addPlantsForAmountButton.addClickListener(e -> {
 			int amountOfPlants = 0;
@@ -642,8 +640,8 @@ public class WarenlagerView extends Div {
 				plant.setAssociationId(associationId);
 				plant.setDateOfExistense(LocalDate.now());
 				if (setCustomSettingsBox.getValue()) {
-					plant.setGrowLocation(plantLocationBox.getValue());
-					plant.setStatus(plantStatusBox.getValue());
+					plant.setGrowLocation(globalLocationBox.isEmpty() ? null : globalLocationBox.getValue());
+					plant.setStatus(globalStatusBox.getValue());
 				}
 				tmpPlants.add(plant);
 			}
@@ -651,10 +649,6 @@ public class WarenlagerView extends Div {
 			plantGrid.setItems(tmpPlants);
 		});
 		
-		ComboBox<Location> globalLocationBox = new ComboBox<Location>("Standort");
-		globalLocationBox.setWidthFull();
-		ComboBox<GrowStatus> globalStatusBox = new ComboBox<GrowStatus>("Status");
-		globalStatusBox.setWidthFull();
 		patternName = new TextField("Name der Pflanzen");
 		patternName.setWidthFull();
 		chargeAmountPlantsField.setWidthFull();
@@ -863,8 +857,8 @@ public class WarenlagerView extends Div {
 			}
 			avatar.getElement().setAttribute("tabindex", "-1");
 						
-			Span fullName = new Span("Nummer: " + entity.getNummer());
-		    Span profession = new Span("Name: " + entity.getName());
+			Span fullName = new Span("Name: " + entity.getName());
+		    Span profession = new Span("Nummer: " + entity.getNummer());
 		    profession.getStyle()
 		            .set("color", "var(--lumo-secondary-text-color)")
 		            .set("font-size", "var(--lumo-font-size-s)");
@@ -933,16 +927,19 @@ public class WarenlagerView extends Div {
 				}
 				menuBar.addItem("Samen ernten", event -> {
 					convertEntity = entity;
+					setMotherPlantForSeed();
 					addSeedsDialog.open();
 				});
 
 				menuBar.addItem("Klonen", event -> {
 					convertEntity = entity;
+					headerClonePlant.setText("Pflanze " + (convertEntity.getName() + "(" + convertEntity.getId() + ")")+ " klonen");
 					clonePlantDialog.open();
 				});
 
 				menuBar.addItem("Stecklinge erfassen", event -> {
 					convertEntity = entity;
+					setMotherPlantForCuttings();
 					addCuttingsDialog.open();
 				});			
 			} else {
@@ -975,16 +972,28 @@ public class WarenlagerView extends Div {
 		tabSheet.add("Pflanze(n)", wrapper);
 	}
 	
+	private void setMotherPlantForCuttings() {
+		Optional<Plant> optionalPlant = plantService.findAllByAssociation(associationId).stream().filter(e -> e.getId().equals(convertEntity.getId())).findAny();
+		optionalPlant.ifPresent(e -> comboboxCuttingsOrigins.setValue(e));			
+	}
+
+	private void setMotherPlantForSeed() {
+		Optional<Plant> optionalPlant = plantService.findAllByAssociation(associationId).stream().filter(e -> e.getId().equals(convertEntity.getId())).findAny();
+		optionalPlant.ifPresent(e -> comboboxSeedsOrigins.setValue(e));		
+	}
+
 	private void createClonePlantDialog() {
 		
 		VerticalLayout cloneWrapper = new VerticalLayout();
-		H2 headerClone = new H2("Pflanze klonen");
+		
 		TextField renamePlantField = new TextField("Name der neuen Pflanze");
+		renamePlantField.setWidthFull();
 		ComboBox<Charge> chargeToCloneToBox = new ComboBox<Charge>("Klonen in Charge");
+		chargeToCloneToBox.setWidthFull();
 		chargeToCloneToBox.setItems(chargeService.findAllByAssociation(associationId));
 		chargeToCloneToBox.setItemLabelGenerator(e -> e.getName());
 		
-		cloneWrapper.add(headerClone, renamePlantField, chargeToCloneToBox);
+		cloneWrapper.add(headerClonePlant, renamePlantField, chargeToCloneToBox);
 		clonePlantDialog.add(cloneWrapper);
 		
 		Button cancelButton = new Button("zurück");
@@ -1022,6 +1031,8 @@ public class WarenlagerView extends Div {
 			} else {
 				Notification.show("Die geklonte Pflanze braucht einen Namen");
 			}
+			
+			refreshGrid(ViewStatus.CHARGE);
 		});
 		
 		clonePlantDialog.getFooter().add(cancelButton, saveButton);
@@ -1331,7 +1342,7 @@ public class WarenlagerView extends Div {
 		
 		comboBoxResponsibleForSeed.setItems(personService.findAllByAssociation(associationId));
 		comboBoxResponsibleForSeed.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
-		comboBoxResponsibleForSeed.setValue(comboBoxResponsibleForSeed.getListDataView().getItem(0));
+		comboBoxResponsibleForSeed.setValue(comboBoxResponsibleForSeed.isEmpty() ? comboBoxResponsibleForSeed.getEmptyValue() : comboBoxResponsibleForSeed.getListDataView().getItem(0));
 		
 		List<Location> allByAssociation = locationService.findAllByAssociation(associationId);
 		comboBoxLocationSeed.setItems(allByAssociation);
@@ -1760,7 +1771,7 @@ public class WarenlagerView extends Div {
 		this.cuttingsPriceField.setValue("");
 		this.cuttingPlantDate.setValue(LocalDate.now());
 		this.cuttingsAmountField.setValue("");
-		this.comboBoxResponsibleForCutting.setValue(comboBoxResponsibleForCutting.getListDataView().getItem(0));
+		this.comboBoxResponsibleForCutting.setValue(comboBoxResponsibleForCutting.isEmpty() ? comboBoxResponsibleForCutting.getEmptyValue() : comboBoxResponsibleForCutting.getListDataView().getItem(0));
 		this.comboBoxLocationCutting.setValue(comboBoxLocationCutting.getListDataView().getItemCount() == 0 ? comboBoxLocationCutting.getEmptyValue() : comboBoxLocationCutting.getListDataView().getItem(0));
 		this.comboxCuttingStatus.setValue(comboxCuttingStatus.getListDataView().getItem(0));
 		this.comboboxCuttingsOrigins.setValue(comboboxCuttingsOrigins.getEmptyValue());
@@ -1819,7 +1830,7 @@ public class WarenlagerView extends Div {
 		
 		comboBoxResponsibleForCutting.setItems(personService.findAllByAssociation(associationId));
 		comboBoxResponsibleForCutting.setItemLabelGenerator(e -> e.getFirstName() + " " + e.getLastName());
-		comboBoxResponsibleForCutting.setValue(comboBoxResponsibleForCutting.getListDataView().getItem(0));
+		comboBoxResponsibleForCutting.setValue(comboBoxResponsibleForCutting.isEmpty() ? comboBoxResponsibleForCutting.getEmptyValue() : comboBoxResponsibleForCutting.getListDataView().getItem(0));
 		
 		List<Location> allByAssociation = locationService.findAllByAssociation(associationId);
 		comboBoxLocationCutting.setItems(allByAssociation);
@@ -2107,11 +2118,11 @@ public class WarenlagerView extends Div {
 			this.seedsGrid.setItems(allSeedsByAssociation);
 			
 		} else {			
-	        this.chargeGrid.setTreeData(builtTreeDate());
+	        this.chargeGrid.setTreeData(builtTreeData());
 		}
 	}
 
-	private TreeData<EntityWrapper> builtTreeDate() {
+	private TreeData<EntityWrapper> builtTreeData() {
 
 		TreeData<EntityWrapper> treeData = new TreeData<>();
 		List<Charge> allByAssociation = chargeService.findAllByAssociation(associationId);

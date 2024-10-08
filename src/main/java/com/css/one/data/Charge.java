@@ -82,14 +82,11 @@ public class Charge implements EntityWrapper {
 	@Override
 	public boolean hasElements() {
 		
-		if(plants != null) {
-			return true;
+		if (plants != null) {
+			if (!plants.isEmpty()) {
+				return true;
+			}
 		}
-		
-		if(!plants.isEmpty()) {
-			return true;
-		}
-		
 		return false;
 	}
 }

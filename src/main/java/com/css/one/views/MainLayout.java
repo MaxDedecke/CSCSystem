@@ -103,7 +103,7 @@ public class MainLayout extends AppLayout {
         HorizontalLayout versionLayout = new HorizontalLayout();
         versionLayout.setWidth("100%");
         versionLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.NONE, "main");
-        versionLayout.add(new Text("ClubOS - v.0.0.4"));
+        versionLayout.add(new Text("CL-OS - v.0.0.5"));
         layout.add(versionLayout);
         
         Hr hr2 = new Hr();
@@ -198,7 +198,7 @@ public class MainLayout extends AppLayout {
             MenuItem userName = userMenu.addItem("");
             Div div = new Div();
             div.add(avatar);
-            div.add(user.getName());
+            div.add(user.getUsername());
             div.add(new Icon("lumo", "dropdown"));
             div.getElement().getStyle().set("display", "flex");
             div.getElement().getStyle().set("align-items", "center");
