@@ -14,8 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Stream;
-
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import javax.money.MonetaryAmount;
@@ -64,7 +62,6 @@ import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.shared.Tooltip;
@@ -78,7 +75,6 @@ import com.vaadin.flow.component.upload.receivers.FileBuffer;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoIcon;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
@@ -99,9 +95,6 @@ public class WarenlagerView extends Div {
     private PlantService plantService;
     
     private int associationId;
-    
-    Dialog addBlossomDialog;
-    Dialog addOutputDialog;
     
 	Grid<Blossom> blossomGrid = new Grid<Blossom>();
 	Grid<Output> outputGrid = new Grid<Output>();
@@ -140,7 +133,10 @@ public class WarenlagerView extends Div {
     List<Output> outputAssociation = new ArrayList<>();
 	List<Plant> tmpPlants = new ArrayList<>();
 
-    Dialog changeStatusDialog = new Dialog();
+	Dialog addBlossomDialog;
+	Dialog addOutputDialog;
+	Dialog clonePlantDialog = new Dialog();
+	Dialog changeStatusDialog = new Dialog();
     Dialog addCuttingsDialog = new Dialog();
     Dialog addSeedsDialog = new Dialog();
     Dialog addChargeDialog = new Dialog();
@@ -242,6 +238,7 @@ public class WarenlagerView extends Div {
         createAddCuttingsDialog();
         createAddSeedsDialog();
         createAddChargeDialog();
+        createClonePlantDialog();
         
         add(tabSheet);
     }
@@ -768,10 +765,11 @@ public class WarenlagerView extends Div {
 			tmpPlant.setName(plantNameField.getValue());
 			tmpPlant.setGrowLocation(plantLocationBox.getValue());
 			tmpPlant.setStatus(plantStatusBox.getValue());
-			tmpPlants.removeIf(p -> p.getNummer().equals(editPlant.getNummer()));
-			
+			if (editPlant.getId() != null) {
+				tmpPlants.removeIf(p -> p.getNummer().equals(editPlant.getNummer()));
+				tmpPlants.sort((o1, o2) -> Integer.compare(o1.getId().intValue(), o2.getId().intValue()));
+			}
 			tmpPlants.add(tmpPlant);
-			tmpPlants.sort((o1, o2) -> Integer.compare(o1.getId().intValue(), o2.getId().intValue()));
 			
 			plantGrid.setItems(tmpPlants);
 			editPlant = null;
@@ -935,30 +933,39 @@ public class WarenlagerView extends Div {
 				}
 				menuBar.addItem("Samen ernten", event -> {
 					convertEntity = entity;
-//					prepareSinglePlantDialog();
 					addSeedsDialog.open();
 				});
+
 				menuBar.addItem("Klonen", event -> {
 					convertEntity = entity;
-//					prepareSinglePlantDialog();
-					addSeedsDialog.open();
+					clonePlantDialog.open();
 				});
+
 				menuBar.addItem("Stecklinge erfassen", event -> {
 					convertEntity = entity;
-//					prepareSinglePlantDialog();
 					addCuttingsDialog.open();
 				});			
 			} else {
-				menuBar.addItem("Status für alle ändern", event -> {
-					statusEntity = entity;
-					prepareChangeStatusPopup(entity);
-					changeStatusDialog.open();
-				});		
 				
-				menuBar.addItem("Pflanze(n) hinzufügen", event -> {
-					statusEntity = entity;
-					addPlantsDialog.open();
-				});
+				if(entity.hasElements()) {					
+					menuBar.addItem("Status für alle ändern", event -> {
+						statusEntity = entity;
+						prepareChangeStatusPopup(entity);
+						changeStatusDialog.open();
+					});	
+					
+					menuBar.addItem("Pflanze(n) bearbeiten", event -> {
+						statusEntity = entity;
+						insertExistingValuesInAddPlantsDialog();
+						addPlantsDialog.open();
+					});
+				} else {					
+					menuBar.addItem("Pflanze(n) hinzufügen", event -> {
+						statusEntity = entity;
+						addPlantsDialog.open();
+					});
+				}
+				
 			}
 			return menuBar;
 		}).setWidth("100px").setFlexGrow(0);
@@ -968,6 +975,69 @@ public class WarenlagerView extends Div {
 		tabSheet.add("Pflanze(n)", wrapper);
 	}
 	
+	private void createClonePlantDialog() {
+		
+		VerticalLayout cloneWrapper = new VerticalLayout();
+		H2 headerClone = new H2("Pflanze klonen");
+		TextField renamePlantField = new TextField("Name der neuen Pflanze");
+		ComboBox<Charge> chargeToCloneToBox = new ComboBox<Charge>("Klonen in Charge");
+		chargeToCloneToBox.setItems(chargeService.findAllByAssociation(associationId));
+		chargeToCloneToBox.setItemLabelGenerator(e -> e.getName());
+		
+		cloneWrapper.add(headerClone, renamePlantField, chargeToCloneToBox);
+		clonePlantDialog.add(cloneWrapper);
+		
+		Button cancelButton = new Button("zurück");
+		cancelButton.addClassName("cancel-button");
+		cancelButton.addClickListener(e -> {
+			clonePlantDialog.close();
+			renamePlantField.setValue("");
+			chargeToCloneToBox.setValue(chargeToCloneToBox.getEmptyValue());
+		});
+		
+		Button saveButton = new Button("klonen");
+		saveButton.addClassName("save-button");
+		saveButton.addClickListener(e -> {
+			clonePlantDialog.close();
+			
+			if(!renamePlantField.isEmpty()) {
+				if(!chargeToCloneToBox.isEmpty()) {
+					Optional<Plant> optionalPlant = plantService.findAllByAssociation(associationId).stream().filter(p -> p.getId().equals(convertEntity.getId())).findAny();
+					Plant tmpPlant = new Plant();
+					tmpPlant.setAssociationId(associationId);
+					tmpPlant.setDateOfExistense(LocalDate.now());
+					tmpPlant.setGrowLocation(optionalPlant.isPresent() ? optionalPlant.get().getGrowLocation() : null);
+					tmpPlant.setName(renamePlantField.getValue());
+					tmpPlant.setStatus(GrowStatus.NEW_PLANTED);
+					
+					tmpPlant = plantService.update(tmpPlant);
+					Charge chargeToCloneTo = chargeToCloneToBox.getValue();
+					List<Plant> plants = chargeToCloneTo.getPlants();
+					plants.add(tmpPlant);
+					chargeToCloneTo.setPlants(plants);
+					chargeService.update(chargeToCloneTo);
+				} else {
+					Notification.show("Es muss feststehen, in welche Charge die Pflanze integriert werden soll.");
+				}
+			} else {
+				Notification.show("Die geklonte Pflanze braucht einen Namen");
+			}
+		});
+		
+		clonePlantDialog.getFooter().add(cancelButton, saveButton);
+	}
+	
+	private void insertExistingValuesInAddPlantsDialog() {
+		Optional<Charge> optionalCharge = chargeService.findAllByAssociation(associationId).stream().filter(e -> e.getId().equals(statusEntity.getId())).findAny();
+		
+		optionalCharge.ifPresentOrElse(e -> {
+			this.tmpPlants = e.getPlants();	
+			this.plantGrid.setItems(tmpPlants);
+		}, () -> {
+			Notification.show("Charge konnte nicht geladen werden.");
+		});		
+	}
+
 	private void prepareNewBlossomStatusPopup(EntityWrapper entity) {
     	this.nameField.setValue("");
     	this.dateBlossomHarvested.setValue(LocalDate.now());

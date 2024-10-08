@@ -79,4 +79,17 @@ public class Charge implements EntityWrapper {
 	public GrowStatus getStatus() {
 		return null;
 	}
+	@Override
+	public boolean hasElements() {
+		
+		if(plants != null) {
+			return true;
+		}
+		
+		if(!plants.isEmpty()) {
+			return true;
+		}
+		
+		return false;
+	}
 }

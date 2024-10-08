@@ -10,4 +10,5 @@ public interface EntityWrapper {
 	public boolean isCharge();
 	public Location getLocation();
 	public GrowStatus getStatus();
+	public boolean hasElements();
 }

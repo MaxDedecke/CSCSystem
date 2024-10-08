@@ -28,6 +28,7 @@ public class Plant implements EntityWrapper{
 	@ManyToOne
 	private Location growLocation;
 	
+	@Nullable
 	private List<String> tags;
 	
 	public List<String> getTags() {
@@ -89,5 +90,9 @@ public class Plant implements EntityWrapper{
 	@Override
 	public Location getLocation() {
 		return getGrowLocation();
+	}
+	@Override
+	public boolean hasElements() {
+		return false;
 	}
 }
