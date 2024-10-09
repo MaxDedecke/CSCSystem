@@ -7,7 +7,7 @@
   margin-right:12px;
 }
 
-body { font-family:'Questrial', sans-serif; }
+body { font-family:'Afacad Flux', sans-serif; }
 
 h3.diary-view-h3-1 { font-weight:bold; }
 
@@ -21,14 +21,14 @@ vaadin-button {
   background-color:rgba(24,102,32,0.05);
   border-color:rgba(0,219,61,1);
   border-radius:var(--lumo-border-radius-l);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-button.diary-view-button-1 { margin-top:37px; }
 
 vaadin-button.diary-view-button-1::part(label) { color:#8ABD3E; }
 
-vaadin-checkbox { font-family:'Questrial', sans-serif; }
+vaadin-checkbox { font-family:'Afacad Flux', sans-serif; }
 
 vaadin-checkbox label { color:var(--lumo-body-text-color); }
 
@@ -74,7 +74,7 @@ vaadin-date-picker::part(label) { color:#8ABD3E; }
 
 vaadin-date-picker::part(toggle-button) { color:#8ABD3E; }
 
-vaadin-date-time-picker { font-family:'Questrial', sans-serif; }
+vaadin-date-time-picker { font-family:'Afacad Flux', sans-serif; }
 
 vaadin-date-time-picker.finanzen-view-date-time-picker-1::part(label) { color:#8ABD3E; }
 
@@ -83,7 +83,7 @@ vaadin-date-time-picker::part(label) { color:#8ABD3E; }
 vaadin-details {
   border-color:#8ABD3E;
   border-width:2px;
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-details-summary.diary-view-details-summary-1 { color:#8ABD3E; }
@@ -101,7 +101,7 @@ vaadin-grid {
   border-color:rgba(255,255,255,0.65);
   border-radius:10px;
   border-width:0px;
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-grid::-webkit-scrollbar-thumb {
@@ -183,7 +183,7 @@ vaadin-horizontal-layout.uebersicht-view-horizontal-layout-1 {
 
 vaadin-icon { color:#8ABD3E; }
 
-vaadin-login-overlay-wrapper { font-family:'Questrial', sans-serif; }
+vaadin-login-overlay-wrapper { font-family:'Afacad Flux', sans-serif; }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-button[theme~="submit"] { background-color:#8ABD3E; }
 
@@ -191,86 +191,86 @@ vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(helper-text) {
   color:rgba(255,255,255,0.97);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(input-field) {
   background-color:rgba(206,247,143,0.5);
   color:rgba(255,255,255,1);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
   font-weight:bold;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(input-field)[selected] {
   background-color:rgba(206,247,143,0.5);
   color:rgba(255,255,255,1);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
   font-weight:bold;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper [required]::part(label) {
   color:rgba(252,252,252,1);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper::part(error-message-description) {
   color:rgba(252,252,252,1);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper::part(error-message-title) {
   color:rgba(0,0,0,1);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper::part(form-title) {
   color:rgba(255,255,255,1);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
   margin-left:90px;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-password-field::part(reveal-button) {
   color:rgba(255,255,255,1);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1::part(backdrop) {
   background-color:rgba(250,0,0,0);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1::part(brand) {
   background-color:rgba(130,130,130,1);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1::part(card) {
   background-color:rgba(232,0,0,0);
   border-color:rgba(242,0,0,0);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1::part(description) {
   color:rgba(255,254,254,1);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
   font-size:var(--lumo-font-size-xl);
   font-weight:bold;
 }
 
 vaadin-login-overlay-wrapper::part(backdrop) {
   background-color:rgba(247,22,22,0);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-login-overlay-wrapper::part(card) {
   background-color:rgba(255,0,0,0);
   border-color:rgba(227,0,0,0);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
 }
 
 vaadin-menu-bar-overlay.main-layout-menu-bar-1 vaadin-menu-bar-item {
   background-color:rgb(255,255,255);
-  font-family:'Questrial', sans-serif;
+  font-family:'Afacad Flux', sans-serif;
   font-weight:bold;
 }
 
@@ -295,13 +295,13 @@ vaadin-number-field.warenlager-view-number-field-1::part(label) { color:#8ABD3E;
 
 vaadin-number-field::part(label) { color:#8ABD3E; }
 
-vaadin-tab { font-family:'Questrial', sans-serif; }
+vaadin-tab { font-family:'Afacad Flux', sans-serif; }
 
-vaadin-text { font-family:'Questrial', sans-serif; }
+vaadin-text { font-family:'Afacad Flux', sans-serif; }
 
-vaadin-text-area { font-family:'Questrial', sans-serif; }
+vaadin-text-area { font-family:'Afacad Flux', sans-serif; }
 
-vaadin-text-field { font-family:'Questrial', sans-serif; }
+vaadin-text-field { font-family:'Afacad Flux', sans-serif; }
 
 vaadin-text-field.finanzen-view-text-field-1::part(label) { color:#8ABD3E; }
 

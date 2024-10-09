@@ -13,7 +13,7 @@ vaadin-side-nav-item vaadin-icon {
   color: #8ABD3E;
   --lumo-base-color: #8ABD3E;
   --lumo-border-radius: 14px;
-    font-family: 'Questrial', sans-serif;
+    font-family: 'Afacad Flux', sans-serif;
   
 }
 
@@ -25,9 +25,10 @@ vaadin-side-nav > [slot="label"] {
   --lumo-header-text-color: #8ABD3E;
   --lumo-body-text-color: #8ABD3E;
   --lumo-border-radius: 8px;
-    font-family: 'Questrial', sans-serif;
-  
-}
+    font-family: 'Afacad Flux', sans-serif;   
+      	font-weight: 750;
+     
+	}
 vaadin-side-nav-item[slot="children"] {
 	background-color: rgb(192, 192, 192);
   --lumo-base-color: #8ABD3E;
@@ -46,7 +47,8 @@ vaadin-side-nav-item {
   --lumo-header-text-color: #8ABD3E;
   --lumo-body-text-color: #8ABD3E;
   --lumo-border-radius: 8px;
-    font-family: 'Questrial', sans-serif;
+    font-family: 'Afacad Flux', sans-serif;
+  	font-weight: 750;
   
 }
 
