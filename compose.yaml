@@ -1,6 +1,6 @@
 services:
     postgresql:
-        image: postgres:latest
+        image: postgres:16
         hostname: postgres.local
         restart: always
         shm_size: 128mb
