@@ -103,7 +103,7 @@ public class MainLayout extends AppLayout {
         HorizontalLayout versionLayout = new HorizontalLayout();
         versionLayout.setWidth("100%");
         versionLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.NONE, "main");
-        versionLayout.add(new Text("CL-OS - v.0.0.5"));
+        versionLayout.add(new Text("CL-OS - v.0.5"));
         layout.add(versionLayout);
         
         Hr hr2 = new Hr();
@@ -131,11 +131,11 @@ public class MainLayout extends AppLayout {
                     LineAwesomeIcon.BOOK_OPEN_SOLID.create()));
 
         }
-        if (accessChecker.hasAccess(ArbeitsplanungView.class)) {
-            nav.addItem(new SideNavItem("Zeiterfassung", ArbeitsplanungView.class,
-                    LineAwesomeIcon.BUSINESS_TIME_SOLID.create()));
+		if (accessChecker.hasAccess(ArbeitsplanungView.class)) {
+			nav.addItem(new SideNavItem("Zeiterfassung", ArbeitsplanungView.class,
+					LineAwesomeIcon.BUSINESS_TIME_SOLID.create()));
 
-        }
+		}
         if (accessChecker.hasAccess(RechtlichesView.class)) {
             nav.addItem(new SideNavItem("Rechtliches", RechtlichesView.class,
                     LineAwesomeIcon.BALANCE_SCALE_SOLID.create()));

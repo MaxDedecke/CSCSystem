@@ -47,7 +47,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
 
-@PageTitle("Arbeitsplanung")
+@PageTitle("Zeiterfassung")
 @Route(value = "planing/:workingUnitID?/:action?(edit)", layout = MainLayout.class)
 @PermitAll
 public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
