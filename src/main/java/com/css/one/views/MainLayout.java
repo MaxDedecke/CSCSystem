@@ -86,8 +86,8 @@ public class MainLayout extends AppLayout {
     private void addDrawerContent() {
     	
     	VerticalLayout layout = new VerticalLayout(); 
-        StreamResource imageResource = new StreamResource("CLOS.png",
-                () -> getClass().getResourceAsStream("/CLOS.png"));
+        StreamResource imageResource = new StreamResource("potteriepng.png",
+                () -> getClass().getResourceAsStream("/potteriepng.png"));
 
         Image logoImage = new Image(imageResource, "");
         logoImage.setHeight(250, Unit.PIXELS);

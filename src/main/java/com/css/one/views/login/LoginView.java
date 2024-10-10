@@ -39,7 +39,7 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         i18n.getErrorMessage().setPassword("Passwort fehlt!");
         i18n.getForm().setUsername("Nutzername");
         i18n.getErrorMessage().setUsername("Nutzername fehlt!");
-        i18n.getForm().setTitle("Einloggen");
+        i18n.getForm().setTitle("Login");
         setI18n(i18n);
         
         VerticalLayout plant = new VerticalLayout();

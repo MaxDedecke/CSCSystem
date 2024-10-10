@@ -3,7 +3,7 @@
   flex-direction: column;
   height: 100%;
   background-color: #efefef;
-  
+  font-size: large;
 }
 
 .warenlager-view vaadin-split-layout {
@@ -16,6 +16,16 @@ vaadin-grid {
   width: 100%;
   display:flex;
   flex-direction: column;
+  font-size: large;
+}
+
+vaadin-text-field[invalid]::part(input-field) {
+	 border: 2px solid red;  /* Roter Rahmen bei Fehler */
+ background-color: #ffe6e6;
+}
+
+.customheader {
+	  font-family:'Afacad Flux', sans-serif;
 }
 
 
@@ -39,7 +49,8 @@ vaadin-grid {
 }
 
 .warenlager-view vaadin-menu-bar-item::part(icon) {
-    color: green; /* Färbt das Icon blau */
+    color: black;
+   	font-family:'Afacad Flux', sans-serif;  
 }
 
 vaadin-vertical-layout {
@@ -171,13 +182,13 @@ vaadin-vertical-layout {
 }
 
 .warenlager-view vaadin-tab[active] {
-  color: #8ABD3E;  /* Dunklere Textfarbe für bessere Lesbarkeit */
+  color: #FFFFFF;  /* Dunklere Textfarbe für bessere Lesbarkeit */
   background-color: #cccccc;
 }
 
 .warenlager-view vaadin-tab[selected] {
-  color:  #8ABD3E;  /* Dunklere Textfarbe für bessere Lesbarkeit */
-  background-color: #cccccc;
+  color:  #FFFFFF;  /* Dunklere Textfarbe für bessere Lesbarkeit */
+  background-color: #8ABD3E;
 }
 
 /* CSS für die Vaadin Upload Komponente */

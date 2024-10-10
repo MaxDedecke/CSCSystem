@@ -80,9 +80,7 @@ vaadin-drawer-toggle {
   --lumo-primary-color: #8ABD3E;
   --lumo-primary-text-color: #FFFFFF
   --lumo-header-text-color: #FFFFFF;
-  --lumo-body-text-color: #FFFFFF;
   --lumo-border-radius: 8px;
-  color: #FFFFFF;
 }
 
 vaadin-app-layout::part(navbar) {
@@ -102,7 +100,6 @@ vaadin-app-layout::part(navbar) {
   --lumo-primary-color: #8ABD3E;
   --lumo-primary-text-color: #FFFFFF;
   --lumo-header-text-color: #FFFFFF;
-  --lumo-body-text-color: #FFFFFF;
   --lumo-border-radius: 8px;
 }
 
@@ -130,12 +127,11 @@ vaadin-app-layout::part(navbar) {
 }
 
 [slot="drawer"] [current]{
-	background-color: rgb(192, 192, 192);
     color: #8ABD3E;
     font-weight: bold;
-    border-bottom: 2px solid var(--lumo-primary-contrast-color);
-    background: rgb(192, 192, 192);
-        
+    box-shadow: 2px solid #FFFFFF;
+    border-color: #FFFFFF;
+    font-size: x-large;
 }
 
 [slot="drawer"] a {
