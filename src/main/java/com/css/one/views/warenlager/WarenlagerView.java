@@ -52,6 +52,7 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
@@ -317,6 +318,8 @@ public class WarenlagerView extends Div {
 			clearAddPlantsDialog();
 			addPlantsDialog.close();
 			refreshGrid(ViewStatus.CHARGE);
+			Notification notification = Notification.show("Pflanzen hinzugefügt.");
+			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 		});
 
 		addPlantsDialog.getFooter().add(cancelButton);
@@ -912,6 +915,7 @@ public class WarenlagerView extends Div {
 		wrapper.add(horizontalLayout);
 
 		chargeGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+		
 		chargeGrid.addComponentHierarchyColumn(entity -> {
 			Component avatar;
 			if (entity.isCharge()) {
@@ -964,11 +968,6 @@ public class WarenlagerView extends Div {
 			menuBar.setOverlayClassName("warenlager-view-menu-bar-1");
 			menuBar.addClassNames("warenlager-view-menu-bar-1", "customheader");
 
-			menuBar.addItem("Charge bearbeiten", event -> {
-				setValuesInChargePopup(entity);
-				addChargeDialog.open();
-
-			});
 			if (!entity.isCharge()) {
 				menuBar.addItem("Pflanze bearbeiten", event -> {
 					changeExistingPlant = entity;
@@ -1012,6 +1011,12 @@ public class WarenlagerView extends Div {
 				});
 
 			} else {
+				
+				menuBar.addItem("Charge bearbeiten", event -> {
+					setValuesInChargePopup(entity);
+					addChargeDialog.open();
+
+				});
 
 				if (entity.hasElements()) {
 					menuBar.addItem("Status für alle ändern", event -> {
@@ -1076,10 +1081,12 @@ public class WarenlagerView extends Div {
 		TextField renamePlantField = new TextField("Name der neuen Pflanze");
 		renamePlantField.setWidthFull();
 		ComboBox<Charge> chargeToCloneToBox = new ComboBox<Charge>("Klonen in Charge");
+		chargeToCloneToBox.getElement().setAttribute("theme", "custom-combo");
 		chargeToCloneToBox.setWidthFull();
 		chargeToCloneToBox.setItems(chargeService.findAllByAssociation(associationId));
 		chargeToCloneToBox.setItemLabelGenerator(e -> e.getName());
-
+		
+		headerClonePlant.addClassName("customheader");
 		cloneWrapper.add(headerClonePlant, renamePlantField, chargeToCloneToBox);
 		clonePlantDialog.add(cloneWrapper);
 
@@ -1113,14 +1120,19 @@ public class WarenlagerView extends Div {
 					plants.add(tmpPlant);
 					chargeToCloneTo.setPlants(plants);
 					chargeService.update(chargeToCloneTo);
+					
+					Notification notification = Notification.show("Pflanze erflogreich geklont.");
+					notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+					
+					refreshGrid(ViewStatus.CHARGE);
 				} else {
-					Notification.show("Es muss feststehen, in welche Charge die Pflanze integriert werden soll.");
+					Notification notification = Notification.show("Es muss feststehen, in welche Charge die Pflanze integriert werden soll.");
+					notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 				}
 			} else {
-				Notification.show("Die geklonte Pflanze braucht einen Namen");
+				Notification notification = Notification.show("Die geklonte Pflanze braucht einen Namen");
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			}
-
-			refreshGrid(ViewStatus.CHARGE);
 		});
 
 		clonePlantDialog.getFooter().add(cancelButton, saveButton);
@@ -1216,6 +1228,7 @@ public class WarenlagerView extends Div {
 		} else {
 			this.statBox.setItems(stati);
 		}
+		this.statBox.setValue(this.statBox.getEmptyValue());
 	}
 
 	private void createSeedsLayout(TabSheet tabSheet) {
@@ -1616,51 +1629,77 @@ public class WarenlagerView extends Div {
 
 		VerticalLayout layout = new VerticalLayout();
 		H2 title = new H2("Status aktualisieren");
-		Hr hr = new Hr();
-
+		title.addClassName("customheader");
+		
 		statBox.setItems(GrowStatus.values());
 		statBox.setItemLabelGenerator(e -> e.getLabel());
 		statBox.setWidthFull();
+		statBox.addValueChangeListener(e -> {
+			statBox.setInvalid(false);
+		});
 
 		Button saveStatusButton = new Button("Aktualisieren", e -> {
+			statBox.setInvalid(false);
 
-			if (statusEntity.isCharge()) {
-				Optional<Charge> optionalCharge = chargeService.get(statusEntity.getId());
-				optionalCharge.ifPresentOrElse(c -> {
-					c.getPlants().forEach(p -> {
+			if (!statBox.isEmpty()) {
+				if (statusEntity.isCharge()) {
+					Optional<Charge> optionalCharge = chargeService.get(statusEntity.getId());
+					optionalCharge.ifPresentOrElse(c -> {
+						c.getPlants().forEach(p -> {
+							p.setStatus(statBox.getValue());
+							plantService.update(p);
+						});
+						
+						Notification show = Notification
+								.show("Status aller Pflanzen auf " + statBox.getValue().label + " geändert");
+						show.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+						
+					}, () -> {
+						Notification show = Notification.show("Unbekannte Charge");
+						show.addThemeVariants(NotificationVariant.LUMO_ERROR);
+					});
+				} else {
+					Optional<Plant> optionalPlant = plantService.get(statusEntity.getId());
+
+					optionalPlant.ifPresentOrElse(p -> {
 						p.setStatus(statBox.getValue());
 						plantService.update(p);
+						
+						Notification show = Notification
+								.show("Status der Pflanze auf " + statBox.getValue().label + " geändert");
+						show.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+					}, () -> {
+						Notification show = Notification.show("Unbekannte Pflanze");
+						show.addThemeVariants(NotificationVariant.LUMO_ERROR);
 					});
-				}, () -> {
-					Notification.show("Unbekannte Charge.");
-				});
+				}
+
+				changeStatusDialog.close();
+				refreshGrid(ViewStatus.CHARGE);
+				clearChangeStatusDialog();
 			} else {
-				Optional<Plant> optionalPlant = plantService.get(statusEntity.getId());
-
-				optionalPlant.ifPresentOrElse(p -> {
-					p.setStatus(statBox.getValue());
-					plantService.update(p);
-				}, () -> {
-					Notification.show("Unbekannte Pflanze.");
-				});
+				statBox.setInvalid(true);
+				Notification show = Notification.show("Kein Status ausgewählt");
+				show.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			}
-
-			statusEntity = null;
-			changeStatusDialog.close();
-			refreshGrid(ViewStatus.CHARGE);
 		});
 		saveStatusButton.addClassName("save-button");
 
 		Button cancelSaveStatusButton = new Button("Abbrechen", e -> {
 			changeStatusDialog.close();
-			statusEntity = null;
+			clearChangeStatusDialog();
 		});
 		cancelSaveStatusButton.addClassName("cancel-button");
-		layout.add(title, hr, statBox);
+		layout.add(title, statBox);
 
 		changeStatusDialog.add(layout);
 		changeStatusDialog.getFooter().add(cancelSaveStatusButton);
 		changeStatusDialog.getFooter().add(saveStatusButton);
+	}
+	
+	private void clearChangeStatusDialog() {
+		statusBox.setValue(statusBox.getEmptyValue());
+		statusEntity = null;
 	}
 
 	private String renderDate(LocalDate datePlanted) {

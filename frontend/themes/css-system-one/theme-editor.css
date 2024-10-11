@@ -210,6 +210,8 @@ vaadin-icon { color:#8ABD3E; }
 
 vaadin-login-overlay-wrapper { font-family:'Afacad Flux',sans-serif; }
 
+vaadin-login-overlay-wrapper vaadin-login-form vaadin-login-form-wrapper { padding:var(--lumo-space-l); }
+
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-button[theme~="submit"] { background-color:#8ABD3E; }
 
 vaadin-login-overlay-wrapper.login-view-login-overlay-1 vaadin-login-form vaadin-login-form-wrapper { background-color:rgba(130,130,130,1); }
@@ -293,6 +295,8 @@ vaadin-login-overlay-wrapper::part(card) {
   font-family:'Afacad Flux',sans-serif;
 }
 
+vaadin-login-overlay-wrapper::part(title) { font-size:var(--lumo-font-size-xxs); }
+
 vaadin-menu-bar-overlay.main-layout-menu-bar-1 vaadin-menu-bar-item {
   background-color:rgb(255,255,255);
   font-family:'Afacad Flux',sans-serif;
@@ -304,17 +308,15 @@ vaadin-menu-bar-overlay.main-layout-menu-bar-1::part(overlay) { background-color
 vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-button vaadin-menu-bar-item vaadin-icon { color:rgb(255,255,255); }
 
 vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item {
-  background-color: #efefef;
+  background-color:#efefef;
+  border-radius:0px;
   color:rgba(69,37,18,1);
   font-family:'Afacad Flux',sans-serif;
-  border-radius: 0px;
-}
-
-vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item:hover {
-	font-size: x-large;
 }
 
 vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item::part(content) { background-color:#efefef; }
+
+vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item:hover { font-size:x-large; }
 
 vaadin-menu-bar-overlay.warenlager-view-menu-bar-1::part(overlay) { background-color:#8ABD3E; }
 
@@ -325,8 +327,9 @@ vaadin-menu-bar.warenlager-view-menu-bar-1 vaadin-menu-bar-button {
   color:#8ABD3E;
 }
 
-vaadin-menu-bar.warenlager-view-menu-bar-1 vaadin-menu-bar-button vaadin-menu-bar-item { color:#8ABD3E; 
+vaadin-menu-bar.warenlager-view-menu-bar-1 vaadin-menu-bar-button vaadin-menu-bar-item {
   background-color:#efefef;
+  color:#8ABD3E;
 }
 
 vaadin-number-field.warenlager-view-number-field-1::part(label) { color:#8ABD3E; }

@@ -29,7 +29,6 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
     public LoginView(AuthenticatedUser authenticatedUser) {   
         this.authenticatedUser = authenticatedUser;
         setAction(RouteUtil.getRoutePath(VaadinService.getCurrent().getContext(), getClass())); 
-        this.addClassNames("css-system-one");
         LoginI18n i18n = LoginI18n.createDefault(); 
         i18n.setHeader(new LoginI18n.Header());    
         i18n.getHeader().setTitle("Ceres"); 
