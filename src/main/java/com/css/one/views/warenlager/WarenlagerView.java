@@ -77,6 +77,7 @@ import com.vaadin.flow.component.upload.receivers.FileBuffer;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.lumo.LumoIcon;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
@@ -160,7 +161,8 @@ public class WarenlagerView extends Div {
 
 	Button updatePlantButton = new Button("update");
 	Button saveChargeButton;
-
+	Button saveBlossomButton;
+	
 	File pathToCertificate;
 	InputStream streamCertificate;
 	String directoryPath;
@@ -172,7 +174,7 @@ public class WarenlagerView extends Div {
 	private NumberField strainInfoThc;
 	private NumberField strainInfoAmount;
 	private TextField numberField;
-	private MoneyField amountPerGramm;
+	private NumberField pricePerGramm;
 
 	private TextField chargeNameField = new TextField("Name");
 	private DatePicker chargeRegDate = new DatePicker("Gepflanzt am");
@@ -1479,6 +1481,8 @@ public class WarenlagerView extends Div {
 			deleteCuttingButton.setEnabled(false);
 			addCuttingsDialog.open();
 		});
+		
+		addCuttingButton.setIcon(LineAwesomeIcon.SEEDLING_SOLID.create());
 
 		layoutButton.setAlignItems(Alignment.CENTER);
 		layoutButton.add(addCuttingButton);
@@ -1561,18 +1565,20 @@ public class WarenlagerView extends Div {
 		VerticalLayout layoutButton = new VerticalLayout();
 		layoutButton.addClassNames(LumoUtility.Padding.Left.NONE);
 
-		Button addStrainButton = new Button();
-		addStrainButton.addClassNames("button-layout-common");
-		addStrainButton.setText("+ Blüten hinzufügen");
+		Button addNewBlossomButton = new Button();
+		addNewBlossomButton.addClassNames("button-layout-common");
+		addNewBlossomButton.setText("+ Blüten hinzufügen");
 
-		addStrainButton.addClickListener(e -> {
+		addNewBlossomButton.addClickListener(e -> {
+			saveBlossomButton.setAriaLabel("hinzufügen");
 			numberField.setValue(String.valueOf(blossomService.getFreeStrainNumber(associationId)));
 			addBlossomDialog.open();
-			deleteBlossomButton.setEnabled(false);
 		});
+		
+		addNewBlossomButton.setIcon(LineAwesomeIcon.CANNABIS_SOLID.create());
 
 		layoutButton.setAlignItems(Alignment.CENTER);
-		layoutButton.add(addStrainButton);
+		layoutButton.add(addNewBlossomButton);
 
 		H2 balance = new H2("Kontingent:");
 		balance.addClassName("customheader");
@@ -1612,11 +1618,28 @@ public class WarenlagerView extends Div {
 			icon.addClickListener(click -> {
 				changeBlossom = item;
 				openDialogForEdit(changeBlossom);
+				saveBlossomButton.setAriaLabel("update");
 				addBlossomDialog.open();
 			});
+			
 			icon.addClassNames("edit");
 			return icon;
-		}).setAutoWidth(true);
+		}).setWidth("75px").setFlexGrow(0);
+		
+		blossomGrid.addComponentColumn(item -> {
+			Icon icon = new Icon(VaadinIcon.TRASH);
+			icon.addClickListener(click -> {
+				blossomService.delete(item.getId());
+				addBlossomDialog.close();
+				Notification notification = Notification.show("Sorte gelöscht.");
+				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+				refreshGrid(ViewStatus.STRAIN);
+			});
+			icon.addClassName("remove-color");
+			return icon;
+		}).setWidth("75px").setFlexGrow(0);
+		
+		blossomGrid.setSelectionMode(SelectionMode.SINGLE);
 
 		refreshGrid(ViewStatus.STRAIN);
 
@@ -1732,9 +1755,15 @@ public class WarenlagerView extends Div {
 
 			responsiblePersonOne.setEnabled(true);
 			List<Person> weighedByMembers = blossom.getWeighedByMembers();
-			responsiblePersonOne.setValue(weighedByMembers.get(0));
-			responsiblePersonTwo.setEnabled(true);
-			responsiblePersonTwo.setValue(weighedByMembers.get(1));
+			
+			if(!weighedByMembers.isEmpty()) {				
+				responsiblePersonOne.setValue(weighedByMembers.get(0));
+				
+				if(weighedByMembers.size() > 1) {					
+					responsiblePersonTwo.setEnabled(true);
+					responsiblePersonTwo.setValue(weighedByMembers.get(1));
+				}
+			}
 
 			strainInfoAmount.setEnabled(true);
 			strainInfoAmount.setValue(blossom.getAmountGramm());
@@ -1742,8 +1771,8 @@ public class WarenlagerView extends Div {
 			strainInfoThc.setEnabled(true);
 			strainInfoThc.setValue(blossom.getThc());
 
-			amountPerGramm.setEnabled(true);
-			amountPerGramm.setAmount(String.valueOf(blossom.getPrice()));
+			pricePerGramm.setEnabled(true);
+			pricePerGramm.setValue(blossom.getPrice());
 			dateBlossomHarvested.setValue(blossom.getDateHarvested());
 		} else {
 			Notification.show("Old logic kickin");
@@ -1765,8 +1794,7 @@ public class WarenlagerView extends Div {
 		header.addClassName("customheader");
 		headlineLayout.add(header);
 
-		Hr hr = new Hr();
-		headerLayout.add(headlineLayout, hr);
+		headerLayout.add(headlineLayout);
 
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.MEDIUM);
@@ -1776,7 +1804,7 @@ public class WarenlagerView extends Div {
 		addBlossomDialog.add(headerLayout);
 		addBlossomDialog.add(layout);
 
-		Button saveButton = new Button("Hinzufügen", e -> {
+		saveBlossomButton = new Button("Hinzufügen", e -> {
 
 			if (!nameField.isEmpty()) {
 				preparePath();
@@ -1784,38 +1812,27 @@ public class WarenlagerView extends Div {
 						statusBox);
 				addBlossomDialog.close();
 				clearBlossomDialog();
+				
+				Notification show = Notification
+						.show("Neue Blüten hinzugefügt");
+				show.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+				
 			} else {
-				Notification.show("Die Sorte muss einen Namen haben !");
+				Notification show = Notification.show("Die Sorte muss einen Namen haben !");
+				show.addThemeVariants(NotificationVariant.LUMO_WARNING);
 			}
 
-			deleteBlossomButton.setEnabled(true);
 		});
-		saveButton.addClassName("save-button");
+		saveBlossomButton.addClassName("save-button");
 
 		Button cancelButton = new Button("Abbrechen", e -> {
 			addBlossomDialog.close();
 			clearBlossomDialog();
-			deleteBlossomButton.setEnabled(true);
 		});
 		cancelButton.addClassNames("cancel-button");
 
-		deleteBlossomButton = new Button("Löschen", e -> {
-			blossomService.delete(changeBlossom.getId());
-			addBlossomDialog.close();
-			Notification.show("Sorte gelöscht.");
-			deleteBlossomButton.setEnabled(true);
-
-		});
-
-		addBlossomDialog.addDialogCloseActionListener(e -> {
-			clearBlossomDialog();
-		});
-
-		deleteBlossomButton.addClassNames("delete-button");
-
-		addBlossomDialog.getFooter().add(deleteBlossomButton);
 		addBlossomDialog.getFooter().add(cancelButton);
-		addBlossomDialog.getFooter().add(saveButton);
+		addBlossomDialog.getFooter().add(saveBlossomButton);
 	}
 
 	private void createAddCuttingsDialog() {
@@ -1998,10 +2015,8 @@ public class WarenlagerView extends Div {
 		responsiblePersonTwo.setValue(responsiblePersonTwo.getEmptyValue());
 		strainInfoAmount.setValue(0.0);
 		strainInfoThc.setValue(0.0);
-		amountPerGramm.clear();
-		CurrencyUnit eur = Monetary.getCurrency("EUR");
-		MonetaryAmount fstAmtEUR = Monetary.getDefaultAmountFactory().setCurrency(eur).setNumber(0.0).create();
-		amountPerGramm.setValue(fstAmtEUR);
+		pricePerGramm.clear();
+		pricePerGramm.setValue(0.0);
 		numberField.setValue("");
 		nameField.setValue("");
 		locationBox.setValue(locationBox.getEmptyValue());
@@ -2016,7 +2031,6 @@ public class WarenlagerView extends Div {
 		FileBuffer buffer = new FileBuffer();
 		uploadCertificate.setReceiver(buffer);
 		uploadCertificate.setAcceptedFileTypes(".pdf");
-//		uploadCertificate.setMaxFileSize(16000);
 		uploadCertificate.setDropAllowed(true);
 		uploadCertificate.setMaxFiles(1);
 
@@ -2127,23 +2141,7 @@ public class WarenlagerView extends Div {
 		statusBox.setItemLabelGenerator(e -> e.getLabel());
 		statusBox.setValue(GrowStatus.HARVESTED);
 
-		statusBox.addValueChangeListener(e -> {
-
-//			if(e.getValue() == GrowStatus.VERIFYING || e.getValue() == GrowStatus.OUTPUT_READY) {					
-//				uploadCertificate.setDropAllowed(true);
-//				Button uploadButton = (Button) uploadCertificate.getUploadButton();
-//				uploadButton.setEnabled(true);
-//				uploadCertificate.setVisible(true);
-
-//			} else {
-//				uploadCertificate.setDropAllowed(false);
-//				Button uploadButton = (Button) uploadCertificate.getUploadButton();
-//				uploadButton.setEnabled(false);
-//				uploadCertificate.setVisible(false);
-//			}
-		});
-
-		locationBox = new ComboBox<>("Standort");
+		locationBox = new ComboBox<>("Lagerort");
 		List<Location> allByAssociation = locationService.findAllByAssociation(associationId);
 		locationBox.setItems(allByAssociation);
 		locationBox.setValue(
@@ -2169,15 +2167,17 @@ public class WarenlagerView extends Div {
 		strainInfoThc = new NumberField("THC Gehalt in Prozent");
 		strainInfoThc.addClassName("warenlager-view-number-field-1");
 
-		amountPerGramm = new MoneyField();
-		amountPerGramm.setLabel("Preis pro Gramm");
-		amountPerGramm.setCurrency("EUR");
+		pricePerGramm = new NumberField();
+		pricePerGramm.setLabel("Preis pro Gramm");
+		Div euroSuffix = new Div();
+		euroSuffix.setText("€");
+		pricePerGramm.setSuffixComponent(euroSuffix);
 
 		comboboxBlossomOrigins.setItems(plantService.findAllByAssociation(associationId));
 		comboboxBlossomOrigins.setItemLabelGenerator(e -> e.getName());
 
 		formLayout.add(numberField, nameField, locationBox, statusBox, dateBlossomHarvested, responsiblePersonOne,
-				responsiblePersonTwo, strainInfoAmount, strainInfoThc, amountPerGramm, comboboxBlossomOrigins);
+				responsiblePersonTwo, strainInfoAmount, strainInfoThc, pricePerGramm, comboboxBlossomOrigins);
 		return formLayout;
 	}
 
@@ -2210,8 +2210,8 @@ public class WarenlagerView extends Div {
 
 		}
 
-		if (amountPerGramm.getValue() != null) {
-			newBlossom.setPrice(amountPerGramm.getValue().getNumber().doubleValue());
+		if (pricePerGramm.getValue() != null) {
+			newBlossom.setPrice(pricePerGramm.getValue());
 		}
 
 		if (statusBox.getValue().ordinal() > 3 && pathToCertificate != null) {

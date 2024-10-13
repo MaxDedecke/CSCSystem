@@ -42,6 +42,16 @@ vaadin-combo-box[invalid]::part(input-field) {
 	font-size: large;
 }
 
+.warenlager-view vaadin-grid::part(row) {
+	font-size: large;
+	height: 80px;
+}
+
+.warenlager-view vaadin-grid::part(row):hover {
+	font-size: large;
+	font-weight: bold;
+}
+
 .warenlager-view vaadin-combo-box-item {
 	font-family:'Afacad Flux', sans-serif;
 }
@@ -172,6 +182,10 @@ vaadin-vertical-layout {
 
 .warenlager-view .edit {
 	border-radius: 32px;
+}
+
+.warenlager-view .remove-color {
+	color: red;
 }
 
 .warenlager-view .editor vaadin-checkbox {
