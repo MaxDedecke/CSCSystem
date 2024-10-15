@@ -84,9 +84,12 @@ vaadin-drawer-toggle {
 }
 
 vaadin-app-layout::part(navbar) {
-  background-color: #efefef;
+  background-color: #ffffff;
   color: #8ABD3E;
-  
+    border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #8ABD3E;
+  gap:var(--lumo-space-xs);
 }
 
 [slot="drawer"]:is(header, footer) {

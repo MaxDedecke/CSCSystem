@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
 import com.css.one.data.Cutting;
 import com.css.one.data.DiaryEntry;
 import com.css.one.data.OutputEntity;
@@ -86,6 +88,7 @@ public class DiaryView extends VerticalLayout {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setWidthFull();
 		addEntryButton.addClassName("button-category");
+		addEntryButton.setIcon(LineAwesomeIcon.BOOK_OPEN_SOLID.create());
 		addEntryButton.addClickListener(e -> {
 			addEntryDialog.open();
 		});

@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #efefef;
+  background-color: #ffffff;
   font-size: large;
 }
 
@@ -38,55 +38,8 @@ vaadin-combo-box[invalid]::part(input-field) {
     font-size: 16px; /* Beispiel für Schriftgröße */
 }
 
-.warenlager-view vaadin-grid {
-	font-size: large;
-}
-
-.warenlager-view vaadin-grid::part(row) {
-	font-size: large;
-	height: 80px;
-}
-
-.warenlager-view vaadin-grid::part(row):hover {
-	font-size: large;
-	font-weight: bold;
-}
-
 .warenlager-view vaadin-combo-box-item {
 	font-family:'Afacad Flux', sans-serif;
-}
-
-.warenlager-view vaadin-combo-box-item::part(content) {
-	font-family:'Afacad Flux', sans-serif;	
-}
-
-.warenlager-view vaadin-grid::part(collapsed-row-cell):hover {
-	font-size: large;
-	font-weight: bold;
-}
-
-.warenlager-view vaadin-grid::part(collapsed-row-cell){
-	font-size: medium;
-	height: 80px;
-}
-
-.warenlager-view vaadin-grid::part(expanded-row-cell):hover {
-	font-size: large;
-	font-weight: bold;
-}
-
-.warenlager-view vaadin-grid::part(expanded-row-cell) {
-	font-size: medium;
-	height: 80px;
-}
-
-.warenlager-view vaadin-grid-tree-toggle:hover {
-	font-size: medium;
-	font-weight: bold;
-}
-
-.warenlager-view vaadin-grid-tree-toggle[expanded]:hover {
-	font-size: medium;
 }
 
 .warenlager-view .button-grid-green {
@@ -142,7 +95,7 @@ vaadin-vertical-layout {
 	background-color: #74410e;
   	color: #FFFFFF;
   	padding: 16px;
-  	border-radius: 32px;
+  	border-radius: 32px;  	
 }
 
 .warenlager-view .span-growing {

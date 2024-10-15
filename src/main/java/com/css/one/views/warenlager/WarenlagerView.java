@@ -53,6 +53,7 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
@@ -501,15 +502,18 @@ public class WarenlagerView extends Div {
 	}
 
 	private void createAddChargeDialog() {
+		
 		VerticalLayout wrapper = new VerticalLayout();
 		addChargeDialog.addClassNames(LumoUtility.MaxWidth.SCREEN_XXLARGE);
 
-		VerticalLayout headerLayout = new VerticalLayout();
+		Icon icon = VaadinIcon.CUBES.create();
+		icon.addClassNames(LumoUtility.Margin.Top.SMALL);
+		HorizontalLayout headerLayout = new HorizontalLayout();
 		headerLayout.setWidthFull();
 		headerLayout.addClassName(LumoUtility.Padding.Left.XLARGE);
 		H2 header = new H2("Neue Charge hinzufügen");
 		header.addClassName("customheader");
-		headerLayout.add(header);
+		headerLayout.add(icon, header);
 
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.MEDIUM,
@@ -915,7 +919,7 @@ public class WarenlagerView extends Div {
 			if (entity.isCharge()) {
 				avatar = VaadinIcon.CUBES.create();
 			} else {
-				avatar = LineAwesomeIcon.CANNABIS_SOLID.create();
+				avatar = LineAwesomeIcon.PAGELINES.create();
 			}
 			avatar.getElement().setAttribute("tabindex", "-1");
 
@@ -1606,7 +1610,7 @@ public class WarenlagerView extends Div {
 		});
 
 		blossomGrid.addComponentColumn(item -> {
-			Icon icon = new Icon(VaadinIcon.PENCIL);
+			SvgIcon icon = LineAwesomeIcon.PEN_SOLID.create();
 			icon.addClickListener(click -> {
 				changeBlossom = item;
 				openDialogForEdit(changeBlossom);
@@ -1619,7 +1623,7 @@ public class WarenlagerView extends Div {
 		}).setWidth("75px").setFlexGrow(0);
 		
 		blossomGrid.addComponentColumn(item -> {
-			Icon icon = new Icon(VaadinIcon.TRASH);
+			SvgIcon icon = LineAwesomeIcon.TRASH_SOLID.create();
 			icon.addClickListener(click -> {
 				blossomService.delete(item.getId());
 				addBlossomDialog.close();

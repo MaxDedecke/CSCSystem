@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.data.Association;
 import com.css.one.data.Cutting;
@@ -49,6 +50,7 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -170,7 +172,6 @@ public class ÜbersichtView extends FlexLayout {
 		
 		createSearchMemberLayout();
 		createSearchStrainLayout();
-//		createChartLayout();
 		createNewsLayout();
 		createCurrentAvailableLayout();
 		createNameLayout();
@@ -178,7 +179,6 @@ public class ÜbersichtView extends FlexLayout {
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.addClassName("übersicht-view-vertical-layout-1");
 		HorizontalLayout firstLayerLayout = new HorizontalLayout();
-//		firstLayerLayout.add(layoutSearchMembers, layoutAvailables, layoutChart);
 		firstLayerLayout.add(layoutSearchMembers, layoutAvailables);
 
 		firstLayerLayout.setWidth("100%");
@@ -200,20 +200,7 @@ public class ÜbersichtView extends FlexLayout {
 		innerWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		dateWrapper.add(innerWrapper);
         add(dateWrapper, mainLayout);
-        
-//        UI.getCurrent().access(() -> {
-//        	layoutChart.getElement().executeJs("drawChart()");
-//        });
     }
-
-//	private void createChartLayout() {
-//		 
-//		layoutChart.addClassName("uebersicht-box");
-//		VerticalLayout wrapper = new VerticalLayout();
-//		wrapper.setId("chart-container");
-//		
-//		layoutChart.add(wrapper);
-//	}
 
 	private void createNameLayout() {
 		
@@ -227,23 +214,37 @@ public class ÜbersichtView extends FlexLayout {
 	private void createCurrentAvailableLayout() {
 		H1 headerAvailables = new H1("Anwesende Personen");
 		headerAvailables.addClassName(LumoUtility.Margin.Left.MEDIUM);
-		headerAvailables.addClassName("backround");
+		headerAvailables.addClassNames("backround", LumoUtility.Margin.Bottom.NONE);
+		
+		HorizontalLayout headerWrapper = new HorizontalLayout();
+    	headerWrapper.addClassName("innerlayout");
+    	SvgIcon svgIcon = LineAwesomeIcon.STOPWATCH_SOLID.create();
+    	svgIcon.addClassNames(LumoUtility.Margin.Top.MEDIUM, LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.NONE, LumoUtility.Margin.Bottom.NONE);
+    	headerWrapper.add(svgIcon, headerAvailables);
     	
 		availablesGrid.addColumn(e -> e.getPersonName()).setAutoWidth(true);
 		availablesGrid.addColumn(e -> "Da seit: " + e.getHourBegin() + ":" + e.getMinuteBegin() + " Uhr").setAutoWidth(true);
 		availablesGrid.setItems(workingUnitService.findByDay(LocalDate.now(),associationId).stream().filter(e -> e.getEnd() == null).toList());
-		availablesGrid.setHeight(200, Unit.PIXELS);
 		availablesGrid.addClassNames(LumoUtility.Border.ALL ,LumoUtility.BorderRadius.LARGE, LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
+		availablesGrid.setHeight("200px");
 		layoutAvailables.addClassNames("uebersicht-box-grid");
 		
-		layoutAvailables.add(headerAvailables, new Hr(), availablesGrid);
+		layoutAvailables.add(headerWrapper, availablesGrid);
 	}
 
 	private void createNewsLayout() {		
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.addClassName("übersicht-view-vertical-layout-1");
 
-		H3 h3 = new H3("Neuigkeiten");
+		H1 h1 = new H1("Neuigkeiten");
+		h1.addClassNames("backround", LumoUtility.Margin.Bottom.NONE);
+
+		HorizontalLayout headerWrapper = new HorizontalLayout();
+    	headerWrapper.addClassName("innerlayout");
+    	SvgIcon svgIcon = LineAwesomeIcon.NEWSPAPER_SOLID.create();
+    	svgIcon.addClassNames(LumoUtility.Margin.Top.MEDIUM, LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.NONE, LumoUtility.Margin.Bottom.NONE);
+    	headerWrapper.add(svgIcon, h1);
+    	
 		newsList.setItems(diaryEntryService.findAllByAssociation(associationId));
 		newsList.setRenderer(new ComponentRenderer<>(entry -> {
         	EntryLayout entryLayout = new EntryLayout();
@@ -255,7 +256,7 @@ public class ÜbersichtView extends FlexLayout {
 		newsList.setHeight(250, Unit.PIXELS);
 		
 		layoutNews.addClassNames("uebersicht-box-grid");
-		mainLayout.add(h3, newsList);
+		mainLayout.add(headerWrapper, newsList);
 		layoutNews.add(mainLayout);
 	}
 
@@ -276,8 +277,15 @@ public class ÜbersichtView extends FlexLayout {
     	HorizontalLayout headerLayout = new HorizontalLayout();
     	H1 headerSearch = new H1("Mitgliedersuche");
     	headerSearch.addClassName(LumoUtility.Margin.Left.MEDIUM);
+    	HorizontalLayout headerWrapper = new HorizontalLayout();
+    	headerWrapper.addClassName("innerlayout");
+    	
+    	SvgIcon svgIcon = LineAwesomeIcon.USERS_SOLID.create();
+    	svgIcon.addClassNames(LumoUtility.Margin.Top.XLARGE, LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.NONE);
+    	headerWrapper.add(svgIcon, headerSearch);
+    	
     	headerLayout.addClassName("backround");
-    	headerLayout.add(headerSearch);
+    	headerLayout.add(headerWrapper);
 		
     	VerticalLayout mainLayout = new VerticalLayout();
     	HorizontalLayout boxLayout = new HorizontalLayout();
@@ -343,7 +351,7 @@ public class ÜbersichtView extends FlexLayout {
     	buttonWorkingUnit.addClassNames(LumoUtility.Margin.Top.LARGE);
 		buttonBookOutput.addClassNames(LumoUtility.Margin.Top.LARGE);
 		
-		layoutSearchMembers.add(headerLayout, new Hr(), mainLayout);
+		layoutSearchMembers.add(headerLayout, mainLayout);
 
     }
 
@@ -513,8 +521,17 @@ public class ÜbersichtView extends FlexLayout {
     	HorizontalLayout headerLayout = new HorizontalLayout();
     	H1 headerSearch = new H1("Bestandssuche");
     	headerSearch.addClassName(LumoUtility.Margin.Left.MEDIUM);
+    	
+    	HorizontalLayout headerWrapper = new HorizontalLayout();
+    	headerWrapper.addClassName("innerlayout");
+    	
+    	
+    	SvgIcon svgIcon = LineAwesomeIcon.SEARCH_SOLID.create();
+    	svgIcon.addClassNames(LumoUtility.Margin.Top.XLARGE, LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.NONE);
+    	headerWrapper.add(svgIcon, headerSearch);
+    	
     	headerLayout.addClassName("backround");
-    	headerLayout.add(headerSearch);
+    	headerLayout.add(headerWrapper);
 
     	buttonOpenStrainInfo.setEnabled(false);
     	buttonOpenStrainInfo.addClassName("button-category");

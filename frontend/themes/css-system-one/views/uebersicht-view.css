@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  background-color: #efefef;
+  background-color: #ffffff;;
   padding: none;
   margin: none;
 }
@@ -10,15 +10,21 @@
 .uebersicht-view vaadin-split-layout {
   width: 100%;
   height: 100%;
-  background-color: #efefef;
+  background-color: transparent;;
 }
 
+.uebersicht-view .innerlayout {
+    background-color: transparent;
+    margin: none;
+    padding: none;
+    height: 50px;
+}
 
 .uebersicht-view vaadin-horizontal-layout {
   width: 100%;
   height: 100%;
   display: flex;
-  background-color: #efefef;
+  background-color: #ffffff;
 }
 
 .uebersicht-view vaadin-grid {
@@ -141,6 +147,7 @@
 .uebersicht-view .backround {
 	background-color: transparent;
 	margin-right: 12px;
+	margin-bottom: none;
 }
 
 .uebersicht-view .textarea::part(input-field){

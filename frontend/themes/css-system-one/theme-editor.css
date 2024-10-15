@@ -11,11 +11,11 @@ body { font-family:'Afacad Flux',sans-serif; }
 
 h3.diary-view-h3-1 { font-weight:bold; }
 
-vaadin-app-layout { background-color:rgb(255,255,255); }
+vaadin-app-layout { background-color:rgb(0, 128, 64); }
 
-vaadin-app-layout.main-layout-app-layout-1 { background-color:rgb(255,255,255); }
+vaadin-app-layout.main-layout-app-layout-1 { background-color:#ffffff; }
 
-vaadin-app-layout::part(navbar) { background-color:rgb(255,255,255); }
+vaadin-app-layout::part(navbar) { background-color:#ffffff; }
 
 vaadin-button {
   background-color:rgba(24,102,32,0.05);
@@ -93,6 +93,39 @@ vaadin-date-picker::part(toggle-button) {
 
 vaadin-date-time-picker { font-family:'Afacad Flux',sans-serif; }
 
+vaadin-grid::part(collapsed-row-cell):hover {
+	font-size: x-large;
+	font-weight: bold;
+}
+
+vaadin-grid::part(collapsed-row-cell){
+	font-size: large;
+	height: 80px;
+}
+
+vaadin-grid::part(expanded-row-cell):hover {
+	font-size: x-large;
+	font-weight: bold;
+}
+
+vaadin-grid::part(expanded-row-cell) {
+	font-size: large;
+	height: 80px;
+}
+
+vaadin-grid-tree-toggle::part(toggle) {
+		font-size: large;
+}
+
+vaadin-grid-tree-toggle:hover {
+	font-size: medium;
+	font-weight: bold;
+}
+
+vaadin-grid-tree-toggle[expanded]:hover {
+	font-size: medium;
+}
+
 vaadin-date-time-picker.finanzen-view-date-time-picker-1::part(label) {
   color:#8ABD3E;
   font-family:'Afacad Flux',sans-serif;
@@ -125,6 +158,17 @@ vaadin-grid {
   border-radius:10px;
   border-width:0px;
   font-family:'Afacad Flux',sans-serif;
+  font-size: large;
+}
+
+vaadin-grid::part(row) {
+	font-size: large;
+	height: 80px;
+}
+
+vaadin-grid::part(row):hover {
+	font-size: large;
+	font-weight: bold;
 }
 
 vaadin-grid::-webkit-scrollbar-thumb {
@@ -179,6 +223,34 @@ vaadin-horizontal-layout.rechtliches-box-horizontal {
   margin-right:8px;
   margin-top:8px;
   padding-bottom:none;
+}
+
+vaadin-combo-box-item {
+  font-family:'Afacad Flux',sans-serif;		
+}
+
+vaadin-combo-box-item[selected] {
+	color: #8ABD3E;
+}
+
+vaadin-combo-box-item::part(checkmark)::before {
+	color: #8ABD3E;
+}
+
+vaadin-combo-box[focused] {
+	color: black;
+}
+
+vaadin-combo-box[focus-ring] {
+border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #8ABD3E;
+    border-radius:10px;
+}
+
+vaadin-combo-box-item:hover {
+	background: #d2e7b4;
+	font-size: large;
 }
 
 vaadin-horizontal-layout.rechtliches-box-horizontal-start {
@@ -308,15 +380,15 @@ vaadin-menu-bar-overlay.main-layout-menu-bar-1::part(overlay) { background-color
 vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-button vaadin-menu-bar-item vaadin-icon { color:rgb(255,255,255); }
 
 vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item {
-  background-color:#efefef;
+  background-color:#ffffff;
   border-radius:0px;
   color:rgba(69,37,18,1);
   font-family:'Afacad Flux',sans-serif;
 }
 
-vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item::part(content) { background-color:#efefef; }
+vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item::part(content) { background-color:#ffffff; }
 
-vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item:hover { font-size:x-large; }
+vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item:hover { font-size:large; }
 
 vaadin-menu-bar-overlay.warenlager-view-menu-bar-1::part(overlay) { background-color:#8ABD3E; }
 
@@ -423,7 +495,6 @@ vaadin-vertical-layout.uebersicht-box-grid {
   border-width:10px;
   border:thick;
   box-shadow:2px 2px 5px #8ABD3E;
-  flex-direction:column;
   margin:none;
   max-height:100%;
   padding-bottom:none;
@@ -461,3 +532,20 @@ vaadin-vertical-layout.uebersicht-view-vertical-layout-2 {
 }
 
 vaadin-vertical-layout.übersicht-view-vertical-layout-1 { flex-direction:column; }
+
+vaadin-dialog-overlay::part(content) {
+	  background:white;
+}
+
+vaadin-dialog-overlay::part(title) {
+	  border:thick;
+  box-shadow:2px 2px 5px #8ABD3E;
+  gap:var(--lumo-space-xs);
+}
+
+vaadin-dialog-overlay::part(footer) {
+	background: white;
+	border: thick;
+	box-shadow: 2px 2px 7px 2px #8ABD3E;
+	gap: var(--lumo-space-xs);
+}
