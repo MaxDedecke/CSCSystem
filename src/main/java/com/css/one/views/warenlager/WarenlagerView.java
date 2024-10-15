@@ -11,15 +11,10 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import javax.money.CurrencyUnit;
-import javax.money.Monetary;
-import javax.money.MonetaryAmount;
 
-import org.vaadin.addons.MoneyField;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.data.Blossom;
@@ -52,7 +47,6 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
@@ -77,7 +71,6 @@ import com.vaadin.flow.component.upload.receivers.FileBuffer;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoIcon;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
@@ -202,7 +195,6 @@ public class WarenlagerView extends Div {
 	private TextField seedPriceField;
 	private TextField seedsAmountField;
 
-	private Button deleteBlossomButton;
 	private Button deleteCuttingButton;
 	private Button deleteSeedButton;
 
@@ -1244,8 +1236,8 @@ public class WarenlagerView extends Div {
 
 		Button addSeedsButton = new Button();
 		addSeedsButton.addClassNames("button-layout-common");
-		addSeedsButton.setText("+ Samen hinzufügen");
-
+		addSeedsButton.setText("Samen hinzufügen");
+		addSeedsButton.setIcon(LineAwesomeIcon.EGG_SOLID.create());
 		addSeedsButton.addClickListener(e -> addSeedsDialog.open());
 
 		layoutButton.setAlignItems(Alignment.CENTER);
@@ -1475,7 +1467,7 @@ public class WarenlagerView extends Div {
 
 		Button addCuttingButton = new Button();
 		addCuttingButton.addClassNames("button-layout-common");
-		addCuttingButton.setText("+ Stecklinge hinzufügen");
+		addCuttingButton.setText("Stecklinge hinzufügen");
 
 		addCuttingButton.addClickListener(e -> {
 			deleteCuttingButton.setEnabled(false);
@@ -1567,7 +1559,7 @@ public class WarenlagerView extends Div {
 
 		Button addNewBlossomButton = new Button();
 		addNewBlossomButton.addClassNames("button-layout-common");
-		addNewBlossomButton.setText("+ Blüten hinzufügen");
+		addNewBlossomButton.setText("Blüten hinzufügen");
 
 		addNewBlossomButton.addClickListener(e -> {
 			saveBlossomButton.setAriaLabel("hinzufügen");
