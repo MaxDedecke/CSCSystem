@@ -85,7 +85,6 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	private final RecurringPaymentService recurringPaymentService;
 	
 	private final String TRANSACTION_ID = "transactionID";
-//	private final String TRANSACTION_EDIT_ROUTE_TEMPLATE = "finanzen/%s/edit";
 
 	private final Grid<Transaction> grid = new Grid<>(Transaction.class, false);
 	private Grid<RecurringPayment> recurringPaymentsGrid;
@@ -949,7 +948,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		costButton = new Button(layout);
 		costButton.setHeight(100, Unit.PIXELS);
 		costButton.setWidth(200, Unit.PIXELS);
-		costButton.addClassName("button-layout-red");
+		costButton.addClassNames("button-layout-red", "state-selected");
 		
 		costButton.addClickListener(e -> {
 			refreshGridWithType(TransactionType.COST);
@@ -969,7 +968,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		incomeButton = new Button(layout);
 		incomeButton.setHeight(100, Unit.PIXELS);
 		incomeButton.setWidth(200, Unit.PIXELS);
-		incomeButton.addClassName("button-category");
+		incomeButton.addClassNames("button-category", "state-selected");
 
 		incomeButton.addClickListener(e -> {
 			refreshGridWithType(TransactionType.INCOME);

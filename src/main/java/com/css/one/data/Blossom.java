@@ -25,7 +25,7 @@ public class Blossom extends OutputEntity {
 	 	private double thc;
 	 	
 	 	@Nullable
-	 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+	 	@ManyToMany(fetch = FetchType.EAGER)
 	 	private List<Person> weighedByMembers;
 	 	
 		@Nullable

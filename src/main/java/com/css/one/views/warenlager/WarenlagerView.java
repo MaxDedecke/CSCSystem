@@ -564,21 +564,12 @@ public class WarenlagerView extends Div {
 
 	private void addNewCharge() {
 
-//		List<Plant> includedPlants = new ArrayList<>();
-
 		Charge charge;
 
 		if (changeCharge != null) {
 			charge = changeCharge;
-//			tmpPlants.forEach(e -> {
-//				includedPlants.add(plantService.update(e));
-//			});
 		} else {
 			charge = new Charge();
-//			tmpPlants.forEach(e -> {
-//				e.setId(0L);
-//				includedPlants.add(plantService.update(e));
-//			});
 		}
 
 		charge.setAssociationId(associationId);

@@ -20,8 +20,17 @@
   padding: var(--lumo-space-l);
 }
 
+.mitglieder-view .form-size {
+  max-width: 350px;
+  width:350px;
+}
+
 .mitglieder-view .green {
 	  color: #8ABD3E;
+}
+
+.customheader {
+	  font-family:'Afacad Flux', sans-serif;
 }
 
 .mitglieder-view vaadin-vertical-layout {
@@ -72,7 +81,6 @@
 .mitglieder-view vaadin-dialog-overlay::part(overlay) {
   border-radius: 8px;
   height:80%;
-  min-width: 500px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 

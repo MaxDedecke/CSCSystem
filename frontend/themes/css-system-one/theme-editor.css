@@ -415,36 +415,36 @@ vaadin-menu-bar-overlay.main-layout-menu-bar-1 vaadin-menu-bar-item {
   font-weight:bold;
 }
 
-vaadin-menu-bar-overlay.main-layout-menu-bar-1::part(overlay) { background-color:rgba(247,11,11,1); }
+vaadin-menu-bar-overlay::part(overlay) { background-color:rgba(247,11,11,1); }
 
-vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-button vaadin-menu-bar-item vaadin-icon { color:rgb(255,255,255); }
+vaadin-menu-bar-overlay vaadin-menu-bar-button vaadin-menu-bar-item vaadin-icon { color:rgb(255,255,255); }
 
-vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item {
+vaadin-menu-bar-overlay vaadin-menu-bar-item {
   background-color:#ffffff;
   border-radius:0px;
   color:rgba(69,37,18,1);
   font-family:'Afacad Flux',sans-serif;
 }
 
-vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item::part(content) { background-color:#ffffff; }
+vaadin-menu-bar-overlay vaadin-menu-bar-item::part(content) { background-color:#ffffff; }
 
-vaadin-menu-bar-overlay.warenlager-view-menu-bar-1 vaadin-menu-bar-item:hover { font-size:large; }
+vaadin-menu-bar-overlay vaadin-menu-bar-item:hover { font-size:large; }
 
-vaadin-menu-bar-overlay.warenlager-view-menu-bar-1::part(overlay) { background-color:#8ABD3E; }
+vaadin-menu-bar-overlay::part(overlay) { background-color:#8ABD3E; }
 
-vaadin-menu-bar.warenlager-view-menu-bar-1 vaadin-menu-bar-button {
+vaadin-menu-bar vaadin-menu-bar-button {
   --lumo-button-size:var(--lumo-size-m);
   background-color:rgba(222,222,222,0);
   border-color:#8ABD3E;
   color:#8ABD3E;
 }
 
-vaadin-menu-bar.warenlager-view-menu-bar-1 vaadin-menu-bar-button vaadin-menu-bar-item {
+vaadin-menu-bar vaadin-menu-bar-button vaadin-menu-bar-item {
   background-color:#efefef;
   color:#8ABD3E;
 }
 
-vaadin-number-field.warenlager-view-number-field-1::part(label) { color:#8ABD3E; }
+vaadin-number-field::part(label) { color:#8ABD3E; }
 
 vaadin-number-field::part(label) { color:#8ABD3E; }
 

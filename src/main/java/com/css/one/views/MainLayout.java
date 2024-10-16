@@ -92,9 +92,10 @@ public class MainLayout extends AppLayout {
         avatar.setImageResource(imageResource);
         avatar.setHeight(250, Unit.PIXELS);
         avatar.setWidthFull();
+        avatar.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.CONTRAST_50);
         layout.setAlignItems(Alignment.CENTER);
         layout.addClassNames(LumoUtility.Padding.XSMALL);
-        layout.add(avatar, new Hr());
+        layout.add(avatar);
         Header header = new Header(layout);
         
         Scroller scroller = new Scroller(createNavigation());

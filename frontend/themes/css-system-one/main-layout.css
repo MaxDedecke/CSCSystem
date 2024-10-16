@@ -5,7 +5,7 @@ vaadin-scroller[slot="drawer"] {
   --lumo-primary-text-color: #efefef;
   --lumo-header-text-color: #8ABD3E
   --lumo-border-radius: 8px;
-  background-color: #efefef;
+  background-color: #ffffff;
 }
 
 vaadin-side-nav-item vaadin-icon {
@@ -17,8 +17,15 @@ vaadin-side-nav-item vaadin-icon {
   
 }
 
+main-layout .avatar {
+	border-width: 10px;
+	border: thick;
+	box-shadow: 2px 2px 5px #8ABD3E;
+	border-color: #8ABD3E;
+}
+
 vaadin-side-nav > [slot="label"] {
-	background-color: #efefef;
+	background-color: #ffffff;
   --lumo-base-color: #8ABD3E;
   --lumo-primary-color: #8ABD3E;
   --lumo-primary-text-color: #8ABD3E;
@@ -40,7 +47,7 @@ vaadin-side-nav-item[slot="children"] {
 }
 
 vaadin-side-nav-item {
- background-color: #efefef;
+ background-color: #ffffff;
   --lumo-base-color: #8ABD3E;
   --lumo-primary-color: #8ABD3E;
   --lumo-primary-text-color: #8ABD3E;
@@ -53,7 +60,7 @@ vaadin-side-nav-item {
 }
 
 vaadin-side-nav-item::part(content) {
-	 background-color: #efefef;
+	 background-color: #ffffff;
   --lumo-base-color: #8ABD3E;
   --lumo-primary-color: #8ABD3E;
   --lumo-primary-text-color: #8ABD3E;
@@ -98,7 +105,7 @@ vaadin-app-layout::part(navbar) {
   gap: var(--lumo-space-s);
   min-height: var(--lumo-size-xl);
   box-sizing: border-box;
-  background-color: #efefef;
+  background-color: #ffffff;
   --lumo-base-color: #8ABD3E;
   --lumo-primary-color: #8ABD3E;
   --lumo-primary-text-color: #FFFFFF;
@@ -108,8 +115,8 @@ vaadin-app-layout::part(navbar) {
 
 [slot="drawer"]:is(header, footer):is(:empty) {
   display: none;
-  background-color: #efefef;
-  background: #efefef;
+  background-color: #ffffff;
+  background: #ffffff;
 }
 
 [slot="drawer"] a[active] {
@@ -125,8 +132,8 @@ vaadin-app-layout::part(navbar) {
 }
 	
 [slot="drawer"] {
-    background-color: #efefef;
-  	background: #efefef;
+    background-color: #ffffff;
+  	background: #ffffff;
 }
 
 [slot="drawer"] [current]{
