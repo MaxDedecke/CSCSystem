@@ -277,7 +277,6 @@ public class MitgliederView extends Div {
         bottomLayout.setWidth("100%");
         bottomLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Bottom.SMALL, LumoUtility.Padding.Left.MEDIUM, LumoUtility.JustifyContent.CENTER);
         memberCount = new Text("Mitglieder: " + samplePersonService.count());
-        
         bottomLayout.add(memberCount);
         
         mainLayout.add(grid, bottomLayout);

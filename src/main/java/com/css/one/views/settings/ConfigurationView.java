@@ -3,6 +3,8 @@ package com.css.one.views.settings;
 import java.util.List;
 import java.util.Optional;
 
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
 import com.css.one.data.Cutting;
 import com.css.one.data.Location;
 import com.css.one.data.Seed;
@@ -95,9 +97,7 @@ public class ConfigurationView extends VerticalLayout {
 		tabSheet.setSizeFull();
 		tabSheet.add("Standorte", createLocationsTab());
 		tabSheet.add("Arbeitsplanung", createWorkingEnvTab());
-		//Bank Verbindung konfigurieren
 		tabSheet.add("Finanzen", createFinancesTab());
-		//Rollen und deren Rechte + Zuweisung an Mitglieder
 		tabSheet.add("Autorisierung", createAuthorizationTab());
 
 		add(tabSheet);
@@ -119,6 +119,7 @@ public class ConfigurationView extends VerticalLayout {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		Button addLocationButton = new Button("Standort hinzufügen");
 		addLocationButton.addClassName("button-category");
+		addLocationButton.setIcon(LineAwesomeIcon.BUILDING_SOLID.create());
 		
 		addLocationButton.addClickListener(e -> {
 			saveLocationButton.setText("erfassen");
@@ -305,6 +306,7 @@ public class ConfigurationView extends VerticalLayout {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		Button addCategoryButton = new Button("Kategorie hinzufügen");
 		addCategoryButton.addClassName("button-category");
+		addCategoryButton.setIcon(LineAwesomeIcon.TAG_SOLID.create());
 		
 		addCategoryButton.addClickListener(e -> {
 			saveCategoryButton.setText("hinzufügen");

@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #efefef;
+  background-color: #ffffff;
   padding-left: none;
   margin-left: none;
 }
@@ -161,38 +161,6 @@
 
 .finanzen-view .grid-wrapper {
   width: 100%;
-}
-
-.finanzen-view vaadin-tab {
-  color: #333;  /* Farbe des Textes auf den Tabs */
-  padding: 10px 20px;
-  border-radius: 5px 5px 0 0; /* Abgerundete Ecken oben am Tab */
-}
-
-.finanzen-view vaadin-tab::before, vaadin-tab::after {
-	content: '';
-      position: absolute;
-      display: var(--_lumo-tab-marker-display, block);
-      bottom: 0;
-      left: 50%;
-      width: var(--lumo-size-s);
-      height: 2px;
-      background-color: #282828;
-      border-radius: var(--lumo-border-radius-s) var(--lumo-border-radius-s) 0 0;
-      transform: translateX(-50%) scale(0);
-      transform-origin: 50% 100%;
-      transition: 0.14s transform cubic-bezier(0.12, 0.32, 0.54, 1);
-      will-change: transform;
-}
-
-.finanzen-view vaadin-tab[active] {
-  color: #8ABD3E;  /* Dunklere Textfarbe für bessere Lesbarkeit */
-  background-color: #cccccc;
-}
-
-.finanzen-view vaadin-tab[selected] {
-  color:  #8ABD3E;  /* Dunklere Textfarbe für bessere Lesbarkeit */
-  background-color: #cccccc;
 }
 
 /* Grundstil für den Dialog */

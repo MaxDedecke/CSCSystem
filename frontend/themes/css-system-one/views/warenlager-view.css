@@ -17,6 +17,7 @@ vaadin-grid {
   display:flex;
   flex-direction: column;
   font-size: large;
+  background: #efefef;
 }
 
 vaadin-text-field[invalid]::part(input-field) {
@@ -175,46 +176,6 @@ vaadin-vertical-layout {
 
 .warenlager-view .grid-wrapper {
   width: 100%;
-}
-
-.warenlager-view vaadin-tab {
-  color: #333;  /* Farbe des Textes auf den Tabs */
-  border-radius: 5px 5px 0 0; /* Abgerundete Ecken oben am Tab */
-}
-
-.warenlager-view vaadin-tab::before, vaadin-tab::after {
-	content: '';
-      position: absolute;
-      display: var(--_lumo-tab-marker-display, block);
-      bottom: 0;
-      left: 50%;
-      width: var(--lumo-size-s);
-      height: 2px;
-      background-color: #282828;
-      border-radius: var(--lumo-border-radius-s) var(--lumo-border-radius-s) 0 0;
-      transform: translateX(-50%) scale(0);
-      transform-origin: 50% 100%;
-      transition: 0.14s transform cubic-bezier(0.12, 0.32, 0.54, 1);
-      will-change: transform;
-}
-
-.warenlager-view vaadin-tab[active] {
-  color: #FFFFFF;  /* Dunklere Textfarbe für bessere Lesbarkeit */
-  background-color: #cccccc;
-}
-
-.warenlager-view vaadin-tab[selected] {
-  color:  #FFFFFF;  /* Dunklere Textfarbe für bessere Lesbarkeit */
-  background-color: #8ABD3E;
-}
-
-/* CSS für die Vaadin Upload Komponente */
-vaadin-upload {
-  --lumo-primary-color: #8ABD3E; /* Hauptfarbe ändern */
-  --lumo-primary-text-color:#8ABD3E; /* Textfarbe ändern */
-  --lumo-border-radius: 8px; /* Ecken abrunden */
-  display: flex;
-  flex-direction: column;
 }
 
 vaadin-upload-file {

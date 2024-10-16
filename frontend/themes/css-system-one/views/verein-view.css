@@ -2,14 +2,23 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #efefef;  
+  background-color: #ffffff;  
 }
 
-.verein-view vaadin-split-layout {
+.verein-view vaadin-vertical-layout {
   width: 100%;
   height: 100%;
   padding: var(--lumo-space-m);
 
+}
+
+vaadin-grid {
+  height: 100%;
+  width: 100%;
+  display:flex;
+  flex-direction: column;
+  font-size: large;
+  background: #efefef;
 }
 
 .verein-view .editor-layout {
@@ -44,41 +53,3 @@
   border-color: #8ABD3E;
   color: #8ABD3E;
 }
-
-
-.verein-view .grid-wrapper {
-  background-color: #efefef;  
-}
-
-.verein-view vaadin-tab {
-  color: #333;  /* Farbe des Textes auf den Tabs */
-  padding: 10px 20px;
-  border-radius: 5px 5px 0 0; /* Abgerundete Ecken oben am Tab */
-}
-
-.verein-view vaadin-tab::before, vaadin-tab::after {
-	content: '';
-      position: absolute;
-      display: var(--_lumo-tab-marker-display, block);
-      bottom: 0;
-      left: 50%;
-      width: var(--lumo-size-s);
-      height: 2px;
-      background-color: #282828;
-      border-radius: var(--lumo-border-radius-s) var(--lumo-border-radius-s) 0 0;
-      transform: translateX(-50%) scale(0);
-      transform-origin: 50% 100%;
-      transition: 0.14s transform cubic-bezier(0.12, 0.32, 0.54, 1);
-      will-change: transform;
-}
-
-.verein-view vaadin-tab[active] {
-	color:  #8ABD3E;  /* Dunklere Textfarbe für bessere Lesbarkeit */
-  background-color: #cccccc;
-}
-
-.verein-view vaadin-tab[selected] {
-  color:  #8ABD3E;  /* Dunklere Textfarbe für bessere Lesbarkeit */
-  background-color: #cccccc;
-}
-

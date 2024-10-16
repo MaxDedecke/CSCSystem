@@ -43,7 +43,6 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
 
@@ -141,7 +140,8 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
 					this.workingUnit = new WorkingUnit();
 				}
 				if (worker.getValue() == null) {
-					Notification.show("Es muss ein Mitglied ausgewählt werden.");
+					Notification notification = Notification.show("Es muss ein Mitglied ausgewählt werden.");
+					notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 				} else {
 					workingUnit.setPersonId(worker.getValue().getId());
 					workingUnit.setPersonName(worker.getValue().getFirstName() + " " + worker.getValue().getLastName());
@@ -164,7 +164,8 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
 					workingUnitService.update(this.workingUnit);
 					clearForm();
 					refreshGrid();
-					Notification.show("Data updated");
+					Notification notification = Notification.show("Zeiterfassung gestartet");
+					notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 					UI.getCurrent().navigate(ArbeitsplanungView.class);
 					this.save.setText("Erfassen");
 					this.workingUnit = null;
@@ -252,11 +253,10 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
 			buttonCategory.addClassName("button-category");
 			buttonCategory.setHeight(100, Unit.PIXELS);
 			buttonCategory.setMinWidth(150, Unit.PIXELS); 
-			buttonCategory.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
 			buttonCategory.addClickListener(e -> {
 				refreshGridWithCategory(category);
 				refreshButtonBorders();
-				buttonCategory.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+				buttonCategory.addClassNames("button-category-selected");
 			});
 			
 			categoriesButtonList.add(buttonCategory);
@@ -266,7 +266,7 @@ public class ArbeitsplanungView extends Div implements BeforeEnterObserver {
 	
 	private void refreshButtonBorders() {
 		categoriesButtonList.forEach(e -> {
-			e.removeClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+			e.removeClassNames("button-category-selected");
 		});	
 	}
 

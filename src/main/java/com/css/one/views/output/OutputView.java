@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.data.Cutting;
 import com.css.one.data.Output;
@@ -103,7 +104,8 @@ public class OutputView extends Div {
 		layoutButton.addClassNames(LumoUtility.Padding.Left.NONE);
 		Button addOutputButton = new Button();
 		addOutputButton.addClassName("button-layout-common");
-		addOutputButton.setText("+ Abgabe");
+		addOutputButton.setText("Abgabe");
+		addOutputButton.setIcon(LineAwesomeIcon.HANDSHAKE_SOLID.create());
 		
 		addOutputButton.addClickListener(e -> openAddOutput());
 		

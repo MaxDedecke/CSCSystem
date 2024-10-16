@@ -111,7 +111,6 @@ public class VereinView extends Div {
 		SplitLayout splitLayout = new SplitLayout();
 		
 		tabSheet.setSizeFull();
-		tabSheet.addClassName(".content");
 		tabSheet.add("Verantwortliche", createResponsiblesTab());
 		tabSheet.add("Downloads", createDownloadsTab());
 		tabSheet.add("Allgemeine Infos", createGeneralInfoTab());
@@ -253,26 +252,19 @@ public class VereinView extends Div {
 
 	private Component createResponsiblesTab() {
 		VerticalLayout wrapper = new VerticalLayout();
-		wrapper.addClassName("grid-wrapper");
-		wrapper.setHeight("100%");
-		wrapper.addClassNames(LumoUtility.Padding.NONE);
-		
-		VerticalLayout wrapperGrid = new VerticalLayout();
-		wrapperGrid.addClassNames(LumoUtility.Padding.NONE);
+		wrapper.addClassNames(LumoUtility.Padding.NONE, LumoUtility.BorderColor.CONTRAST_90);
 		
 		importantPeople = samplePersonService.findAllByAssociation(associationId).stream()
-				.filter(e -> e.getAssociationRole() != AssociationRole.MEMBER).collect(Collectors.toList());
+				.filter(e -> e.getAssociationRole() != AssociationRole.MEMBER).toList();
 		
 		Grid<Person> responsiblesGrid = new Grid<>(Person.class, false);
 		responsiblesGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-		responsiblesGrid.setMinHeight(500, Unit.PIXELS);
 		responsiblesGrid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
 		responsiblesGrid.addColumn(p -> p.getAssociationRole().getLabel()).setAutoWidth(true).setHeader("Rolle");
 		responsiblesGrid.addColumn(p -> renderDate(p.getDateOfHigherRole())).setAutoWidth(true).setHeader("In der Funktion seit");
 		responsiblesGrid.setItems(importantPeople);
 		
-		wrapperGrid.add(responsiblesGrid); 
-		wrapper.add(wrapperGrid);
+		wrapper.add(responsiblesGrid);
 		return wrapper;
 	}
 

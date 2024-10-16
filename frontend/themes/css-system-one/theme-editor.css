@@ -24,6 +24,38 @@ vaadin-button {
   font-family:'Afacad Flux',sans-serif;
 }
 
+vaadin-tab {
+  color: #333;  /* Farbe des Textes auf den Tabs */
+  border-radius: 5px 5px 0 0; /* Abgerundete Ecken oben am Tab */
+}
+
+vaadin-tab::before, vaadin-tab::after {
+	content: '';
+	position: absolute;
+	display: var(--_lumo-tab-marker-display, block);
+	bottom: 0;
+	left: 50%;
+	width: var(--lumo-size-s);
+	height: 2px;
+	background-color: #282828;
+	border-radius: var(--lumo-border-radius-s) var(--lumo-border-radius-s) 0
+		0;
+	transform: translateX(-50%) scale(0);
+	transform-origin: 50% 100%;
+	transition: 0.14s transform cubic-bezier(0.12, 0.32, 0.54, 1);
+	will-change: transform;
+}
+
+vaadin-tab[active] {
+  color: #FFFFFF;  /* Dunklere Textfarbe für bessere Lesbarkeit */
+  background-color: #cccccc;
+}
+
+vaadin-tab[selected] {
+  color:  #FFFFFF;  /* Dunklere Textfarbe für bessere Lesbarkeit */
+  background-color: #8ABD3E;
+}
+
 vaadin-button.diary-view-button-1 { margin-top:37px; }
 
 vaadin-button.diary-view-button-1::part(label) { color:#8ABD3E; }
@@ -94,27 +126,27 @@ vaadin-date-picker::part(toggle-button) {
 vaadin-date-time-picker { font-family:'Afacad Flux',sans-serif; }
 
 vaadin-grid::part(collapsed-row-cell):hover {
-	font-size: x-large;
+	font-size: medium;
 	font-weight: bold;
 }
 
 vaadin-grid::part(collapsed-row-cell){
-	font-size: large;
+	font-size: medium;
 	height: 80px;
 }
 
 vaadin-grid::part(expanded-row-cell):hover {
-	font-size: x-large;
+	font-size: medium;
 	font-weight: bold;
 }
 
 vaadin-grid::part(expanded-row-cell) {
-	font-size: large;
+	font-size: medium;
 	height: 80px;
 }
 
 vaadin-grid-tree-toggle::part(toggle) {
-		font-size: large;
+	font-size: medium;
 }
 
 vaadin-grid-tree-toggle:hover {
@@ -153,12 +185,20 @@ vaadin-details.diary-view-details-summary-1 {
 }
 
 vaadin-grid {
-  background:rgba(255,255,255,0.65);
   border-color:rgba(255,255,255,0.65);
   border-radius:10px;
   border-width:0px;
   font-family:'Afacad Flux',sans-serif;
   font-size: large;
+  height: 100%;
+  width: 100%;
+  display:flex;
+  flex-direction: column;
+  background: #efefef;
+}
+
+vaadin-grid::part(header-cell) {
+  background:rgba(191,191,191,0.08);
 }
 
 vaadin-grid::part(row) {
@@ -186,7 +226,7 @@ vaadin-grid::part(body-cell) {
 
 vaadin-grid::part(header-cell) {
   --lumo-font-size-s:var(--lumo-font-size-l);
-  background-color:rgba(247,247,247,1);
+  background-color:rgba(191,191,191,0.08);
   border-bottom:none;
   border-radius:10px;
   color:rgba(69,37,18,1);

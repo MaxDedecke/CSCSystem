@@ -2,12 +2,12 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #efefef;
+  background-color: #ffffff;
 }
 
 .waitinglist-view vaadin-split-layout {
   height: 100%;
-  background-color: #efefef;
+  background-color: #ffffff;
 }
 
 .waitinglist-view .editor-layout {
