@@ -2,14 +2,13 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #ffffff;  
+  background-color: #ffffff;
+  font-size: large;
 }
 
 .verein-view vaadin-vertical-layout {
   width: 100%;
   height: 100%;
-  padding: var(--lumo-space-m);
-
 }
 
 vaadin-grid {
@@ -19,6 +18,11 @@ vaadin-grid {
   flex-direction: column;
   font-size: large;
   background: #efefef;
+}
+
+vaadin-vertical-layout {
+  box-sizing: border-box;
+  padding: none;
 }
 
 .verein-view .editor-layout {

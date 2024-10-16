@@ -884,7 +884,7 @@ public class WarenlagerView extends Div {
 
 	private void createChargeLayout(TabSheet tabSheet) {
 		VerticalLayout wrapper = new VerticalLayout();
-		wrapper.setClassName("grid-wrapper");
+		wrapper.addClassNames("grid-wrapper", LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		wrapper.setHeightFull();
 
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -1231,7 +1231,7 @@ public class WarenlagerView extends Div {
 
 	private void createSeedsLayout(TabSheet tabSheet) {
 		VerticalLayout wrapper = new VerticalLayout();
-		wrapper.setClassName("grid-wrapper");
+		wrapper.addClassNames("grid-wrapper", LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		wrapper.setHeightFull();
 
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -1462,7 +1462,7 @@ public class WarenlagerView extends Div {
 
 	private void createCuttingsLayout(TabSheet tabSheet) {
 		VerticalLayout wrapper = new VerticalLayout();
-		wrapper.setClassName("grid-wrapper");
+		wrapper.addClassNames("grid-wrapper", LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		wrapper.setHeightFull();
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
 
@@ -1553,7 +1553,7 @@ public class WarenlagerView extends Div {
 	private void createBlossomLayout(TabSheet tabSheet) {
 
 		VerticalLayout wrapper = new VerticalLayout();
-		wrapper.setClassName("grid-wrapper");
+		wrapper.addClassNames("grid-wrapper", LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 
 		wrapper.setHeightFull();
 		HorizontalLayout horizontalLayout = new HorizontalLayout();

@@ -3,8 +3,7 @@
   flex-direction: column;
   height: 100%;
   background-color: #ffffff;
-  padding-left: none;
-  margin-left: none;
+  font-size: large;
 }
 
 .configuration-view vaadin-split-layout {

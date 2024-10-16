@@ -31,7 +31,6 @@ import com.vaadin.flow.component.html.Footer;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.menubar.MenuBar;
@@ -89,13 +88,13 @@ public class MainLayout extends AppLayout {
         StreamResource imageResource = new StreamResource("potteriepng.png",
                 () -> getClass().getResourceAsStream("/potteriepng.png"));
 
-        Image logoImage = new Image(imageResource, "");
-        logoImage.setHeight(250, Unit.PIXELS);
-         
-         
+        Avatar avatar = new Avatar("logo_club");
+        avatar.setImageResource(imageResource);
+        avatar.setHeight(250, Unit.PIXELS);
+        avatar.setWidthFull();
         layout.setAlignItems(Alignment.CENTER);
         layout.addClassNames(LumoUtility.Padding.XSMALL);
-        layout.add(logoImage, new Hr());
+        layout.add(avatar, new Hr());
         Header header = new Header(layout);
         
         Scroller scroller = new Scroller(createNavigation());

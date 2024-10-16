@@ -85,8 +85,6 @@ public class ÜbersichtView extends FlexLayout {
     private VerticalLayout layoutNews = new VerticalLayout();
     private VerticalLayout layoutAvailables = new VerticalLayout();
     private VerticalLayout layoutName = new VerticalLayout();
-//    private VerticalLayout layoutChart = new VerticalLayout();
-
     private VerticalLayout layoutCurrentDate = new VerticalLayout();
 
     private ComboBox<Person> searchMemberBox = new ComboBox<>();
@@ -572,7 +570,7 @@ public class ÜbersichtView extends FlexLayout {
     	searchStrainBox.addClassNames(LumoUtility.Margin.Top.LARGE);
     	buttonOpenStrainInfo.addClassNames(LumoUtility.Padding.LARGE,LumoUtility.Margin.Top.LARGE, "button-category-1");
     	buttonOpenStrainInfo.setWidthFull();
-		layoutSearchStrains.add(headerLayout, new Hr(), mainLayout);
+		layoutSearchStrains.add(headerLayout, mainLayout);
 
     }
     

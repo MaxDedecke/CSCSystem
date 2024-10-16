@@ -805,7 +805,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 
 	private Component createGeneralTab() {
 		VerticalLayout wrapperGeneralTab = new VerticalLayout();
-		wrapperGeneralTab.setClassName("grid-wrapper");
+		wrapperGeneralTab.addClassNames("grid-wrapper", LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		wrapperGeneralTab.setHeight("100%");
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
 		horizontalLayout.setAlignItems(Alignment.CENTER);
@@ -833,18 +833,14 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 					subscriptionByTransaction.get().setPayed(false);
 					memberSubscriptionService.update(subscriptionByTransaction.get());
 				}
-				recurringPaymentService.deleteConnectedTransaktion(associationId, item.getId());
+				recurringPaymentService.deleteConnectedTransaction(associationId, item.getId());
 				transactionService.delete(item.getId());
 				refreshGrid();
-
 			});
 
 			return button;
 		}).setAutoWidth(true);
-		
-		//		grid.setItems(query -> transactionService.list(
-		//		PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
-		//		.stream());
+
 		grid.setItems(transactionService.findAllByAssociation(associationId));
 		grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
@@ -859,7 +855,6 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		});
 
 		wrapperGeneralTab.add(grid);
-		
 		return wrapperGeneralTab;
 	}
 	
@@ -887,20 +882,33 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		this.monthValue = month;
 		this.year = year;
 		
-		switch(this.monthValue) {
-		case 1: return "Januar " + String.valueOf(year);
-		case 2: return "Februar "+ String.valueOf(year);
-		case 3: return "März "+ String.valueOf(year);
-		case 4: return "April "+ String.valueOf(year);
-		case 5: return "Mai " + String.valueOf(year);
-		case 6: return "Juni " + String.valueOf(year);
-		case 7: return "Juli " + String.valueOf(year);
-		case 8: return "August " + String.valueOf(year);
-		case 9: return "September " + String.valueOf(year);
-		case 10: return "Oktober " + String.valueOf(year);
-		case 11: return "November " + String.valueOf(year);
-		case 12: return "Dezember " + String.valueOf(year);
-		default: return "Kein Monat ausgewählt";
+		switch (this.monthValue) {
+		case 1:
+			return "Januar " + String.valueOf(year);
+		case 2:
+			return "Februar " + String.valueOf(year);
+		case 3:
+			return "März " + String.valueOf(year);
+		case 4:
+			return "April " + String.valueOf(year);
+		case 5:
+			return "Mai " + String.valueOf(year);
+		case 6:
+			return "Juni " + String.valueOf(year);
+		case 7:
+			return "Juli " + String.valueOf(year);
+		case 8:
+			return "August " + String.valueOf(year);
+		case 9:
+			return "September " + String.valueOf(year);
+		case 10:
+			return "Oktober " + String.valueOf(year);
+		case 11:
+			return "November " + String.valueOf(year);
+		case 12:
+			return "Dezember " + String.valueOf(year);
+		default:
+			return "Kein Monat ausgewählt";
 		}
 	}
 	
@@ -912,7 +920,7 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		layout.setAlignItems(Alignment.CENTER);
 		
 		allTransactionsButton = new Button(layout);
-		allTransactionsButton.addClassNames("button-layout-common", LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		allTransactionsButton.addClassNames("button-layout-common", "state-selected");
 		allTransactionsButton.setHeight(100, Unit.PIXELS);
 		allTransactionsButton.setWidth(250, Unit.PIXELS);
 		
@@ -920,7 +928,8 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 			refreshGridWithType(null);
 			this.currentType = null;
 			refreshButtonStyle();
-			allTransactionsButton.addClassNames("button-layout-common", LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+			allTransactionsButton.removeClassNames("state-normal");
+			allTransactionsButton.addClassNames("button-layout-common", "state-selected");
 			if(amountDouble > 0) {
 				sum.removeClassNames("text-red");
 				sum.addClassNames("text-green");
@@ -945,7 +954,8 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		costButton.addClickListener(e -> {
 			refreshGridWithType(TransactionType.COST);
 			refreshButtonStyle();
-			costButton.addClassNames("button-layout-red", LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+			costButton.removeClassNames("state-normal");
+			costButton.addClassNames("button-layout-red", "state-selected");
 			sum.removeClassNames("text-green");
 			sum.addClassNames("text-red");
 		});
@@ -964,7 +974,8 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 		incomeButton.addClickListener(e -> {
 			refreshGridWithType(TransactionType.INCOME);
 			refreshButtonStyle();
-			incomeButton.addClassNames("button-category",LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+			incomeButton.removeClassNames("state-normal");
+			incomeButton.addClassNames("button-category","state-selected");
 			sum.removeClassNames("text-red");
 			sum.addClassNames("text-green");
 		});
@@ -983,9 +994,12 @@ public class FinanzenView extends Div implements BeforeEnterObserver {
 	}
 
 	private void refreshButtonStyle() {
-		incomeButton.removeClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
-		costButton.removeClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
-		allTransactionsButton.removeClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		incomeButton.removeClassNames("state-selected");
+		incomeButton.addClassName("state-normal");
+		costButton.removeClassNames("state-selected");
+		costButton.addClassName("state-normal");
+		allTransactionsButton.removeClassNames("state-selected");
+		allTransactionsButton.addClassName("state-normal");
 	}
 	
 	private void refreshGridWithType(TransactionType type) {

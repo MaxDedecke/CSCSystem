@@ -107,16 +107,14 @@ public class VereinView extends Div {
 		
 		addClassNames("verein-view");
 		associationId = MainLayout.getAssociationId();
-
-		SplitLayout splitLayout = new SplitLayout();
 		
 		tabSheet.setSizeFull();
+		tabSheet.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		tabSheet.add("Verantwortliche", createResponsiblesTab());
 		tabSheet.add("Downloads", createDownloadsTab());
 		tabSheet.add("Allgemeine Infos", createGeneralInfoTab());
-
-		createSideLayout(splitLayout);
-
+		
+		addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		add(tabSheet);
 	}
 
@@ -252,7 +250,7 @@ public class VereinView extends Div {
 
 	private Component createResponsiblesTab() {
 		VerticalLayout wrapper = new VerticalLayout();
-		wrapper.addClassNames(LumoUtility.Padding.NONE, LumoUtility.BorderColor.CONTRAST_90);
+		wrapper.addClassNames(LumoUtility.Padding.NONE, LumoUtility.BorderColor.CONTRAST_90, LumoUtility.Margin.NONE);
 		
 		importantPeople = samplePersonService.findAllByAssociation(associationId).stream()
 				.filter(e -> e.getAssociationRole() != AssociationRole.MEMBER).toList();

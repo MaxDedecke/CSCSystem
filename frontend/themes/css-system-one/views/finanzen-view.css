@@ -64,6 +64,20 @@
   color: #DC3545;
 }
 
+.finanzen-view .state-selected {
+	border-width: 10px;
+	border: thick;
+	box-shadow: 2px 2px 5px #8ABD3E;
+	gap: var(--lumo-space-xs);
+}
+
+.finanzen-view .state-normal {
+	border-width: 10px;
+	border: thick;
+	box-shadow: 2px 2px 5px #c0c0c0;
+	gap: var(--lumo-space-xs);
+}
+
 .finanzen-view .cancel-button {
   background-color: #808080;
   color: white;
@@ -161,6 +175,7 @@
 
 .finanzen-view .grid-wrapper {
   width: 100%;
+  margin: none;
 }
 
 /* Grundstil für den Dialog */

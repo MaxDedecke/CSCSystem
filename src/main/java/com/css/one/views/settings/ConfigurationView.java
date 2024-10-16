@@ -19,11 +19,14 @@ import com.css.one.services.WorkingUnitCategoryService;
 import com.css.one.services.WorkingUnitService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Unit;
+import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.notification.Notification;
@@ -33,6 +36,8 @@ import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
 
@@ -90,23 +95,76 @@ public class ConfigurationView extends VerticalLayout {
 		this.cuttingService = cuttingService;
 		this.workingUnitService = workingUnitService;
 		
-		addClassNames("configuration-view");
+		addClassNames("configuration-view", LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		
 		associationId = MainLayout.getAssociationId();
 		
 		tabSheet.setSizeFull();
+		tabSheet.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		tabSheet.add("Standorte", createLocationsTab());
 		tabSheet.add("Arbeitsplanung", createWorkingEnvTab());
 		tabSheet.add("Finanzen", createFinancesTab());
 		tabSheet.add("Autorisierung", createAuthorizationTab());
-
+		tabSheet.add("Import", createImportTab());
+		tabSheet.add("Export", createExportTab());
+		
 		add(tabSheet);
     }
+
+	private Component createExportTab() {
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.setHeight("100%");
+		
+		mainLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		H1 help = new H1("Work in progress.");
+
+		StreamResource imageResource = new StreamResource("potteriepng.png",
+				() -> getClass().getResourceAsStream("/potteriepng.png"));
+
+		Avatar avatar = new Avatar("logo_club");
+		avatar.setImageResource(imageResource);
+		avatar.setHeight(250, Unit.PIXELS);
+	    avatar.setWidth(250, Unit.PIXELS);
+		
+		mainLayout.add(avatar, help);
+		return mainLayout;
+	}
+
+	private Component createImportTab() {
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.setHeight("100%");
+		mainLayout.setWidthFull();
+		mainLayout.addClassName(LumoUtility.JustifyContent.CENTER);
+		H1 help = new H1("Work in progress.");
+
+		StreamResource imageResource = new StreamResource("potteriepng.png",
+				() -> getClass().getResourceAsStream("/potteriepng.png"));
+
+		Avatar avatar = new Avatar("logo_club");
+		avatar.setImageResource(imageResource);
+		avatar.setHeight(250, Unit.PIXELS);
+	    avatar.setWidth(250, Unit.PIXELS);
+		
+		mainLayout.add(avatar, help);
+		return mainLayout;
+	}
 
 	private Component createAuthorizationTab() {
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setHeight("100%");
+		mainLayout.setWidthFull();
+		mainLayout.addClassName(LumoUtility.JustifyContent.CENTER);
+		H1 help = new H1("Work in progress.");
+
+		StreamResource imageResource = new StreamResource("potteriepng.png",
+				() -> getClass().getResourceAsStream("/potteriepng.png"));
+
+		Avatar avatar = new Avatar("logo_club");
+		avatar.setImageResource(imageResource);
+		avatar.setHeight(250, Unit.PIXELS);
+	    avatar.setWidth(250, Unit.PIXELS);
 		
+		mainLayout.add(avatar, help);
 		return mainLayout;
 	}
 
@@ -114,6 +172,7 @@ public class ConfigurationView extends VerticalLayout {
 		
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setHeight("100%");
+		mainLayout.addClassNames("grid-wrapper",LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		addLocationDialog();
 		
 		HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -153,7 +212,7 @@ public class ConfigurationView extends VerticalLayout {
 		locationsGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 		refreshGrid(ViewStatus.LOCATION);
 		
-		mainLayout.add(buttonLayout, new Hr(), locationsGrid);
+		mainLayout.add(buttonLayout, locationsGrid);
 		
 		return mainLayout;
 	}
@@ -294,7 +353,19 @@ public class ConfigurationView extends VerticalLayout {
 	private Component createFinancesTab() {
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setHeight("100%");
+		mainLayout.setWidth("100%");
+		mainLayout.addClassNames(LumoUtility.JustifyContent.CENTER);
+		H1 help = new H1("Work in progress.");
 
+		StreamResource imageResource = new StreamResource("potteriepng.png",
+				() -> getClass().getResourceAsStream("/potteriepng.png"));
+
+		Avatar avatar = new Avatar("logo_club");
+		avatar.setImageResource(imageResource);
+		avatar.setHeight(250, Unit.PIXELS);
+	    avatar.setWidth(250, Unit.PIXELS);
+		
+		mainLayout.add(avatar, help);
 		return mainLayout;
 	}
 

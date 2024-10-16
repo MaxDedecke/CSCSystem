@@ -2,10 +2,10 @@ vaadin-scroller[slot="drawer"] {
   padding: var(--lumo-space-s);
   --lumo-base-color: #8ABD3E;
   --lumo-primary-color: #8ABD3E;
-  --lumo-primary-text-color: #FFFFFF;
+  --lumo-primary-text-color: #efefef;
   --lumo-header-text-color: #8ABD3E
   --lumo-border-radius: 8px;
-  background-color: rgb(192, 192, 192);
+  background-color: #efefef;
 }
 
 vaadin-side-nav-item vaadin-icon {
@@ -18,7 +18,7 @@ vaadin-side-nav-item vaadin-icon {
 }
 
 vaadin-side-nav > [slot="label"] {
-	background-color: rgb(192, 192, 192);
+	background-color: #efefef;
   --lumo-base-color: #8ABD3E;
   --lumo-primary-color: #8ABD3E;
   --lumo-primary-text-color: #8ABD3E;
@@ -30,7 +30,7 @@ vaadin-side-nav > [slot="label"] {
      
 	}
 vaadin-side-nav-item[slot="children"] {
-	background-color: rgb(192, 192, 192);
+	background-color: #efefef;
   --lumo-base-color: #8ABD3E;
   --lumo-primary-color: #8ABD3E;
   --lumo-primary-text-color: #8ABD3E;
@@ -40,7 +40,7 @@ vaadin-side-nav-item[slot="children"] {
 }
 
 vaadin-side-nav-item {
- background-color: rgb(192, 192, 192);
+ background-color: #efefef;
   --lumo-base-color: #8ABD3E;
   --lumo-primary-color: #8ABD3E;
   --lumo-primary-text-color: #8ABD3E;
@@ -53,11 +53,11 @@ vaadin-side-nav-item {
 }
 
 vaadin-side-nav-item::part(content) {
-	 background-color: rgb(192, 192, 192);
+	 background-color: #efefef;
   --lumo-base-color: #8ABD3E;
   --lumo-primary-color: #8ABD3E;
-  --lumo-primary-text-color: #FFFFFF;
-  --lumo-header-text-color: #FFFFFF;
+  --lumo-primary-text-color: #8ABD3E;
+  --lumo-header-text-color: #8ABD3E;
   --lumo-body-text-color: #8ABD3E;
   --lumo-border-radius: 8px;
 }
@@ -98,7 +98,7 @@ vaadin-app-layout::part(navbar) {
   gap: var(--lumo-space-s);
   min-height: var(--lumo-size-xl);
   box-sizing: border-box;
-  background-color: rgb(192, 192, 192);
+  background-color: #efefef;
   --lumo-base-color: #8ABD3E;
   --lumo-primary-color: #8ABD3E;
   --lumo-primary-text-color: #FFFFFF;
@@ -108,8 +108,8 @@ vaadin-app-layout::part(navbar) {
 
 [slot="drawer"]:is(header, footer):is(:empty) {
   display: none;
-  background-color: rgb(192, 192, 192);
-  background: rgb(192, 192, 192);
+  background-color: #efefef;
+  background: #efefef;
 }
 
 [slot="drawer"] a[active] {
@@ -120,20 +120,20 @@ vaadin-app-layout::part(navbar) {
 }
 
 .main-layout main {
-	background-color: rgb(192, 192, 192);
-  	background: rgb(192, 192, 192);
+	background-color: #efefef;
+  	background: #efefef;
 }
 	
 [slot="drawer"] {
-    background-color: rgb(192, 192, 192);
-  	background: rgb(192, 192, 192);
+    background-color: #efefef;
+  	background: #efefef;
 }
 
 [slot="drawer"] [current]{
     color: #8ABD3E;
     font-weight: bold;
-    box-shadow: 2px solid #FFFFFF;
-    border-color: #FFFFFF;
+    box-shadow: 2px solid #8ABD3E;
+    border-color: #8ABD3E;
     font-size: x-large;
 }
 
@@ -141,13 +141,13 @@ vaadin-app-layout::part(navbar) {
     text-decoration: none;
     padding: 10px;
     display: block;
-    background-color: rgb(192, 192, 192);
-  	background: rgb(192, 192, 192);
+    background-color: #efefef;
+  	background: #efefef;
 }
 
 vaadin-app-layout::part(navbar) a[active] {
     font-weight: bold;
     border-bottom: 2px solid var(--lumo-primary-contrast-color);
-    background-color: rgb(192, 192, 192);
-  	background: rgb(192, 192, 192);
+    background-color: #efefef;
+  	background: #efefef;
 }

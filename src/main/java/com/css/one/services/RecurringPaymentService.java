@@ -35,7 +35,7 @@ public class RecurringPaymentService {
 		repository.deleteById(id);
 	}
 	
-	public boolean deleteConnectedTransaktion(int associationId, Long transactionId) {
+	public boolean deleteConnectedTransaction(int associationId, Long transactionId) {
 		List<Boolean> returnValue = new ArrayList<>();
 		
 		findAllByAssociation(associationId).forEach(e -> {

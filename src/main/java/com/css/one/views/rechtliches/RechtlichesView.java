@@ -231,8 +231,8 @@ public class RechtlichesView extends FlexLayout {
 
 	private void createTrainingComponent() {
 		trainingCertLayout = new VerticalLayout();
-		trainingCertLayout.addClassNames("rechtliches-box");
-		
+		trainingCertLayout.addClassNames("rechtliches-box", LumoUtility.Margin.Right.SMALL);
+
 		HorizontalLayout typeLayout = new HorizontalLayout();
 		typeLayout.add(new H3("Präventionsbeauftragter - Schulung"));
 		
@@ -605,7 +605,7 @@ public class RechtlichesView extends FlexLayout {
 
 	private void createTemplatesComponent() {
 		templateLayout = new VerticalLayout();
-		templateLayout.addClassNames("rechtliches-box");
+		templateLayout.addClassNames("rechtliches-box", LumoUtility.Margin.Right.SMALL);
 		
 		HorizontalLayout typeLayout = new HorizontalLayout();
 		typeLayout.add(new H3("Vorlagen"));
