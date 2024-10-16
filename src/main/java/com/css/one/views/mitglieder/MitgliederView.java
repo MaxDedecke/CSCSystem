@@ -98,20 +98,20 @@ public class MitgliederView extends Div {
         createConfirmDeletionDialog();
         
         grid.addColumn(p -> p.getMemberNumber()).setAutoWidth(true).setHeader("Mitgliedsnummer").setWidth("200px").setFlexGrow(0);
-		grid.addComponentColumn(e -> {
-
-			Avatar avatar = new Avatar("member_picture");
-			
-			StreamResource imageResource = new StreamResource("potteriepng.png",
-	                () -> getClass().getResourceAsStream("/potteriepng.png"));
-			
-			avatar.setImageResource(imageResource);
-			avatar.setHeight(48, Unit.PIXELS);
-			avatar.setWidth(48, Unit.PIXELS);
-			avatar.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.CONTRAST_50);
-			
-			return avatar;
-		}).setWidth("100px").setFlexGrow(0);
+//		grid.addComponentColumn(e -> {
+//
+//			Avatar avatar = new Avatar("member_picture");
+//			
+//			StreamResource imageResource = new StreamResource("potteriepng.png",
+//	                () -> getClass().getResourceAsStream("/potteriepng.png"));
+//			
+//			avatar.setImageResource(imageResource);
+//			avatar.setHeight(48, Unit.PIXELS);
+//			avatar.setWidth(48, Unit.PIXELS);
+//			avatar.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.CONTRAST_50);
+//			
+//			return avatar;
+//		}).setWidth("100px").setFlexGrow(0);
         
         grid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
         grid.addColumn(p -> p.getPhone()).setAutoWidth(true).setHeader("Telefonnummer");
@@ -292,7 +292,8 @@ public class MitgliederView extends Div {
 		Button confirmButton = new Button("Aktualisieren",e -> {	
 			updatePerson();
 			this.memberDetailDialog.close();
-			Notification.show("Informationen aktualisiert!");
+			Notification notification = Notification.show("Informationen aktualisiert!");
+			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 		});
 		confirmButton.addClassName("save-button");
 		
