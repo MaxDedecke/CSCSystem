@@ -24,6 +24,8 @@ public class WaitingPerson {
 	private int associationId;
 	private LocalDate dateOfRegistration;
 	
+	private boolean isOnboaring;
+	
 	public Long getId() {
 		return id;
 	}
@@ -85,5 +87,11 @@ public class WaitingPerson {
 
 	public void setDateOfRegistration(LocalDate dateOfRegistration) {
 		this.dateOfRegistration = dateOfRegistration;
+	}
+	public boolean isOnboaring() {
+		return isOnboaring;
+	}
+	public void setOnboaring(boolean isOnboaring) {
+		this.isOnboaring = isOnboaring;
 	}
 }

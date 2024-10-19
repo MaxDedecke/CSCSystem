@@ -24,8 +24,9 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
@@ -63,9 +64,7 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 	private DatePicker dateOfBirth;
 
 	private final Button cancel = new Button("Abbrechen");
-	private final Button save = new Button("Speichern");
-	private final Button levelup = new Button("Zu Mitglied machen");
-	
+	private final Button save = new Button("Speichern");	
 	private Dialog newMemberDialog = new Dialog();
 	private Text memberCount;
 	
@@ -96,16 +95,37 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 		add(splitLayout);
 
 		// Configure Grid
-
 		grid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
 		grid.addColumn(p -> p.getEmail()).setAutoWidth(true).setHeader("Email");
 		grid.addColumn(p -> p.getPhone()).setAutoWidth(true).setHeader("Telefonnummer");
 		grid.addColumn(p -> renderDate(p.getDateOfRegistration())).setAutoWidth(true).setHeader("Auf Warteliste seit").setSortable(true);
+		
+		grid.addComponentColumn(person -> {
+			
+			this.waitingPerson = person;
+			MenuBar menuBar = new MenuBar();
+			menuBar.setOverlayClassName("warenlager-view-menu-bar-1");
+			menuBar.addClassNames("warenlager-view-menu-bar-1", "customheader");
+			
+			menuBar.addItem("Person löschen", event -> {
+				waitingPersonService.delete(person.getId());
+				refreshGrid();
+			});
+			
+			menuBar.addItem("Zum Mitglied machen", event -> {
+				newMemberDialog = new Dialog();
+				createNewMemberDialog();
+				newMemberDialog.open();
+			});
+			
+			if(!person.isOnboaring()) {				
+				menuBar.addItem("Onboarding starten", event -> {
+					
+				});
+			}
 
-		grid.addComponentColumn(item -> new Button("Löschen", click -> {
-			waitingPersonService.delete(item.getId());
-			refreshGrid();
-		}));
+			return menuBar;
+		}).setWidth("100px").setFlexGrow(0);
 
 		grid.setItems(waitingPersonService.findAllByAssociation(associationId));
 		grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
@@ -125,7 +145,6 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 		binder = new BeanValidationBinder<>(WaitingPerson.class);
 
 		// Bind fields. This is where you'd define e.g. validation rules
-
 		binder.bindInstanceFields(this);
 
 		cancel.addClickListener(e -> {
@@ -145,42 +164,21 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 					this.waitingPerson.setAssociationId(associationId);
 					this.waitingPerson.setDateOfBirth(dateOfBirth.getValue());
 					this.waitingPerson.setDateOfRegistration(LocalDate.now());
-
+					this.waitingPerson.setOnboaring(false);
+					
 					binder.writeBean(this.waitingPerson);
 					waitingPersonService.update(this.waitingPerson);
 					clearForm();
 					refreshGrid();
-					Notification.show("Person wurd auf die Warteliste gesetzt.");
+					Notification notification = Notification.show("Person wurd auf die Warteliste gesetzt.");
+					notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 					UI.getCurrent().navigate(WaitingListView.class);
 				} else {
 
 				}
 			} catch (ValidationException exception) {
-				Notification.show("Failed to update the data. Check again that all values are valid");
-			}
-		});
-		
-		levelup.addClickListener(e -> {
-			newMemberDialog = new Dialog();
-			
-			
-			if (this.waitingPerson == null) {
-				if (checkPersonDataForWaitingList()) {
-					this.waitingPerson = new WaitingPerson();
-					this.waitingPerson.setAssociationId(associationId);
-					this.waitingPerson.setDateOfBirth(dateOfBirth.getValue());
-					this.waitingPerson.setDateOfRegistration(LocalDate.now());
-					this.waitingPerson.setEmail(email.getValue());
-					this.waitingPerson.setFirstName(firstName.getValue());
-					this.waitingPerson.setLastName(lastName.getValue());
-					this.waitingPerson.setPhone(phone.getValue());
-
-					createNewMemberDialog();
-					newMemberDialog.open();
-				}
-			} else {				
-				createNewMemberDialog();
-				newMemberDialog.open();
+				Notification notification = Notification.show("Failed to update the data. Check again that all values are valid");
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			}
 		});
 	}
@@ -200,56 +198,63 @@ private void createSingleSubscriptionForNewMember(Person member) {
 	
 	private boolean checkPersonDataForWaitingList() {
 		boolean isDataOk = true;
-		
-		
+
 		if(firstName.getValue().equals("")) {
 			isDataOk = false;
-			Notification.show("Die Person braucht einen Vornamen");
+			Notification notification = Notification.show("Die Person braucht einen Vornamen");
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return isDataOk;
 		}
 		
 		if(lastName.getValue().equals("")) {
 			isDataOk = false;
-			Notification.show("Die Person braucht einen Nachnamen");
+			Notification notification = Notification.show("Die Person braucht einen Nachnamen");
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return isDataOk;
 		}
 		
 		if(email.getValue().equals("")) {
 			isDataOk = false;
-			Notification.show("Die Person braucht eine Email");
+			Notification notification = Notification.show("Die Person braucht eine Email");
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return isDataOk;
 		}
 		
 		if(phone.getValue().equals("")) {
 			isDataOk = false;
-			Notification.show("Die Person braucht eine Telefonnummer");
+			Notification notification = Notification.show("Die Person braucht eine Telefonnummer");
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return isDataOk;
 		}
 		
 		if(dateOfBirth.getValue() == null) {
 			isDataOk = false;
-			Notification.show("Die Person braucht ein Geburtsdatum");
+			Notification notification = Notification.show("Die Person braucht ein Geburtsdatum");
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return isDataOk;
 		}
 		
 		LocalDate date = dateOfBirth.getValue();
 		LocalDate now = LocalDate.now();
 		
-		if (!(now.getYear() - date.getYear() > 17)) {
+		if (!(now.getYear() - date.getYear() > 20)) {
 			isDataOk = false;
-			Notification.show("Die Person ist noch nicht volljährig!");
+			Notification notification = Notification.show("Die Person ist noch nicht volljährig!");
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return isDataOk;
 		} else {
-			if (now.getYear() - date.getYear() == 18) {
+			if (now.getYear() - date.getYear() == 21) {
 				if (!(now.getMonth().getValue() >= date.getMonth().getValue())) {
 					isDataOk = false;
-					Notification.show("Die Person ist noch nicht volljährig!");
+					Notification notification = Notification.show("Die Person ist noch nicht 21 Jahre alt!");
+					notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 					return isDataOk;
 				} else {
 					if (now.getMonth().getValue() == date.getMonth().getValue()) {
 						if (!(now.getDayOfMonth() >= date.getDayOfMonth())) {
 							isDataOk = false;
-							Notification.show("Es fehlen nur noch ein paar Tage !");
+							Notification notification = Notification.show("Es fehlen nur noch ein paar Tage!");
+							notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 							return isDataOk;
 						}
 					}
@@ -281,12 +286,11 @@ private void createSingleSubscriptionForNewMember(Person member) {
 	private void createNewMemberDialog() {
 		
 		VerticalLayout dialogLayout = new VerticalLayout();
-
-		dialogLayout.add(new H2("Zu Mitgliedern hinzufügen"));
-		dialogLayout.add(new Hr());
+		H2 h2 = new H2("Zu Mitgliedern hinzufügen");
+		h2.addClassNames("customheader");
+		dialogLayout.add(h2);
 
 		FormLayout formLayout = new FormLayout();
-
 		TextField nameOfPerson = new TextField("Name");
 		nameOfPerson.setValue(this.waitingPerson.getFirstName() + " " + this.waitingPerson.getLastName());
 		nameOfPerson.setEnabled(false);
@@ -299,7 +303,6 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		dialogLayout.add(formLayout);
 		
 		newMemberDialog.add(dialogLayout);
-
 		Button saveButton = new Button("Hinzufügen", e -> {
 
 			if (checkBeforeSave(comboBox, nameOfPerson)) {
@@ -327,11 +330,14 @@ private void createSingleSubscriptionForNewMember(Person member) {
 				clearForm();
 				refreshGrid();
 
-				Notification.show("Neues Mitglied hinzugefügt.");
+				Notification notification = Notification.show("Neues Mitglied hinzugefügt.");
+				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 			}
 		});
-
+		saveButton.addClassNames("save-button");
+		
 		Button cancelButton = new Button("Zurück", e -> newMemberDialog.close());
+		cancelButton.addClassNames("cancel-button");
 
 		newMemberDialog.getFooter().add(cancelButton);
 		newMemberDialog.getFooter().add(saveButton);
@@ -342,17 +348,20 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		
 		if(comboBox.getValue() == null) {
 			returnValue = false;
-			Notification.show("Einer Person muss eine Rolle zugewiesen werden");
+			Notification notification = Notification.show("Einer Person muss eine Rolle zugewiesen werden");
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return returnValue;
 		}
 		if(personService.count() >= 500) {
 			returnValue = false;
-			Notification.show("Die maximale Anzahl an Mitgliedern ist bereits erreicht !");
+			Notification notification = Notification.show("Die maximale Anzahl an Mitgliedern ist bereits erreicht !");
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return returnValue;
 		}
 		if(nameOfPerson.getValue().equals("")) {
 			returnValue = false;
-			Notification.show("Die Person braucht noch einen Namen !");
+			Notification notification = Notification.show("Die Person braucht noch einen Namen !");
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return returnValue;
 		}
 		
@@ -407,9 +416,8 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		
 		save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		save.addClassName("save-button");
-		levelup.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-		levelup.addClassName("save-button");
-		buttonLayout.add(save, levelup, cancel);
+
+		buttonLayout.add(save, cancel);
 		editorLayoutDiv.add(buttonLayout);
 	}
 
