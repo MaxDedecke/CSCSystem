@@ -41,7 +41,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
 
-@PageTitle("Warteliste")
+@PageTitle("Wartebereich")
 @Route(value = "waitinglist/:waitingPersonID?/:action?(edit)", layout = MainLayout.class)
 @PermitAll
 public class WaitingListView extends Div implements BeforeEnterObserver {

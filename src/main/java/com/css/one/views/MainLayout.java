@@ -154,7 +154,7 @@ public class MainLayout extends AppLayout {
 
         }
         if (accessChecker.hasAccess(WaitingListView.class)) {
-        	nav.addItem(new SideNavItem("Warteliste", WaitingListView.class, LineAwesomeIcon.LIST_SOLID.create()));
+        	nav.addItem(new SideNavItem("Wartebereich", WaitingListView.class, LineAwesomeIcon.LIST_SOLID.create()));
         	
         }
         if (accessChecker.hasAccess(VereinView.class)) {

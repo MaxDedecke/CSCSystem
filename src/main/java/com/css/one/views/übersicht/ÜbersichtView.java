@@ -204,8 +204,8 @@ public class ÜbersichtView extends FlexLayout {
 		
 		layoutName.addClassNames("primary-background", "uebersicht-box-header"); 
 		Optional<Association> optional = associationService.get(Integer.toUnsignedLong(associationId));
-		optional.ifPresentOrElse(e -> currentNameText = new H1(e.getName()), () -> currentNameText = new H1("Kein Verein hinterlegt"));
-		
+//		optional.ifPresentOrElse(e -> currentNameText = new H1(e.getName()), () -> currentNameText = new H1("Kein Verein hinterlegt"));
+		currentNameText = new H1("Die Potterie e.V.");
 		layoutName.add(currentNameText);
 	}
 
