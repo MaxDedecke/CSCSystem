@@ -2,10 +2,14 @@ package com.css.one.data;
 
 import java.time.LocalDate;
 
+import jakarta.annotation.Nullable;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Email;
 
 @Entity
@@ -25,6 +29,17 @@ public class WaitingPerson {
 	private LocalDate dateOfRegistration;
 	
 	private boolean isOnboaring;
+	
+	@Nullable
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private MemberData memberData;
+	
+	public MemberData getMemberData() {
+		return memberData;
+	}
+	public void setMemberData(MemberData memberData) {
+		this.memberData = memberData;
+	} 
 	
 	public Long getId() {
 		return id;

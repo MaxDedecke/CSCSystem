@@ -1,10 +1,13 @@
 package com.css.one.data;
 
 import jakarta.annotation.Nullable;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Email;
 import java.time.LocalDate;
 
@@ -24,9 +27,12 @@ public class Person {
     private LocalDate dateOfBirth;
     private AssociationRole associationRole;
     private int associationId;
-    private LocalDate dateOfRegistration;
     @Nullable
     private LocalDate dateOfHigherRole;
+    
+    @Nullable
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private MemberData memberData;
     
     public Long getId() {
 		return id;
@@ -34,7 +40,12 @@ public class Person {
 	public void setId(Long id) {
 		this.id = id;
 	}
-    
+	public MemberData getMemberData() {
+		return memberData;
+	}
+	public void setMemberData(MemberData memberData) {
+		this.memberData = memberData;
+	}    
     public String getFirstName() {
         return firstName;
     }
@@ -76,12 +87,6 @@ public class Person {
 	}
 	public void setAssociationRole(AssociationRole associationRole) {
 		this.associationRole = associationRole;
-	}
-	public LocalDate getDateOfRegistration() {
-		return dateOfRegistration;
-	}
-	public void setDateOfRegistration(LocalDate dateOfRegistration) {
-		this.dateOfRegistration = dateOfRegistration;
 	}
 	public LocalDate getDateOfHigherRole() {
 		return dateOfHigherRole;

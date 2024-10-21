@@ -24,6 +24,27 @@ vaadin-button {
   font-family:'Afacad Flux',sans-serif;
 }
 
+vaadin-button.button-neutral {
+  background-color:rgba(24,102,32,0.05);
+  border-color:rgba(0,219,61,1);
+  border-radius:var(--lumo-border-radius-l);
+  font-family:'Afacad Flux',sans-serif;
+  color: rgba(69,37,18,1);
+  
+}
+
+vaadin-horizontal-layout.header-bar-custom {
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #cccccc;
+  padding: 4px;
+  padding-top: 8px;
+  height: 72px;
+}
+
 vaadin-tab {
   color: #333;  /* Farbe des Textes auf den Tabs */
   border-radius: 5px 5px 0 0; /* Abgerundete Ecken oben am Tab */

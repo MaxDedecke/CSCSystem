@@ -3,6 +3,8 @@ package com.css.one.views.waitinglist;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
 import com.css.one.data.AssociationRole;
 import com.css.one.data.MemberSubscription;
 import com.css.one.data.Person;
@@ -12,6 +14,7 @@ import com.css.one.services.PersonService;
 import com.css.one.services.WaitingPersonService;
 import com.css.one.views.MainLayout;
 import com.css.one.views.mitglieder.MitgliederView;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -68,6 +71,8 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 	private Dialog newMemberDialog = new Dialog();
 	private Text memberCount;
 	
+	private Dialog addPersonDialog = new Dialog();
+	
 	private final BeanValidationBinder<WaitingPerson> binder;
 
 	private WaitingPerson waitingPerson;
@@ -93,53 +98,6 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 
 		splitLayout.setSplitterPosition(70);
 		add(splitLayout);
-
-		// Configure Grid
-		grid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
-		grid.addColumn(p -> p.getEmail()).setAutoWidth(true).setHeader("Email");
-		grid.addColumn(p -> p.getPhone()).setAutoWidth(true).setHeader("Telefonnummer");
-		grid.addColumn(p -> renderDate(p.getDateOfRegistration())).setAutoWidth(true).setHeader("Auf Warteliste seit").setSortable(true);
-		
-		grid.addComponentColumn(person -> {
-			
-			this.waitingPerson = person;
-			MenuBar menuBar = new MenuBar();
-			menuBar.setOverlayClassName("warenlager-view-menu-bar-1");
-			menuBar.addClassNames("warenlager-view-menu-bar-1", "customheader");
-			
-			menuBar.addItem("Person löschen", event -> {
-				waitingPersonService.delete(person.getId());
-				refreshGrid();
-			});
-			
-			menuBar.addItem("Zum Mitglied machen", event -> {
-				newMemberDialog = new Dialog();
-				createNewMemberDialog();
-				newMemberDialog.open();
-			});
-			
-			if(!person.isOnboaring()) {				
-				menuBar.addItem("Onboarding starten", event -> {
-					
-				});
-			}
-
-			return menuBar;
-		}).setWidth("100px").setFlexGrow(0);
-
-		grid.setItems(waitingPersonService.findAllByAssociation(associationId));
-		grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-
-		// when a row is selected or deselected, populate form
-		grid.asSingleSelect().addValueChangeListener(event -> {
-			if (event.getValue() != null) {
-				this.waitingPerson = event.getValue();
-				UI.getCurrent().navigate(String.format(WAITINGPERSON_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
-			} else {
-				clearForm();
-				UI.getCurrent().navigate(WaitingListView.class);
-			}
-		});
 
 		// Configure Form
 		binder = new BeanValidationBinder<>(WaitingPerson.class);
@@ -311,7 +269,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 				person.setAssociationId(associationId);
 				person.setAssociationRole(comboBox.getValue());
 				person.setDateOfBirth(waitingPerson.getDateOfBirth());
-				person.setDateOfRegistration(LocalDate.now());
+//TODO				person.setDateOfRegistration(LocalDate.now());
 				person.setEmail(waitingPerson.getEmail());
 				person.setPhone(waitingPerson.getPhone());
 				person.setFirstName(waitingPerson.getFirstName());
@@ -433,9 +391,85 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		memberCount = new Text("Wartendene Personen: " + waitingPersonService.count());
 
 		bottomLayout.add(memberCount);
+		
+		createGrid();
 
-		mainLayout.add(grid, bottomLayout);
+		mainLayout.add(createFirstComponent(), grid, bottomLayout);
 		splitLayout.addToPrimary(mainLayout);
+	}
+
+	private Component createFirstComponent() {
+		HorizontalLayout wrapper = new HorizontalLayout();
+		wrapper.addClassNames("header-bar-custom");
+		wrapper.setWidthFull();
+		
+		
+		Button buttonAddPerson = new Button("Person hinzufügen");
+		buttonAddPerson.setIcon(LineAwesomeIcon.USER_PLUS_SOLID.create());
+		buttonAddPerson.addClassName("button-neutral");
+		
+		buttonAddPerson.addClickListener(e -> {
+			addPersonDialog.open();
+		});
+		
+		wrapper.add(buttonAddPerson);
+		return wrapper;
+	}
+
+	private void createGrid() {
+		// Configure Grid
+		grid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
+		grid.addColumn(p -> p.getEmail()).setAutoWidth(true).setHeader("Email");
+		grid.addColumn(p -> p.getPhone()).setAutoWidth(true).setHeader("Telefonnummer");
+		grid.addColumn(p -> renderDate(p.getDateOfRegistration())).setAutoWidth(true).setHeader("Auf Warteliste seit")
+				.setSortable(true);
+
+		grid.addComponentColumn(person -> {
+
+			this.waitingPerson = person;
+			MenuBar menuBar = new MenuBar();
+			menuBar.setOverlayClassName("warenlager-view-menu-bar-1");
+			menuBar.addClassNames("warenlager-view-menu-bar-1", "customheader");
+
+			menuBar.addItem("bearbeiten", event -> {
+				waitingPersonService.delete(person.getId());
+				refreshGrid();
+			});
+
+			menuBar.addItem("Person löschen", event -> {
+				waitingPersonService.delete(person.getId());
+				refreshGrid();
+			});
+
+			menuBar.addItem("Zum Mitglied machen", event -> {
+				newMemberDialog = new Dialog();
+				createNewMemberDialog();
+				newMemberDialog.open();
+			});
+
+			if (!person.isOnboaring()) {
+				menuBar.addItem("Onboarding starten", event -> {
+
+				});
+			}
+
+			return menuBar;
+		}).setWidth("100px").setFlexGrow(0);
+
+		grid.setItems(waitingPersonService.findAllByAssociation(associationId));
+		grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+
+		// when a row is selected or deselected, populate form
+		grid.asSingleSelect().addValueChangeListener(event -> {
+			if (event.getValue() != null) {
+				this.waitingPerson = event.getValue();
+				UI.getCurrent().navigate(String.format(WAITINGPERSON_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
+			} else {
+				clearForm();
+				UI.getCurrent().navigate(WaitingListView.class);
+			}
+		});
+
 	}
 
 	@Override

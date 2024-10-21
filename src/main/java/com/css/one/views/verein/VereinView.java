@@ -474,7 +474,7 @@ public class VereinView extends Div {
 				builder.append(person.getPhone() + ", ");
 				builder.append(person.getDateOfBirth() + ", ");
 				builder.append(person.getAssociationRole().getLabel() + ", ");
-				builder.append("dabei seit: " + person.getDateOfRegistration());
+//TODO				builder.append("dabei seit: " + person.getDateOfRegistration());
 				builder.append("\n");
 				counter = counter + 1;
 			}

@@ -157,7 +157,7 @@ public class MitgliederView extends Div {
 					}
 					samplePerson.setAssociationId(associationId);
 					samplePerson.setAssociationRole(role.getValue());
-					samplePerson.setDateOfRegistration(LocalDate.now());
+//	TODO				samplePerson.setDateOfRegistration(LocalDate.now());
 					if(newMember) {						
 						samplePerson.setMemberNumber(samplePersonService.getFreeMemberNumber(associationId));
 					}
@@ -319,7 +319,7 @@ public class MitgliederView extends Div {
 			
 			samplePerson.setAssociationId(associationId);
 			samplePerson.setAssociationRole(role.getValue());
-			samplePerson.setDateOfRegistration(LocalDate.now());
+//TODO			samplePerson.setDateOfRegistration(LocalDate.now());
 			
 			if(newMember) {						
 				samplePerson.setMemberNumber(samplePersonService.getFreeMemberNumber(associationId));
