@@ -18,6 +18,8 @@ import com.css.one.services.PersonService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Unit;
+import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -40,6 +42,7 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
@@ -96,20 +99,20 @@ public class MitgliederView extends Div {
         createConfirmDeletionDialog();
         
         grid.addColumn(p -> p.getMemberNumber()).setAutoWidth(true).setHeader("Mitgliedsnummer").setWidth("200px").setFlexGrow(0);
-//		grid.addComponentColumn(e -> {
-//
-//			Avatar avatar = new Avatar("member_picture");
-//			
-//			StreamResource imageResource = new StreamResource("potteriepng.png",
-//	                () -> getClass().getResourceAsStream("/potteriepng.png"));
-//			
-//			avatar.setImageResource(imageResource);
-//			avatar.setHeight(48, Unit.PIXELS);
-//			avatar.setWidth(48, Unit.PIXELS);
-//			avatar.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.CONTRAST_50);
-//			
-//			return avatar;
-//		}).setWidth("100px").setFlexGrow(0);
+		grid.addComponentColumn(e -> {
+
+			Avatar avatar = new Avatar("member_picture");
+			
+			StreamResource imageResource = new StreamResource("potteriepng.png",
+	                () -> getClass().getResourceAsStream("/potteriepng.png"));
+			
+			avatar.setImageResource(imageResource);
+			avatar.setHeight(48, Unit.PIXELS);
+			avatar.setWidth(48, Unit.PIXELS);
+			avatar.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.CONTRAST_50);
+			
+			return avatar;
+		}).setWidth("100px").setFlexGrow(0);
         
         grid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
         grid.addColumn(p -> p.getPhone()).setAutoWidth(true).setHeader("Telefonnummer");
