@@ -72,7 +72,7 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 	private Text memberCount;
 	
 	private Dialog addPersonDialog = new Dialog();
-	
+
 	private final BeanValidationBinder<WaitingPerson> binder;
 
 	private WaitingPerson waitingPerson;
@@ -432,8 +432,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			menuBar.addClassNames("warenlager-view-menu-bar-1", "customheader");
 
 			menuBar.addItem("bearbeiten", event -> {
-				waitingPersonService.delete(person.getId());
-				refreshGrid();
+				//TODO
 			});
 
 			menuBar.addItem("Person löschen", event -> {
