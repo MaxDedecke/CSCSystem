@@ -9,6 +9,7 @@ import com.css.one.data.AssociationRole;
 import com.css.one.data.MemberSubscription;
 import com.css.one.data.Person;
 import com.css.one.data.WaitingPerson;
+import com.css.one.services.EmailService;
 import com.css.one.services.MemberSubscriptionService;
 import com.css.one.services.PersonService;
 import com.css.one.services.WaitingPersonService;
@@ -448,7 +449,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 			if (!person.isOnboaring()) {
 				menuBar.addItem("Onboarding starten", event -> {
-
+					sendOnboardingEmail();
 				});
 			}
 
@@ -469,6 +470,24 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			}
 		});
 
+	}
+
+	private void sendOnboardingEmail() {
+		EmailService emailService = new EmailService();
+		
+		String to = "jm.dedecke@gmail.com";
+		String subject = "First email of the system";
+		String body = "Don't worry, be happy !";
+		
+		emailService.sendSimpleMessage(to, subject, body);
+		try {
+            Notification notification = Notification.show("E-Mail erfolgreich gesendet");
+            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        } catch (Exception e) {
+        	Notification notification = Notification.show("Fehler beim Senden der E-Mail: " + e.getMessage());
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+
+        }
 	}
 
 	@Override
