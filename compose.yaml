@@ -74,30 +74,23 @@ services:
           - ~/docker_data/borgmatic/config:/root/.config/borg
           - ~/docker_data/borgmatic/config:/root/.cache/borg
           # Data to Backup 
-          - joomla_data:/mnt/src/joomla_data/:ro
-          - cscs_data:/mnt/src/cscs_data/:ro
-          - mariadb_data:/mnt/src/mariadb_data/:ro
-          - portainer_data:/mnt/src/portainer_data/:ro
-          - postgres_data:/mnt/src/postgres_data/:ro
-          - ~/docker_data/:/mnt/src/docker_data/:ro
-  
-    nginx:
-        image: nginx:latest
-        restart: always
-        ports:
-          - 80:80
-          - 443:443
-        volumes:
-          - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
-          - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-            #certbot
-          - ~/docker_data/acme-challenge/:/var/www/certbot/:ro
-          - ~/docker_data/certbot/:/etc/nginx/ssl/:ro
-    certbot:
-        image: certbot/certbot:latest
-        volumes:
-          - ~/docker_data/acme-challenge/:/var/www/certbot/:rw
-          - ~/docker_data/certbot/:/etc/letsencrypt/:rw
+          - joomla_data:/mnt/src/joomla_data/
+          - cscs_data:/mnt/src/cscs_data/
+          - mariadb_data:/mnt/src/mariadb_data/
+          - portainer_data:/mnt/src/portainer_data/
+          - postgres_data:/mnt/src/postgres_data/
+          - ~/docker_data/:/mnt/src/docker_data/
+          - caddy_data:/mnt/src/caddy_data/
+
+    caddy:
+      image: caddy
+      restart: always
+      ports:
+        - 80:80
+        - 443:443
+      volumes:
+        - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile
+        - caddy_data:/data
 
 volumes:
     joomla_data:
@@ -105,3 +98,4 @@ volumes:
     postgres_data:
     cscs_data:
     mariadb_data:
+    caddy_data:
