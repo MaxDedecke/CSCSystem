@@ -479,8 +479,8 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		String subject = "First email of the system";
 		String body = "Don't worry, be happy !";
 		
-		emailService.sendSimpleMessage(to, subject, body);
 		try {
+			emailService.sendSimpleMessage(to, subject, body);
             Notification notification = Notification.show("E-Mail erfolgreich gesendet");
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         } catch (Exception e) {
