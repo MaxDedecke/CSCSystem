@@ -28,6 +28,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -66,9 +68,13 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 	private TextField email;
 	private TextField phone;
 	private DatePicker dateOfBirth;
+	
+	private TextField streetName;
+	private TextField streetNumber;
+	private TextField postalCode;
+	private TextField city;
 
-	private final Button cancel = new Button("Abbrechen");
-	private final Button save = new Button("Speichern");	
+	private Button save = new Button("Speichern");	
 	private Dialog newMemberDialog = new Dialog();
 	private Text memberCount;
 	
@@ -95,8 +101,8 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 		associationId = MainLayout.getAssociationId();
 
 		createGridLayout(splitLayout);
-		createEditorLayout(splitLayout);
-
+		createAddPersonDialog();
+		
 		splitLayout.setSplitterPosition(70);
 		add(splitLayout);
 
@@ -106,42 +112,85 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 		// Bind fields. This is where you'd define e.g. validation rules
 		binder.bindInstanceFields(this);
 
-		cancel.addClickListener(e -> {
-			clearForm();
-			refreshGrid();
-		});
-
-		save.addClickListener(e -> {
-			try {
-
-				if (checkPersonDataForWaitingList()) {
-
-					if (this.waitingPerson == null) {
-						this.waitingPerson = new WaitingPerson();
-					}
-
-					this.waitingPerson.setAssociationId(associationId);
-					this.waitingPerson.setDateOfBirth(dateOfBirth.getValue());
-					this.waitingPerson.setDateOfRegistration(LocalDate.now());
-					this.waitingPerson.setOnboaring(false);
-					
-					binder.writeBean(this.waitingPerson);
-					waitingPersonService.update(this.waitingPerson);
-					clearForm();
-					refreshGrid();
-					Notification notification = Notification.show("Person wurd auf die Warteliste gesetzt.");
-					notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-					UI.getCurrent().navigate(WaitingListView.class);
-				} else {
-
-				}
-			} catch (ValidationException exception) {
-				Notification notification = Notification.show("Failed to update the data. Check again that all values are valid");
-				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-			}
-		});
 	}
 	
+private void createAddPersonDialog() {
+		VerticalLayout mainWrapper = new VerticalLayout();
+		
+		H2 header = new H2("Person hinzufügen");
+		header.addClassName("customheader");
+		
+		mainWrapper.add(header, createAddPersonContent(), new Hr(), createAdditionalDataContent());
+
+		save = new Button("hinzufügen");
+		save.addClassNames("save-button");
+
+		save.addClickListener(e -> {
+			savePersonData();
+		});
+		
+		Button buttonCancel = new Button("abbrechen");
+		buttonCancel.addClassNames("cancel-button");
+		
+		buttonCancel.addClickListener(e -> {
+			addPersonDialog.close();
+		});
+		
+		addPersonDialog.getFooter().add(buttonCancel, save);
+		addPersonDialog.add(mainWrapper);
+	}
+
+private Component createAdditionalDataContent() {
+	
+	VerticalLayout wrapper = new VerticalLayout();
+	H3 h3 = new H3("Addressdaten");
+	h3.addClassName("customheader");
+	
+	FormLayout additionalFormLayout = new FormLayout();
+	streetName = new TextField("Straße");	
+	streetNumber = new TextField("Hausnummer");
+	postalCode = new TextField("PLZ");
+	city = new TextField("Ort");
+		
+	additionalFormLayout.add(streetName, streetNumber, postalCode, city);
+	
+	wrapper.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
+	wrapper.add(h3, additionalFormLayout);
+	return wrapper;
+}
+
+private void savePersonData() {
+	if (checkPersonDataForWaitingList()) {
+
+		if (this.waitingPerson == null) {
+			this.waitingPerson = new WaitingPerson();
+		}
+
+		this.waitingPerson.setAssociationId(associationId);
+		this.waitingPerson.setDateOfBirth(dateOfBirth.getValue());
+		this.waitingPerson.setDateOfRegistration(LocalDate.now());
+		this.waitingPerson.setOnboaring(false);
+		this.waitingPerson.setEmail(email.getValue());
+		this.waitingPerson.setFirstName(firstName.getValue());
+		this.waitingPerson.setLastName(lastName.getValue());
+		this.waitingPerson.setOnboaring(false);
+		this.waitingPerson.setPhone(phone.getValue());
+		
+		waitingPersonService.update(this.waitingPerson);
+		clearForm();
+		refreshGrid();
+		
+		Notification notification = Notification.show("Person wurd auf die Warteliste gesetzt.");
+		notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+		addPersonDialog.close();
+		this.waitingPerson = null;
+		
+	} else {
+		Notification notification = Notification.show("Das war leider nicht erfolgreich...");
+		notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+	}
+}
+
 private void createSingleSubscriptionForNewMember(Person member) {
 		
     	LocalDate now = LocalDate.now();
@@ -340,14 +389,12 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		this.waitingPerson = value;
 		binder.readBean(this.waitingPerson);
 	}
-
-	private void createEditorLayout(SplitLayout splitLayout) {
-		Div editorLayoutDiv = new Div();
-		editorLayoutDiv.setClassName("editor-layout");
-
-		Div editorDiv = new Div();
-		editorDiv.setClassName("editor");
-		editorLayoutDiv.add(editorDiv);
+	
+	private Component createAddPersonContent() {
+		
+		VerticalLayout wrapper = new VerticalLayout();
+		H3 h3 = new H3("Allgemeine Angaben");
+		h3.addClassName("customheader");
 
 		FormLayout formLayout = new FormLayout();
 		firstName = new TextField("Vorname");
@@ -359,25 +406,12 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		dateOfBirth.setOverlayClassName("waiting-list-view-date-picker-1");
 		dateOfBirth.addClassName("waiting-list-view-date-picker-1");
 
-		formLayout.add(firstName, lastName, email, phone, dateOfBirth);
-
-		editorDiv.add(formLayout);
-		createButtonLayout(editorLayoutDiv);
-
-		splitLayout.addToSecondary(editorLayoutDiv);
-	}
-
-	private void createButtonLayout(Div editorLayoutDiv) {
-		HorizontalLayout buttonLayout = new HorizontalLayout();
-		buttonLayout.setClassName("button-layout");
-		cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-		cancel.addClassName("cancel-button");
+		formLayout.add(firstName, lastName, phone, dateOfBirth, email);
+		formLayout.setColspan(email, 2);
 		
-		save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-		save.addClassName("save-button");
-
-		buttonLayout.add(save, cancel);
-		editorLayoutDiv.add(buttonLayout);
+		wrapper.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
+		wrapper.add(h3, formLayout);
+		return wrapper;
 	}
 
 	private void createGridLayout(SplitLayout splitLayout) {
@@ -427,13 +461,14 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 		grid.addComponentColumn(person -> {
 
-			this.waitingPerson = person;
 			MenuBar menuBar = new MenuBar();
 			menuBar.setOverlayClassName("warenlager-view-menu-bar-1");
 			menuBar.addClassNames("warenlager-view-menu-bar-1", "customheader");
 
 			menuBar.addItem("bearbeiten", event -> {
 				//TODO
+				this.waitingPerson = person;
+
 			});
 
 			menuBar.addItem("Person löschen", event -> {
@@ -442,6 +477,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			});
 
 			menuBar.addItem("Zum Mitglied machen", event -> {
+				this.waitingPerson = person;
 				newMemberDialog = new Dialog();
 				createNewMemberDialog();
 				newMemberDialog.open();
