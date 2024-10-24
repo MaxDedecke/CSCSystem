@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.data.AssociationRole;
+import com.css.one.data.MemberData;
 import com.css.one.data.MemberSubscription;
 import com.css.one.data.Person;
 import com.css.one.data.WaitingPerson;
@@ -19,7 +20,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -38,17 +38,14 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Wartebereich")
-@Route(value = "waitinglist/:waitingPersonID?/:action?(edit)", layout = MainLayout.class)
 @PermitAll
 public class WaitingListView extends Div implements BeforeEnterObserver {
 
@@ -74,13 +71,11 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 	private TextField postalCode;
 	private TextField city;
 
-	private Button save = new Button("Speichern");	
+	private Button save = new Button("speichern");	
 	private Dialog newMemberDialog = new Dialog();
 	private Text memberCount;
 	
-	private Dialog addPersonDialog = new Dialog();
-
-	private final BeanValidationBinder<WaitingPerson> binder;
+	private Dialog personInfoDialog = new Dialog();
 
 	private WaitingPerson waitingPerson;
 	private PersonService personService;
@@ -105,13 +100,6 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 		
 		splitLayout.setSplitterPosition(70);
 		add(splitLayout);
-
-		// Configure Form
-		binder = new BeanValidationBinder<>(WaitingPerson.class);
-
-		// Bind fields. This is where you'd define e.g. validation rules
-		binder.bindInstanceFields(this);
-
 	}
 	
 private void createAddPersonDialog() {
@@ -133,11 +121,11 @@ private void createAddPersonDialog() {
 		buttonCancel.addClassNames("cancel-button");
 		
 		buttonCancel.addClickListener(e -> {
-			addPersonDialog.close();
+			personInfoDialog.close();
 		});
 		
-		addPersonDialog.getFooter().add(buttonCancel, save);
-		addPersonDialog.add(mainWrapper);
+		personInfoDialog.getFooter().add(buttonCancel, save);
+		personInfoDialog.add(mainWrapper);
 	}
 
 private Component createAdditionalDataContent() {
@@ -160,6 +148,7 @@ private Component createAdditionalDataContent() {
 }
 
 private void savePersonData() {
+	
 	if (checkPersonDataForWaitingList()) {
 
 		if (this.waitingPerson == null) {
@@ -176,13 +165,30 @@ private void savePersonData() {
 		this.waitingPerson.setOnboaring(false);
 		this.waitingPerson.setPhone(phone.getValue());
 		
+		if(this.waitingPerson.getMemberData() == null) {
+			MemberData memberData = new MemberData();
+			memberData.setCityName("");
+			memberData.setPostalCode(1);
+			memberData.setStreetName("");
+			memberData.setStreetNumber("");
+			memberData.setDateOfRegistration(LocalDate.now());
+			waitingPerson.setMemberData(memberData);
+		} else {
+			MemberData memberData = waitingPerson.getMemberData();
+			memberData.setStreetName(streetName.getValue());	
+			memberData.setCityName(city.getValue());
+			memberData.setPostalCode(Integer.parseInt(postalCode.getValue()));
+			memberData.setStreetNumber(streetNumber.getValue());
+			waitingPerson.setMemberData(memberData);
+		}
+		
 		waitingPersonService.update(this.waitingPerson);
-		clearForm();
+		clearPersonInfoDialog();
 		refreshGrid();
 		
 		Notification notification = Notification.show("Person wurd auf die Warteliste gesetzt.");
 		notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-		addPersonDialog.close();
+		personInfoDialog.close();
 		this.waitingPerson = null;
 		
 	} else {
@@ -335,7 +341,6 @@ private void createSingleSubscriptionForNewMember(Person member) {
 				createSingleSubscriptionForNewMember(person);
 				
 				newMemberDialog.close();
-				clearForm();
 				refreshGrid();
 
 				Notification notification = Notification.show("Neues Mitglied hinzugefügt.");
@@ -379,15 +384,6 @@ private void createSingleSubscriptionForNewMember(Person member) {
 	private void refreshGrid() {
 		grid.select(null);
 		grid.setItems(waitingPersonService.findAllByAssociation(associationId));
-	}
-
-	private void clearForm() {
-		populateForm(null);
-	}
-
-	private void populateForm(WaitingPerson value) {
-		this.waitingPerson = value;
-		binder.readBean(this.waitingPerson);
 	}
 	
 	private Component createAddPersonContent() {
@@ -444,7 +440,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		buttonAddPerson.addClassName("button-neutral");
 		
 		buttonAddPerson.addClickListener(e -> {
-			addPersonDialog.open();
+			personInfoDialog.open();
 		});
 		
 		wrapper.add(buttonAddPerson);
@@ -468,7 +464,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			menuBar.addItem("bearbeiten", event -> {
 				//TODO
 				this.waitingPerson = person;
-
+				initPersonInfoDialog();
 			});
 
 			menuBar.addItem("Person löschen", event -> {
@@ -499,13 +495,42 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		grid.asSingleSelect().addValueChangeListener(event -> {
 			if (event.getValue() != null) {
 				this.waitingPerson = event.getValue();
-				UI.getCurrent().navigate(String.format(WAITINGPERSON_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
 			} else {
-				clearForm();
-				UI.getCurrent().navigate(WaitingListView.class);
+				this.waitingPerson = null;
 			}
 		});
 
+	}
+
+	private void initPersonInfoDialog() {
+
+		this.firstName.setValue(waitingPerson.getFirstName());
+		this.lastName.setValue(waitingPerson.getLastName());
+		this.email.setValue(waitingPerson.getEmail());
+		this.phone.setValue(waitingPerson.getPhone());
+		
+		if(waitingPerson.getMemberData() != null) {
+			MemberData memberData = waitingPerson.getMemberData();
+			this.city.setValue(memberData.getCityName());
+			this.streetName.setValue(memberData.getStreetName());
+			this.streetNumber.setValue(memberData.getStreetNumber());
+			this.postalCode.setValue(String.valueOf(memberData.getPostalCode()));
+		}
+		
+		this.save.setAriaLabel("aktualisieren");
+	}
+	
+	private void clearPersonInfoDialog() {
+		
+		this.firstName.setValue("");
+		this.lastName.setValue("");
+		this.email.setValue("");
+		this.phone.setValue("");
+		this.city.setValue("");
+		this.streetName.setValue("");
+		this.streetNumber.setValue("");
+		this.postalCode.setValue("");
+		this.save.setAriaLabel("speichern");
 	}
 
 	private void sendOnboardingEmail() {
@@ -532,7 +557,6 @@ private void createSingleSubscriptionForNewMember(Person member) {
 	        if (waitingPersonId.isPresent()) {
 	            Optional<WaitingPerson> waitingPersonFromBackend = waitingPersonService.get(waitingPersonId.get());
 	            if (waitingPersonFromBackend.isPresent()) {
-	            	populateForm(waitingPersonFromBackend.get());
 	            } else {
 	                Notification.show(
 	                        String.format("The requested samplePerson was not found, ID = %s", waitingPersonId.get()), 3000,
