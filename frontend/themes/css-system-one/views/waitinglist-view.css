@@ -3,6 +3,8 @@
   flex-direction: column;
   height: 100%;
   background-color: #ffffff;
+  margin:none;
+  padding: none;
 }
 
 .waitinglist-view vaadin-split-layout {
@@ -25,8 +27,8 @@
   box-sizing: border-box;
   height: 100%;
   width: 100%;
-  padding-left: var(--lumo-space-m);
-  padding-right: var(--lumo-space-m);
+  padding-left: var(--lumo-space-s);
+  padding-right: var(--lumo-space-s);
   padding-top: var(--lumo-space-s);
   
 }

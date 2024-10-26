@@ -1,7 +1,6 @@
 package com.css.one.views.waitinglist;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
@@ -11,14 +10,13 @@ import com.css.one.data.MemberSubscription;
 import com.css.one.data.Person;
 import com.css.one.data.WaitingPerson;
 import com.css.one.services.EmailService;
+import com.css.one.services.MemberDataService;
 import com.css.one.services.MemberSubscriptionService;
 import com.css.one.services.PersonService;
 import com.css.one.services.WaitingPersonService;
 import com.css.one.views.MainLayout;
-import com.css.one.views.mitglieder.MitgliederView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -26,28 +24,29 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Wartebereich")
 @PermitAll
-public class WaitingListView extends Div implements BeforeEnterObserver {
+@Route(value = "waitingroom/", layout = MainLayout.class)
+@RouteAlias(value = "waitingroom/", layout = MainLayout.class)
+public class WaitingListView extends FlexLayout {
 
 	/**
 	* 
@@ -55,9 +54,6 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 	private static final long serialVersionUID = -5000521119703456571L;
 
 	private WaitingPersonService waitingPersonService;
-	private final String WAITINGPERSON_ID = "waitingPersonID";
-	private final String WAITINGPERSON_EDIT_ROUTE_TEMPLATE = "waitinglist/%s/edit";
-
 	private final Grid<WaitingPerson> grid = new Grid<>(WaitingPerson.class, false);
 
 	private TextField firstName;
@@ -80,26 +76,27 @@ public class WaitingListView extends Div implements BeforeEnterObserver {
 	private WaitingPerson waitingPerson;
 	private PersonService personService;
     private MemberSubscriptionService subscriptionService;
+    private MemberDataService memberDataService;
 
 	private int associationId;
 
-	public WaitingListView(WaitingPersonService waitingPersonService, PersonService personService, MemberSubscriptionService subscriptionService) {
+	public WaitingListView(WaitingPersonService waitingPersonService, PersonService personService, MemberSubscriptionService subscriptionService, MemberDataService memberDataService) {
 		this.waitingPersonService = waitingPersonService;
 		this.personService = personService;
 		this.subscriptionService = subscriptionService;
+		this.memberDataService = memberDataService;
 		
 		addClassNames("waitinglist-view");
 
 		// Create UI
-		SplitLayout splitLayout = new SplitLayout();
-
 		associationId = MainLayout.getAssociationId();
 
-		createGridLayout(splitLayout);
+		VerticalLayout mainWrapper = new VerticalLayout();
+		mainWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE); 
+		createGridLayout(mainWrapper);
 		createAddPersonDialog();
 		
-		splitLayout.setSplitterPosition(70);
-		add(splitLayout);
+		add(mainWrapper);
 	}
 	
 private void createAddPersonDialog() {
@@ -121,6 +118,12 @@ private void createAddPersonDialog() {
 		buttonCancel.addClassNames("cancel-button");
 		
 		buttonCancel.addClickListener(e -> {
+			personInfoDialog.close();
+			clearPersonInfoDialog();
+		});
+		
+		personInfoDialog.addDialogCloseActionListener(e -> {
+			clearPersonInfoDialog();
 			personInfoDialog.close();
 		});
 		
@@ -410,7 +413,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		return wrapper;
 	}
 
-	private void createGridLayout(SplitLayout splitLayout) {
+	private void createGridLayout(VerticalLayout wrapper) {
 		
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.addClassNames(LumoUtility.Padding.NONE);
@@ -426,7 +429,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		createGrid();
 
 		mainLayout.add(createFirstComponent(), grid, bottomLayout);
-		splitLayout.addToPrimary(mainLayout);
+		wrapper.add(mainLayout);
 	}
 
 	private Component createFirstComponent() {
@@ -462,9 +465,9 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			menuBar.addClassNames("warenlager-view-menu-bar-1", "customheader");
 
 			menuBar.addItem("bearbeiten", event -> {
-				//TODO
 				this.waitingPerson = person;
 				initPersonInfoDialog();
+				personInfoDialog.open();
 			});
 
 			menuBar.addItem("Person löschen", event -> {
@@ -508,16 +511,19 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		this.lastName.setValue(waitingPerson.getLastName());
 		this.email.setValue(waitingPerson.getEmail());
 		this.phone.setValue(waitingPerson.getPhone());
+		this.dateOfBirth.setValue(waitingPerson.getDateOfBirth());
 		
 		if(waitingPerson.getMemberData() != null) {
-			MemberData memberData = waitingPerson.getMemberData();
-			this.city.setValue(memberData.getCityName());
-			this.streetName.setValue(memberData.getStreetName());
-			this.streetNumber.setValue(memberData.getStreetNumber());
-			this.postalCode.setValue(String.valueOf(memberData.getPostalCode()));
+			memberDataService.findByMember(waitingPerson).ifPresent(memberData -> {
+				
+				this.city.setValue(memberData.getCityName());
+				this.streetName.setValue(memberData.getStreetName());
+				this.streetNumber.setValue(memberData.getStreetNumber());
+				this.postalCode.setValue(String.valueOf(memberData.getPostalCode()));
+			});			
 		}
 		
-		this.save.setAriaLabel("aktualisieren");
+		this.save.setText("aktualisieren");
 	}
 	
 	private void clearPersonInfoDialog() {
@@ -530,7 +536,9 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		this.streetName.setValue("");
 		this.streetNumber.setValue("");
 		this.postalCode.setValue("");
-		this.save.setAriaLabel("speichern");
+		this.dateOfBirth.setValue(dateOfBirth.getEmptyValue());
+		
+		this.save.setText("hinzufügen");
 	}
 
 	private void sendOnboardingEmail() {
@@ -549,23 +557,5 @@ private void createSingleSubscriptionForNewMember(Person member) {
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 
         }
-	}
-
-	@Override
-	public void beforeEnter(BeforeEnterEvent event) {
-		  Optional<Long> waitingPersonId = event.getRouteParameters().get(WAITINGPERSON_ID).map(Long::parseLong);
-	        if (waitingPersonId.isPresent()) {
-	            Optional<WaitingPerson> waitingPersonFromBackend = waitingPersonService.get(waitingPersonId.get());
-	            if (waitingPersonFromBackend.isPresent()) {
-	            } else {
-	                Notification.show(
-	                        String.format("The requested samplePerson was not found, ID = %s", waitingPersonId.get()), 3000,
-	                        Notification.Position.BOTTOM_START);
-	                // when a row is selected but the data is no longer available,
-	                // refresh grid
-	                refreshGrid();
-	                event.forwardTo(MitgliederView.class);
-	            }
-	        }
 	}
 }
