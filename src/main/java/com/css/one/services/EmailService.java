@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Properties;
 
 import org.springframework.mail.SimpleMailMessage;
@@ -42,15 +44,19 @@ public class EmailService {
     public void sendSimpleMessage(String to, String subject, String text) {
 
         Properties props = mailSender.getJavaMailProperties();
+		Properties properties = getProperties();
+
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", propertySmtpAuth);
         props.put("mail.smtp.starttls.enable", propertyStartTls);
         props.put("mail.debug", "true");
-        
+                
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
+        message.setFrom(properties.getProperty("spring.mail.username"));
         message.setSubject(subject);
         message.setText(text);
+        message.setSentDate(Date.valueOf(LocalDate.now()));
         mailSender.send(message);
     }
     

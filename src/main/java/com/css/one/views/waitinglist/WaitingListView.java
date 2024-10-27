@@ -27,13 +27,15 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -457,6 +459,29 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		grid.addColumn(p -> p.getPhone()).setAutoWidth(true).setHeader("Telefonnummer");
 		grid.addColumn(p -> renderDate(p.getDateOfRegistration())).setAutoWidth(true).setHeader("Auf Warteliste seit")
 				.setSortable(true);
+		
+		grid.addComponentColumn(status -> {
+			VerticalLayout wrapper = new VerticalLayout();
+
+			if (status.isOnboaring()) {
+				ProgressBar bar = new ProgressBar();
+				bar.setValue(0.5);
+
+				NativeLabel progressBarLabelText = new NativeLabel("Onboarding gestartet..");
+				progressBarLabelText.setId("pblabel");
+				bar.getElement().setAttribute("aria-labelledby", "pblabel");
+
+				Span progressBarLabelValue = new Span("50%");
+				HorizontalLayout progressBarLabel = new HorizontalLayout(progressBarLabelText, progressBarLabelValue);
+				progressBarLabel.setJustifyContentMode(JustifyContentMode.BETWEEN);
+
+				wrapper.add(progressBarLabel, bar);
+				return wrapper;
+			} else {
+				wrapper.add(new Span("-"));
+				return wrapper;
+			}
+		}).setWidth("75px").setAutoWidth(false);
 
 		grid.addComponentColumn(person -> {
 
@@ -484,7 +509,9 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 			if (!person.isOnboaring()) {
 				menuBar.addItem("Onboarding starten", event -> {
-					sendOnboardingEmail();
+					if (person.getEmail() != null) {
+						sendOnboardingEmail(person);
+					}
 				});
 			}
 
@@ -541,21 +568,38 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		this.save.setText("hinzufügen");
 	}
 
-	private void sendOnboardingEmail() {
+	private void sendOnboardingEmail(WaitingPerson person) {
 		EmailService emailService = new EmailService();
 		
-		String to = "jm.dedecke@gmail.com";
-		String subject = "First email of the system";
-		String body = "Don't worry, be happy !";
+		String to = person.getEmail();
+		
+		StringBuilder builder = new StringBuilder();
+		builder.append("Hi ").append(person.getFirstName()).append(",")
+		.append("\n\n")
+		.append("wir freuen uns dir mitteilen zu können, dass soeben das Onboarding in die Potterie gestartet wurde :).")
+		.append("\n")
+		.append("Klicke einfach auf den nachfolgenden Link, um zu jetzt gleich zu starten - keine Angst, es dauert nicht lange :D.")
+		.append("\n")
+		.append("https://cl-os.code-green-systems.de/login")
+		.append("\n")
+		.append("\n")
+		.append("Beste Grüße")
+		.append("\n\n")
+		.append("Dein Centralo Team :)");
+		
+		String subject = "Onboarding gestartet - " + " Herzlich willkommen " + person.getFirstName() + " " + person.getLastName() + "!";
+		String body = builder.toString();
 		
 		try {
 			emailService.sendSimpleMessage(to, subject, body);
             Notification notification = Notification.show("E-Mail erfolgreich gesendet");
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            person.setOnboaring(true);
+            waitingPersonService.update(person);
+            refreshGrid();
         } catch (Exception e) {
         	Notification notification = Notification.show("Fehler beim Senden der E-Mail: " + e.getMessage());
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-
         }
 	}
 }
