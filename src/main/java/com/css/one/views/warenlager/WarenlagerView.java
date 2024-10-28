@@ -844,7 +844,7 @@ public class WarenlagerView extends Div {
 		stepOne.addClassNames(LumoUtility.Margin.Left.SMALL, "customheader");
 
 		Icon icon = VaadinIcon.INFO_CIRCLE.create();
-		Tooltip tooltip = Tooltip.forComponent(icon).withText(
+		Tooltip.forComponent(icon).withText(
 				"Dieser Schritt kann mehrmals wiederholt werden, um mehrere Konfigurationen einer Charge zuzuordnern.")
 				.withPosition(Tooltip.TooltipPosition.TOP_START);
 		icon.setSize("16px");
