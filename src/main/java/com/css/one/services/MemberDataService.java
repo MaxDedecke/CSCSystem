@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 
 import com.css.one.data.MemberData;
 import com.css.one.data.MemberDataRepository;
-import com.css.one.data.Output;
-import com.css.one.data.OutputRepository;
 import com.css.one.data.WaitingPerson;
 
 @Service

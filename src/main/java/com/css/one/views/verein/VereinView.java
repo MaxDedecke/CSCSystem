@@ -49,7 +49,6 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -264,62 +263,6 @@ public class VereinView extends Div {
 		
 		wrapper.add(responsiblesGrid);
 		return wrapper;
-	}
-
-	private void createSideLayout(SplitLayout splitLayout) {
-		Div editorLayoutDiv = new Div();
-		editorLayoutDiv.setClassName("editor-layout");
-
-		Div editorDiv = new Div();
-		editorDiv.setClassName("editor");
-		editorLayoutDiv.add(editorDiv);
-
-		VerticalLayout mainLayout = new VerticalLayout();
-
-		mainLayout.add(new H1("Downloads"));
-
-		mainLayout.add(new H3("Mitglieder"));
-		Hr hr1 = new Hr();
-		hr1.setWidth(420, Unit.PIXELS);
-		mainLayout.add(hr1);
-
-		HorizontalLayout layerOne = new HorizontalLayout();
-		setFirstLayer(layerOne);
-		mainLayout.add(layerOne);
-
-		HorizontalLayout layerTwo = new HorizontalLayout();
-		setSecondLayer(layerTwo);
-		mainLayout.add(layerTwo);
-
-		mainLayout.add(new H3("Waren"));
-		Hr hr2 = new Hr();
-		hr2.setWidth(420, Unit.PIXELS);
-		mainLayout.add(hr2);
-
-		HorizontalLayout layerThree = new HorizontalLayout();
-		setThirdLayer(layerThree);
-		mainLayout.add(layerThree);
-
-		mainLayout.add(new H3("Finanzen"));
-		Hr hr3 = new Hr();
-		hr3.setWidth(420, Unit.PIXELS);
-		mainLayout.add(hr3);
-
-		HorizontalLayout layerFour = new HorizontalLayout();
-		createFourthLayer(layerFour);
-		mainLayout.add(layerFour);
-
-		mainLayout.add(new H3("Allgemein"));
-		Hr hr4 = new Hr();
-		hr4.setWidth(420, Unit.PIXELS);
-		mainLayout.add(hr4);
-
-		HorizontalLayout layerGeneral = new HorizontalLayout();
-		setGeneralLayer(layerGeneral);
-		mainLayout.add(layerGeneral);
-
-		editorDiv.add(mainLayout);
-		splitLayout.addToSecondary(editorLayoutDiv);
 	}
 
 	private void setGeneralLayer(HorizontalLayout layerGeneral) {

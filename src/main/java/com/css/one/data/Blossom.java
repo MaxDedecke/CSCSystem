@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.annotation.Nullable;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToMany;
