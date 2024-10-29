@@ -32,7 +32,9 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
@@ -44,13 +46,15 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Mitglieder")
-@Route(value = "mitglieder/:samplePersonID?/:action?(edit)", layout = MainLayout.class)
+@Route(value = "mitglieder-bereich/", layout = MainLayout.class)
+@RouteAlias(value = "mitglieder-bereich/", layout = MainLayout.class)
 @PermitAll
 @Uses(Icon.class)
 public class MitgliederView extends Div {
@@ -63,9 +67,14 @@ public class MitgliederView extends Div {
     private TextField lastName;
     private TextField email;
     private TextField phone;
-    private PasswordField password;
     private DatePicker dateOfBirth;
     private TextField numberField;
+    
+	private TextField streetName;
+	private TextField streetNumber;
+	private TextField postalCode;
+	private TextField city;
+	
     private ComboBox<AssociationRole> role;
 
     private final Button cancel = new Button("Abbrechen");
@@ -270,25 +279,20 @@ public class MitgliederView extends Div {
 		h1.add("Mitgliedsinformationen");
 		h1.addClassName("customheader");
 		
-		FormLayout layout = new FormLayout();
+//		
+//		memberDetailDialog.getFooter().add(cancelButton, confirmButton);
+//		mainWrapper.add(h1, layout);
+//		memberDetailDialog.add(mainWrapper);
 		
-		numberField = new TextField("Mitgliedsnummer");
-		numberField.setEnabled(false);
-        firstName = new TextField("Vorname");
-        lastName = new TextField("Nachname");
-        email = new TextField("Email");
-        phone = new TextField("Telefonnummer");
-        phone.setAllowedCharPattern("[0-9/]");
-        dateOfBirth = new DatePicker("Geburtstag");
-        dateOfBirth.setEnabled(false);
-        password = new PasswordField("Password");
-        
-        role = new ComboBox<AssociationRole>("Rolle im Verein");
-        role.setItems(Arrays.asList(AssociationRole.values()));
-        role.setItemLabelGenerator(e -> e.getLabel());
+		//
 		
-		layout.add(numberField, firstName, lastName, email, phone, role, dateOfBirth, password);
+//		VerticalLayout mainWrapper = new VerticalLayout();
 		
+		H2 header = new H2("Mitglied hinzufügen");
+		header.addClassName("customheader");
+		
+		mainWrapper.add(header, createMemberInfoContent(), new Hr(), createAdditionalDataContent());
+
 		Button cancelButton = new Button("Zurück", e -> memberDetailDialog.close());
 		cancelButton.addClassName("cancel-button");
 		
@@ -300,9 +304,63 @@ public class MitgliederView extends Div {
 		});
 		confirmButton.addClassName("save-button");
 		
+		memberDetailDialog.addDialogCloseActionListener(e -> {
+//			clearPersonInfoDialog();
+			memberDetailDialog.close();
+		});
+		
 		memberDetailDialog.getFooter().add(cancelButton, confirmButton);
-		mainWrapper.add(h1, layout);
 		memberDetailDialog.add(mainWrapper);
+	}
+	
+	private Component createAdditionalDataContent() {
+		
+		VerticalLayout wrapper = new VerticalLayout();
+		H3 h3 = new H3("Addressdaten");
+		h3.addClassName("customheader");
+		
+		FormLayout additionalFormLayout = new FormLayout();
+		streetName = new TextField("Straße");	
+		streetNumber = new TextField("Hausnummer");
+		postalCode = new TextField("PLZ");
+		city = new TextField("Ort");
+			
+		additionalFormLayout.add(streetName, streetNumber, postalCode, city);
+		
+		wrapper.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
+		wrapper.add(h3, additionalFormLayout);
+		return wrapper;
+	}
+	
+	private Component createMemberInfoContent() {
+
+		VerticalLayout wrapper = new VerticalLayout();
+		H3 h3 = new H3("Allgemeine Angaben");
+		h3.addClassName("customheader");
+		
+		FormLayout layout = new FormLayout();
+
+		numberField = new TextField("Mitgliedsnummer");
+		numberField.setEnabled(false);
+		firstName = new TextField("Vorname");
+		lastName = new TextField("Nachname");
+		email = new TextField("Email");
+		phone = new TextField("Telefonnummer");
+		phone.setAllowedCharPattern("[0-9/]");
+		dateOfBirth = new DatePicker("Geburtstag");
+		dateOfBirth.setEnabled(false);
+
+		role = new ComboBox<AssociationRole>("Rolle im Verein");
+		role.setItems(Arrays.asList(AssociationRole.values()));
+		role.setItemLabelGenerator(e -> e.getLabel());
+
+		layout.setColspan(numberField, 2);
+
+		layout.add(numberField, firstName, lastName, email, phone, role, dateOfBirth);
+		wrapper.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
+		wrapper.add(h3, layout);
+		
+		return layout;
 	}
 	
 	private void updatePerson() {
@@ -373,7 +431,7 @@ public class MitgliederView extends Div {
 		wrapper.addClassNames("header-bar-custom");
 		
 		
-		Button buttonAddPerson = new Button("Person hinzufügen");
+		Button buttonAddPerson = new Button("Mitglied hinzufügen");
 		buttonAddPerson.setIcon(LineAwesomeIcon.USER_PLUS_SOLID.create());
 		buttonAddPerson.addClassName("button-neutral");
 		
