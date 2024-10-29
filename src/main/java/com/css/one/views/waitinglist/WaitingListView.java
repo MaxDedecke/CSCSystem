@@ -330,7 +330,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 				person.setAssociationId(associationId);
 				person.setAssociationRole(comboBox.getValue());
 				person.setDateOfBirth(waitingPerson.getDateOfBirth());
-//TODO				person.setDateOfRegistration(LocalDate.now());
+//TODO			person.setDateOfRegistration(LocalDate.now());
 				person.setEmail(waitingPerson.getEmail());
 				person.setPhone(waitingPerson.getPhone());
 				person.setFirstName(waitingPerson.getFirstName());
@@ -463,7 +463,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		grid.addComponentColumn(status -> {
 			VerticalLayout wrapper = new VerticalLayout();
 
-			if (status.isOnboaring()) {
+//			if (status.isOnboaring()) {
 				ProgressBar bar = new ProgressBar();
 				bar.setValue(0.5);
 
@@ -477,10 +477,10 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 				wrapper.add(progressBarLabel, bar);
 				return wrapper;
-			} else {
-				wrapper.add(new Span("-"));
-				return wrapper;
-			}
+//			} else {
+//				wrapper.add(new Span("-"));
+//				return wrapper;
+//			}
 		}).setWidth("75px").setAutoWidth(false);
 
 		grid.addComponentColumn(person -> {
