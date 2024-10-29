@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.data.AssociationRole;
 import com.css.one.data.Blossom;
@@ -16,6 +17,7 @@ import com.css.one.services.BlossomService;
 import com.css.one.services.MemberSubscriptionService;
 import com.css.one.services.PersonService;
 import com.css.one.views.MainLayout;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
@@ -71,7 +73,7 @@ public class MitgliederView extends Div {
     private Text memberCount;
     
     private Dialog confirmDeleteDialog;
-    private Dialog memberDetailDialog;    
+    private Dialog memberDetailDialog;  
     private Person samplePerson;
     
     private H3 textForDeletion;
@@ -359,17 +361,48 @@ public class MitgliederView extends Div {
     private void createGridLayout() {
     	
     	VerticalLayout mainLayout = new VerticalLayout();
-    	mainLayout.addClassNames(LumoUtility.Padding.NONE);
+    	mainLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.Bottom.MEDIUM);
         
-        HorizontalLayout bottomLayout = new HorizontalLayout();
-        bottomLayout.setWidth("100%");
-        bottomLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Bottom.SMALL, LumoUtility.Padding.Left.MEDIUM, LumoUtility.JustifyContent.CENTER);
-        memberCount = new Text("Mitglieder: " + samplePersonService.count());
-        bottomLayout.add(memberCount);
-        
-        mainLayout.add(grid, bottomLayout);
+        mainLayout.add(createFirstComponent(), grid);
         add(mainLayout);
     }
+    
+    private Component createFirstComponent() {
+		HorizontalLayout wrapper = new HorizontalLayout();
+		wrapper.setWidthFull();
+		wrapper.addClassNames("header-bar-custom");
+		
+		
+		Button buttonAddPerson = new Button("Person hinzufügen");
+		buttonAddPerson.setIcon(LineAwesomeIcon.USER_PLUS_SOLID.create());
+		buttonAddPerson.addClassName("button-neutral");
+		
+		buttonAddPerson.addClickListener(e -> {
+			memberDetailDialog.open();
+		});
+		
+		VerticalLayout secondWrapper = new VerticalLayout();
+		
+		HorizontalLayout bottomLayout = new HorizontalLayout();
+		bottomLayout.setWidth("100%");
+		bottomLayout.addClassNames(LumoUtility.Padding.NONE,
+				LumoUtility.Padding.Left.MEDIUM, LumoUtility.JustifyContent.START, LumoUtility.Margin.NONE);
+		H3 statisticsCountTitle = new H3("Statistik");
+		statisticsCountTitle.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE, "header-statistics");
+		bottomLayout.add(statisticsCountTitle);	
+		
+		HorizontalLayout statisticsLayout = new HorizontalLayout();
+		statisticsLayout.setWidth("100%");
+		statisticsLayout.addClassNames(LumoUtility.Padding.NONE,	
+				LumoUtility.Padding.Left.MEDIUM, LumoUtility.JustifyContent.START, LumoUtility.Margin.NONE, "header-statistics-item");
+		H3 second = new H3("Mitglieder: " + samplePersonService.count() + "/ 500");
+		statisticsLayout.add(second);
+		
+		secondWrapper.add(bottomLayout, statisticsLayout);
+		
+		wrapper.add(buttonAddPerson, secondWrapper);
+		return wrapper;
+	}
 
     private void refreshGrid() {
         List<Person> allByAssociation = samplePersonService.findAllByAssociation(associationId);

@@ -29,6 +29,7 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -71,7 +72,7 @@ public class WaitingListView extends FlexLayout {
 
 	private Button save = new Button("speichern");	
 	private Dialog newMemberDialog = new Dialog();
-	private Text memberCount;
+	private H3 memberCount;
 	
 	private Dialog personInfoDialog = new Dialog();
 
@@ -94,8 +95,8 @@ public class WaitingListView extends FlexLayout {
 		associationId = MainLayout.getAssociationId();
 
 		VerticalLayout mainWrapper = new VerticalLayout();
-		mainWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE); 
-		createGridLayout(mainWrapper);
+		mainWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Margin.Bottom.MEDIUM, LumoUtility.Padding.NONE); 
+		createMainLayout(mainWrapper);
 		createAddPersonDialog();
 		
 		add(mainWrapper);
@@ -415,30 +416,21 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		return wrapper;
 	}
 
-	private void createGridLayout(VerticalLayout wrapper) {
+	private void createMainLayout(VerticalLayout wrapper) {
 		
 		VerticalLayout mainLayout = new VerticalLayout();
-		mainLayout.addClassNames(LumoUtility.Padding.NONE);
-		
-		HorizontalLayout bottomLayout = new HorizontalLayout();
-		bottomLayout.setWidth("100%");
-		bottomLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Bottom.SMALL,
-				LumoUtility.Padding.Left.MEDIUM, LumoUtility.JustifyContent.CENTER);
-		memberCount = new Text("Wartendene Personen: " + waitingPersonService.count());
-
-		bottomLayout.add(memberCount);
+		mainLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.NONE);
 		
 		createGrid();
 
-		mainLayout.add(createFirstComponent(), grid, bottomLayout);
+		mainLayout.add(createFirstComponent(), grid);
 		wrapper.add(mainLayout);
 	}
 
 	private Component createFirstComponent() {
 		HorizontalLayout wrapper = new HorizontalLayout();
-		wrapper.addClassNames("header-bar-custom");
 		wrapper.setWidthFull();
-		
+		wrapper.addClassNames("header-bar-custom");
 		
 		Button buttonAddPerson = new Button("Person hinzufügen");
 		buttonAddPerson.setIcon(LineAwesomeIcon.USER_PLUS_SOLID.create());
@@ -448,7 +440,25 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			personInfoDialog.open();
 		});
 		
-		wrapper.add(buttonAddPerson);
+		VerticalLayout secondWrapper = new VerticalLayout();
+		
+		HorizontalLayout bottomLayout = new HorizontalLayout();
+		bottomLayout.setWidth("100%");
+		bottomLayout.addClassNames(LumoUtility.Padding.NONE,
+				LumoUtility.Padding.Left.MEDIUM, LumoUtility.JustifyContent.START, LumoUtility.Margin.NONE);
+		memberCount = new H3("Statistik");
+		memberCount.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE, "header-statistics");
+		bottomLayout.add(memberCount);	
+		
+		HorizontalLayout statisticsLayout = new HorizontalLayout();
+		statisticsLayout.setWidth("100%");
+		statisticsLayout.addClassNames(LumoUtility.Padding.NONE,	
+				LumoUtility.Padding.Left.MEDIUM, LumoUtility.JustifyContent.START, LumoUtility.Margin.NONE, "header-statistics-item");
+		H3 second = new H3("Wartendene Personen: " + waitingPersonService.count());
+		statisticsLayout.add(second);
+		
+		secondWrapper.add(bottomLayout, statisticsLayout);
+		wrapper.add(buttonAddPerson, secondWrapper);
 		return wrapper;
 	}
 
@@ -590,16 +600,16 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		String subject = "Onboarding gestartet - " + " Herzlich willkommen " + person.getFirstName() + " " + person.getLastName() + "!";
 		String body = builder.toString();
 		
-		try {
+//		try {
 			emailService.sendSimpleMessage(to, subject, body);
             Notification notification = Notification.show("E-Mail erfolgreich gesendet");
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             person.setOnboaring(true);
             waitingPersonService.update(person);
             refreshGrid();
-        } catch (Exception e) {
-        	Notification notification = Notification.show("Fehler beim Senden der E-Mail: " + e.getMessage());
-            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        }
+//        } catch (Exception e) {
+//        	Notification notification = Notification.show("Fehler beim Senden der E-Mail: " + e.getMessage());
+//            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+//        }
 	}
 }
