@@ -38,10 +38,14 @@ public class EmailService {
     	
 		Properties properties = PropertyService.getProperties();		
 		mailSender.setJavaMailProperties(properties);
-        mailSender.setHost(properties.getProperty("spring.mail.host"));
-        mailSender.setPort(Integer.parseUnsignedInt(properties.getProperty("spring.mail.port")));
-        mailSender.setUsername(properties.getProperty("spring.mail.username"));
-        mailSender.setPassword(properties.getProperty("spring.mail.password"));
+		mailSender.setHost(properties.getProperty("spring.mail.host"));
+		mailSender.setPort(Integer.parseUnsignedInt(properties.getProperty("spring.mail.port")));
+		mailSender.setUsername(properties.getProperty("spring.mail.username"));
+		mailSender.setPassword(properties.getProperty("spring.mail.password"));
+		Properties prop = new Properties();
+		prop.setProperty("mail.smtp.auth", properties.getProperty("spring.mail.properties.mail.smtp.auth"));
+		prop.setProperty("mail.smtp.starttls.enable",  properties.getProperty("spring.mail.properties.mail.smtp.starttls.enable"));
+		mailSender.setJavaMailProperties(prop);
 	}
 	
     public void sendSimpleMessage(String to, String subject, String text) {
