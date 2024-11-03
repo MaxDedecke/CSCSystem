@@ -1,9 +1,6 @@
 package com.css.one.services;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -16,8 +13,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.util.StreamUtils;
-
-import com.css.one.views.warenlager.WarenlagerView;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -35,28 +30,23 @@ public class EmailService {
 	String propertyPassword;
 	String propertySmtpAuth;
 	String propertyStartTls;
+	String propertyCapabilitiesAfterAuth;
 	
 	public EmailService() {
 		
 		mailSender = new JavaMailSenderImpl();
     	
-		Properties properties = getProperties();
-		propertyHost = properties.getProperty("spring.mail.host");
-		propertyPort = properties.getProperty("spring.mail.port");
-		propertyUserName = properties.getProperty("spring.mail.username");
-		propertyPassword = properties.getProperty("spring.mail.password");
-		propertySmtpAuth = properties.getProperty("spring.mail.properties.mail.smtp.auth");
-		propertyStartTls = properties.getProperty("spring.mail.properties.mail.smtp.starttls.enable");	
-		
-        mailSender.setHost(propertyHost);
-        mailSender.setPort(Integer.parseUnsignedInt(propertyPort));
-        mailSender.setUsername(propertyUserName);
-        mailSender.setPassword(propertyPassword);
+		Properties properties = PropertyService.getProperties();		
+		mailSender.setJavaMailProperties(properties);
+        mailSender.setHost(properties.getProperty("spring.mail.host"));
+        mailSender.setPort(Integer.parseUnsignedInt(properties.getProperty("spring.mail.port")));
+        mailSender.setUsername(properties.getProperty("spring.mail.username"));
+        mailSender.setPassword(properties.getProperty("spring.mail.password"));
 	}
 	
     public void sendSimpleMessage(String to, String subject, String text) {
 
-		Properties properties = getProperties();            
+		Properties properties = PropertyService.getProperties();            
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setFrom(properties.getProperty("spring.mail.username"));
@@ -80,7 +70,7 @@ public class EmailService {
     public void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "utf-8");
-		Properties properties = getProperties();
+		Properties properties = PropertyService.getProperties();
 
         message.setTo(to);
         message.setFrom(properties.getProperty("spring.mail.username"));
@@ -90,29 +80,5 @@ public class EmailService {
         
         mailSender.send(message.getMimeMessage());
 
-    }
-    
-    private Properties getProperties() {
-    	
-    	final Properties properties = new Properties();
-		try (InputStream input = new FileInputStream(new File("/application.properties"))) {
-
-			// Load the properties file
-			properties.load(input);
-		} catch (IOException ex) {
-			try (InputStream input = WarenlagerView.class.getClassLoader()
-					.getResourceAsStream("application.properties")) {
-				if (input == null) {
-					System.out.println("Sorry, unable to find application.properties");
-					System.exit(1);
-				}
-
-				// Load the properties file
-				properties.load(input);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return properties;
     }
 }

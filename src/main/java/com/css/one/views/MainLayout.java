@@ -7,7 +7,7 @@ import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.data.User;
 import com.css.one.security.AuthenticatedUser;
-import com.css.one.views.ai.AiWizzardView;
+import com.css.one.services.PropertyService;
 import com.css.one.views.arbeitsplanung.ArbeitsplanungView;
 import com.css.one.views.diary.DiaryView;
 import com.css.one.views.finanzen.FinanzenView;
@@ -70,6 +70,7 @@ public class MainLayout extends AppLayout {
         addHeaderContent(); 
         addClassName("main-layout-app-layout-1");
         setDrawerOpened(false);
+        new PropertyService();
     }
 
     private void addHeaderContent() {
@@ -85,14 +86,18 @@ public class MainLayout extends AppLayout {
     private void addDrawerContent() {
     	
     	VerticalLayout layout = new VerticalLayout(); 
-        StreamResource imageResource = new StreamResource("potteriepng.png",
-                () -> getClass().getResourceAsStream("/potteriepng.png"));
+        StreamResource imageResource = new StreamResource("logoCodeGreen.png",
+                () -> getClass().getResourceAsStream("/logoCodeGreen.png"));
 
         Avatar avatar = new Avatar("logo_club");
         avatar.setImageResource(imageResource);
-        avatar.setHeight(250, Unit.PIXELS);
-        avatar.setWidthFull();
-        avatar.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.CONTRAST_50);
+        avatar.addClassNames(
+//        		LumoUtility.Border.ALL, 
+//        		LumoUtility.BorderColor.CONTRAST_50, 
+        		LumoUtility.Padding.LARGE);
+        avatar.setWidth(200, Unit.PIXELS);
+        avatar.setHeight(150, Unit.PIXELS);
+
         layout.setAlignItems(Alignment.CENTER);
         layout.addClassNames(LumoUtility.Padding.XSMALL);
         layout.add(avatar);
@@ -103,7 +108,7 @@ public class MainLayout extends AppLayout {
         HorizontalLayout versionLayout = new HorizontalLayout();
         versionLayout.setWidth("100%");
         versionLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.NONE, "main");
-        versionLayout.add(new Text("CL-OS - v.0.5"));
+        versionLayout.add(new Text("v.0.6"));
         layout.add(versionLayout);
         
         Hr hr2 = new Hr();
@@ -166,10 +171,10 @@ public class MainLayout extends AppLayout {
 
         }
         
-        if (accessChecker.hasAccess(AiWizzardView.class)) {
-            nav.addItem(new SideNavItem("AI Wizzard", AiWizzardView.class, LineAwesomeIcon.MAGIC_SOLID.create()));
-
-        }
+//        if (accessChecker.hasAccess(AiWizzardView.class)) {
+//            nav.addItem(new SideNavItem("AI Wizzard", AiWizzardView.class, LineAwesomeIcon.MAGIC_SOLID.create()));
+//
+//        }
 
         return nav;
     }
