@@ -1,12 +1,16 @@
 package com.css.one.services;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.Properties;
 
+import org.apache.xmlgraphics.image.loader.util.ImageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.mail.SimpleMailMessage;
@@ -14,8 +18,11 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.util.StreamUtils;
 
+import com.css.one.data.EmailType;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
+
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 
 public class EmailService {
 	
@@ -60,20 +67,43 @@ public class EmailService {
         mailSender.send(message);
     }
 
-    public void sendHtmlMessageWithTemplate(String to, String subject) throws MessagingException, IOException {
+    public void sendHtmlMessageWithTemplate(String to, String subject, String userName, EmailType type) throws MessagingException, IOException {
         // HTML-Vorlage laden
-        Resource resource = resourceLoader.getResource("classpath:templates/welcome_template.html");
-        String htmlContent = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
-//      TODO replace with user data in template
-//      htmlContent = htmlContent.replace("${userName}", userName);
+    	resourceLoader =  new DefaultResourceLoader();
+        Resource resource = resourceLoader.getResource(type.getHtml());
+        
+		if (resource.exists()) {
+			String htmlContent = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+		    htmlContent = htmlContent.replace("${memberName}", userName);
+		    
+		    if(type.equals(EmailType.ONBOARING)) {
+//		    	htmlContent = htmlContent.replace("${onboardingLink}", "https://cl-os.code-green-systems.de/onboarding/" + generateOnboardingToken());
+		    	htmlContent = htmlContent.replace("${onboardingLink}", "http://localhost:8080/onboarding?token=" + generateOnboardingToken());
 
-        // E-Mail senden
-        sendHtmlMessage(to, subject, htmlContent);
+		            try (InputStream imageStream = ImageUtil.class.getClassLoader().getResourceAsStream("logoCodeGreen.png")) {
+		                if (imageStream == null) {
+		                    throw new IOException("Bild konnte nicht geladen werden: " + "logoCodeGreen");
+		                }
+		                byte[] imageBytes = imageStream.readAllBytes();
+		                htmlContent = htmlContent.replace("logoCodeGreen.png","data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes));
+		            }
+		   
+		    }
+			// E-Mail senden
+			sendHtmlMessage(to, subject, htmlContent);
+		} else {
+			Notification show = Notification.show("Resource could not be loaded");
+			show.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			
+		}
     }
 
-    public void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {
-        MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "utf-8");
+    private String generateOnboardingToken() {
+		return "123456789101112";
+	}
+
+	public void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {
+        MimeMessageHelper message = new MimeMessageHelper(mailSender.createMimeMessage(), "utf-8");
 		Properties properties = PropertyService.getProperties();
 
         message.setTo(to);
@@ -83,6 +113,5 @@ public class EmailService {
         message.setSentDate(Date.valueOf(LocalDate.now()));
         
         mailSender.send(message.getMimeMessage());
-
     }
 }

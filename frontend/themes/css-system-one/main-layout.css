@@ -130,6 +130,11 @@ vaadin-app-layout::part(navbar) {
 	background-color: #efefef;
   	background: #efefef;
 }
+
+.custom-anchor {
+    color: #8ABD3E; /* Ändere dies in die gewünschte Farbe */
+   	background: #8ABD3E;
+}
 	
 [slot="drawer"] {
     background-color: #ffffff;

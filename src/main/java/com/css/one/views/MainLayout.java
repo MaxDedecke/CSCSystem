@@ -170,7 +170,10 @@ public class MainLayout extends AppLayout {
             nav.addItem(new SideNavItem("Konfiguration", ConfigurationView.class, LineAwesomeIcon.COG_SOLID.create()));
 
         }
-        
+        if (accessChecker.hasAccess(OnboardingView.class)) {
+            nav.addItem(new SideNavItem("Onboarding", OnboardingView.class, LineAwesomeIcon.COG_SOLID.create()));
+
+        }
 //        if (accessChecker.hasAccess(AiWizzardView.class)) {
 //            nav.addItem(new SideNavItem("AI Wizzard", AiWizzardView.class, LineAwesomeIcon.MAGIC_SOLID.create()));
 //
@@ -214,12 +217,13 @@ public class MainLayout extends AppLayout {
             });
 
             layout.add(userMenu);
-            layout.addClassNames(LumoUtility.JustifyContent.CENTER);
         } else {
             Anchor loginLink = new Anchor("login", "Einloggen");
+            loginLink.addClassNames("custom-anchor");
             layout.add(loginLink);
         }
 
+        layout.addClassNames(LumoUtility.JustifyContent.CENTER);
         return layout;
     }
 

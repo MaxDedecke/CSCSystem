@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.data.AssociationRole;
+import com.css.one.data.EmailType;
 import com.css.one.data.MemberData;
 import com.css.one.data.MemberSubscription;
 import com.css.one.data.Person;
@@ -16,7 +17,6 @@ import com.css.one.services.PersonService;
 import com.css.one.services.WaitingPersonService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -29,7 +29,6 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -49,6 +48,7 @@ import jakarta.annotation.security.PermitAll;
 @PermitAll
 @Route(value = "waitingroom/", layout = MainLayout.class)
 @RouteAlias(value = "waitingroom/", layout = MainLayout.class)
+
 public class WaitingListView extends FlexLayout {
 
 	/**
@@ -579,37 +579,22 @@ private void createSingleSubscriptionForNewMember(Person member) {
 	}
 
 	private void sendOnboardingEmail(WaitingPerson person) {
+		
 		EmailService emailService = new EmailService();
 		
 		String to = person.getEmail();
-		
-		StringBuilder builder = new StringBuilder();
-		builder.append("Hi ").append(person.getFirstName()).append(",")
-		.append("\n\n")
-		.append("wir freuen uns dir mitteilen zu können, dass soeben das Onboarding in die Potterie gestartet wurde :).")
-		.append("\n")
-		.append("Klicke einfach auf den nachfolgenden Link, um zu jetzt gleich zu starten - keine Angst, es dauert nicht lange :D.")
-		.append("\n")
-		.append("https://cl-os.code-green-systems.de/login")
-		.append("\n")
-		.append("\n")
-		.append("Beste Grüße")
-		.append("\n\n")
-		.append("Dein Centralo Team :)");
-		
 		String subject = "Onboarding gestartet - " + " Herzlich willkommen " + person.getFirstName() + " " + person.getLastName() + "!";
-		String body = builder.toString();
 		
-//		try {
-			emailService.sendSimpleMessage(to, subject, body);
+		try {
+			emailService.sendHtmlMessageWithTemplate(to, subject, person.getFirstName(), EmailType.ONBOARING);
             Notification notification = Notification.show("E-Mail erfolgreich gesendet");
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-            person.setOnboaring(true);
+//            person.setOnboaring(true);
             waitingPersonService.update(person);
             refreshGrid();
-//        } catch (Exception e) {
-//        	Notification notification = Notification.show("Fehler beim Senden der E-Mail: " + e.getMessage());
-//            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-//        }
+        } catch (Exception e) {
+        	Notification notification = Notification.show("Fehler beim Senden der E-Mail: " + e.getMessage());
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
 	}
 }

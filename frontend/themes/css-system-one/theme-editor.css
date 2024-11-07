@@ -606,6 +606,11 @@ vaadin-vertical-layout.uebersicht-box-grid {
   width:100%;
 }
 
+.save-button {
+  background-color: #8ABD3E;
+  color: white;
+}
+
 vaadin-vertical-layout.uebersicht-box-header {
   background:rgba(191,191,191,0.08);
   border-color:#000000;

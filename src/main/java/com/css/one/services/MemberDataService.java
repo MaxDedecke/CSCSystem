@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.css.one.data.MemberData;
 import com.css.one.data.MemberDataRepository;
+import com.css.one.data.Person;
 import com.css.one.data.WaitingPerson;
 
 @Service
@@ -45,6 +46,10 @@ public class MemberDataService {
 //    }
     
     public Optional<MemberData> findByMember(WaitingPerson person) {
+    	return repository.findById(person.getMemberData().getId());
+    }
+    
+    public Optional<MemberData> findByMember(Person person) {
     	return repository.findById(person.getMemberData().getId());
     }
     

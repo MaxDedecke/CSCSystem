@@ -7,19 +7,20 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.transaction.annotation.Transactional;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.data.AssociationRole;
 import com.css.one.data.Blossom;
+import com.css.one.data.MemberData;
 import com.css.one.data.MemberSubscription;
 import com.css.one.data.Person;
 import com.css.one.services.BlossomService;
+import com.css.one.services.MemberDataService;
 import com.css.one.services.MemberSubscriptionService;
 import com.css.one.services.PersonService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
@@ -42,7 +43,6 @@ import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -75,12 +75,12 @@ public class MitgliederView extends Div {
 	private TextField postalCode;
 	private TextField city;
 	
+	private H2 headerMemberInfo;
+	
     private ComboBox<AssociationRole> role;
 
     private final Button cancel = new Button("Abbrechen");
-    private final Button save = new Button("Speichern");
-    private Text memberCount;
-    
+    private Button confirmAddMemberButton;    
     private Dialog confirmDeleteDialog;
     private Dialog memberDetailDialog;  
     private Person samplePerson;
@@ -90,13 +90,15 @@ public class MitgliederView extends Div {
     private final PersonService samplePersonService;
     private final MemberSubscriptionService subscriptionService;
     private final BlossomService blossomService;
+    private final MemberDataService memberDataService;
     
     private int associationId;
 
-    public MitgliederView(PersonService samplePersonService, MemberSubscriptionService subscriptionService, BlossomService blossomService) {
+    public MitgliederView(PersonService samplePersonService, MemberSubscriptionService subscriptionService, BlossomService blossomService, MemberDataService memberDataService) {
         this.samplePersonService = samplePersonService;
         this.subscriptionService = subscriptionService;
         this.blossomService = blossomService;
+        this.memberDataService = memberDataService;
         
         addClassNames("mitglieder-view");
 
@@ -134,6 +136,8 @@ public class MitgliederView extends Div {
 			
         	menuBar.addItem("Infos", event -> {
         		this.samplePerson = item;
+        		confirmAddMemberButton.setText("aktualisieren");
+        		headerMemberInfo.setText("Mitgliedsinformationen");
             	putValuesInDialog();
             	memberDetailDialog.open();
                 refreshGrid();
@@ -155,46 +159,6 @@ public class MitgliederView extends Div {
         cancel.addClickListener(e -> {
             refreshGrid();
         });
-
-		save.addClickListener(e -> {
-			try {
-
-				if (role.getValue() != null) {
-					
-					boolean newMember = false;
-					if (this.samplePerson == null) {
-						this.samplePerson = new Person();
-						newMember = true;
-					}
-					samplePerson.setAssociationId(associationId);
-					samplePerson.setAssociationRole(role.getValue());
-//	TODO				samplePerson.setDateOfRegistration(LocalDate.now());
-					if(newMember) {						
-						samplePerson.setMemberNumber(samplePersonService.getFreeMemberNumber(associationId));
-					}
-					
-					if (role.getValue() != AssociationRole.MEMBER) {
-						samplePerson.setDateOfHigherRole(LocalDate.now());
-					}
-					this.samplePerson = samplePersonService.update(this.samplePerson);
-					if(newMember) {						
-						createSingleSubscriptionForNewMember(this.samplePerson);
-					}
-					refreshGrid();	
-					Notification.show("Mitglied hinzugefügt");
-					UI.getCurrent().navigate(MitgliederView.class);
-				} else {
-					Notification n = Notification.show("Eine neue Person muss eine Rolle haben!");
-					n.setPosition(Position.MIDDLE);
-					n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-				}
-			} catch (ObjectOptimisticLockingFailureException exception) {
-				Notification n = Notification.show(
-						"Error updating the data. Somebody else has updated the record while you were making changes.");
-				n.setPosition(Position.MIDDLE);
-				n.addThemeVariants(NotificationVariant.LUMO_ERROR);
-			} 
-		});
     }
 
     private void createConfirmDeletionDialog() {
@@ -265,7 +229,17 @@ public class MitgliederView extends Div {
         email.setValue(this.samplePerson.getEmail());
         phone.setValue(this.samplePerson.getPhone());
         dateOfBirth.setValue(this.samplePerson.getDateOfBirth());
-        role.setValue(this.samplePerson.getAssociationRole());	
+        role.setValue(this.samplePerson.getAssociationRole());
+        
+        if(this.samplePerson.getMemberData() != null) {
+        	Optional<MemberData> memberData = memberDataService.findByMember(this.samplePerson);
+        	memberData.ifPresent(e -> {        		
+        		city.setValue(e.getCityName());
+        		streetName.setValue(e.getStreetName());
+        		streetNumber.setValue(e.getStreetNumber());
+        		postalCode.setValue(String.valueOf(e.getPostalCode()));   	
+        	});
+        }
 	}
 
 	private void createMemberDetailsDialog() {
@@ -278,41 +252,108 @@ public class MitgliederView extends Div {
 		H1 h1 = new H1();
 		h1.add("Mitgliedsinformationen");
 		h1.addClassName("customheader");
+			
+		headerMemberInfo = new H2("Mitglied hinzufügen");
+		headerMemberInfo.addClassName("customheader");
 		
-//		
-//		memberDetailDialog.getFooter().add(cancelButton, confirmButton);
-//		mainWrapper.add(h1, layout);
-//		memberDetailDialog.add(mainWrapper);
-		
-		//
-		
-//		VerticalLayout mainWrapper = new VerticalLayout();
-		
-		H2 header = new H2("Mitglied hinzufügen");
-		header.addClassName("customheader");
-		
-		mainWrapper.add(header, createMemberInfoContent(), new Hr(), createAdditionalDataContent());
+		mainWrapper.add(headerMemberInfo, createMemberInfoContent(), new Hr(), createAdditionalDataContent());
 
-		Button cancelButton = new Button("Zurück", e -> memberDetailDialog.close());
+		Button cancelButton = new Button("Zurück", e -> {
+			memberDetailDialog.close();
+			clearPersonInfoDialog();
+		});
 		cancelButton.addClassName("cancel-button");
 		
-		Button confirmButton = new Button("Aktualisieren",e -> {	
-			updatePerson();
-			this.memberDetailDialog.close();
-			Notification notification = Notification.show("Informationen aktualisiert!");
+		confirmAddMemberButton = new Button("hinzufügen",e -> {	
+			
+			Notification notification;
+			
+			if (this.samplePerson != null) {
+				updatePerson();
+				this.memberDetailDialog.close();
+				notification = Notification.show("Informationen aktualisiert!");
+			} else {
+				savePerson();
+				this.memberDetailDialog.close();
+				notification = Notification.show("Mitglied hinzugefügt");
+			}
 			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			this.samplePerson = null;
+			refreshGrid();
+			clearPersonInfoDialog();
 		});
-		confirmButton.addClassName("save-button");
+		confirmAddMemberButton.addClassName("save-button");
 		
 		memberDetailDialog.addDialogCloseActionListener(e -> {
-//			clearPersonInfoDialog();
+			clearPersonInfoDialog();
 			memberDetailDialog.close();
 		});
 		
-		memberDetailDialog.getFooter().add(cancelButton, confirmButton);
+		memberDetailDialog.getFooter().add(cancelButton, confirmAddMemberButton);
 		memberDetailDialog.add(mainWrapper);
 	}
 	
+	private void clearPersonInfoDialog() {
+		this.firstName.setValue(firstName.getEmptyValue());
+		this.lastName.setValue(lastName.getEmptyValue());
+		this.phone.setValue(phone.getEmptyValue());
+		this.email.setValue(email.getEmptyValue());
+		this.dateOfBirth.setValue(dateOfBirth.getEmptyValue());
+		this.role.setValue(role.getEmptyValue());
+		
+		this.city.setValue(city.getEmptyValue());
+		this.streetName.setValue(streetName.getEmptyValue());
+		this.streetNumber.setValue(streetNumber.getEmptyValue());
+		this.postalCode.setValue(postalCode.getEmptyValue());
+	}
+
+	@Transactional
+	private void savePerson() {
+		try {
+
+			if (role.getValue() != null) {
+				
+				boolean newMember = false;
+				if (this.samplePerson == null) {
+					this.samplePerson = new Person();
+					newMember = true;
+				}
+				samplePerson.setAssociationId(associationId);
+				samplePerson.setAssociationRole(role.getValue());
+				
+				addOrUpdatePerson();
+				
+				if(newMember) {						
+					samplePerson.setMemberNumber(samplePersonService.getFreeMemberNumber(associationId));
+				}
+				
+				if (role.getValue() != AssociationRole.MEMBER) {
+					samplePerson.setDateOfHigherRole(LocalDate.now());
+				}
+				
+				addOrUpdateMemberData();
+				
+				this.samplePerson = samplePersonService.update(this.samplePerson);
+				if(newMember) {						
+					createSingleSubscriptionForNewMember(this.samplePerson);
+				}
+				refreshGrid();	
+				Notification show = Notification.show("Mitglied hinzugefügt");
+				show.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			} else {
+				Notification n = Notification.show("Eine neue Person muss eine Rolle haben!");
+				n.setPosition(Position.MIDDLE);
+				n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			}
+		} catch (ObjectOptimisticLockingFailureException exception) {
+			Notification n = Notification.show(
+					"Error updating the data. Somebody else has updated the record while you were making changes.");
+			n.setPosition(Position.MIDDLE);
+			n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		} 
+		
+	}
+
 	private Component createAdditionalDataContent() {
 		
 		VerticalLayout wrapper = new VerticalLayout();
@@ -348,7 +389,6 @@ public class MitgliederView extends Div {
 		phone = new TextField("Telefonnummer");
 		phone.setAllowedCharPattern("[0-9/]");
 		dateOfBirth = new DatePicker("Geburtstag");
-		dateOfBirth.setEnabled(false);
 
 		role = new ComboBox<AssociationRole>("Rolle im Verein");
 		role.setItems(Arrays.asList(AssociationRole.values()));
@@ -372,15 +412,9 @@ public class MitgliederView extends Div {
 				this.samplePerson = new Person();
 				newMember = true;
 			}
-			samplePerson.setFirstName(firstName.getValue());
-			samplePerson.setLastName(lastName.getValue());
-			samplePerson.setEmail(email.getValue());
-			samplePerson.setPhone(phone.getValue());
 			
-			samplePerson.setAssociationId(associationId);
-			samplePerson.setAssociationRole(role.getValue());
-//TODO			samplePerson.setDateOfRegistration(LocalDate.now());
-			
+			addOrUpdatePerson();	
+						
 			if(newMember) {						
 				samplePerson.setMemberNumber(samplePersonService.getFreeMemberNumber(associationId));
 			} else {
@@ -390,6 +424,8 @@ public class MitgliederView extends Div {
 			if (role.getValue() != AssociationRole.MEMBER) {
 				samplePerson.setDateOfHigherRole(LocalDate.now());
 			}
+			
+			addOrUpdateMemberData();
 			
 			this.samplePerson = samplePersonService.update(this.samplePerson);
 			if(newMember) {						
@@ -401,6 +437,43 @@ public class MitgliederView extends Div {
 			n.setPosition(Position.MIDDLE);
 			n.addThemeVariants(NotificationVariant.LUMO_ERROR);
 		}
+	}
+
+	private void addOrUpdateMemberData() {
+		
+		MemberData memberData;
+		
+		if(this.samplePerson.getMemberData() != null ) {
+			Optional<MemberData> info = memberDataService.findByMember(samplePerson);
+			
+			if(info.isPresent()) {				
+				memberData = info.get();
+			} else {
+				memberData = new MemberData();
+				memberData.setDateOfRegistration(LocalDate.now());			}
+		} else {
+			memberData = new MemberData();
+			memberData.setDateOfRegistration(LocalDate.now());
+		}
+		
+		memberData.setCityName(this.city.getValue());
+		memberData.setPostalCode(Integer.valueOf(this.postalCode.getValue()));
+		memberData.setStreetName(streetName.getValue());
+		memberData.setStreetNumber(streetNumber.getValue());
+			
+		this.samplePerson.setMemberData(memberData);
+		
+	}
+
+	private void addOrUpdatePerson() {
+		
+		samplePerson.setFirstName(firstName.getValue());
+		samplePerson.setLastName(lastName.getValue());
+		samplePerson.setEmail(email.getValue());
+		samplePerson.setPhone(phone.getValue());
+		samplePerson.setAssociationId(associationId);
+		samplePerson.setAssociationRole(role.getValue());
+		samplePerson.setDateOfBirth(dateOfBirth.getValue());
 	}
 
 	private void createSingleSubscriptionForNewMember(Person member) {
@@ -436,6 +509,8 @@ public class MitgliederView extends Div {
 		buttonAddPerson.addClassName("button-neutral");
 		
 		buttonAddPerson.addClickListener(e -> {
+			confirmAddMemberButton.setText("hinzufügen");
+    		headerMemberInfo.setText("Mitglied hinzufügen");
 			memberDetailDialog.open();
 		});
 		
@@ -465,6 +540,5 @@ public class MitgliederView extends Div {
     private void refreshGrid() {
         List<Person> allByAssociation = samplePersonService.findAllByAssociation(associationId);
         grid.setItems(allByAssociation);
-        memberCount.setText("Mitglieder: " + allByAssociation.size());
     }
 }
