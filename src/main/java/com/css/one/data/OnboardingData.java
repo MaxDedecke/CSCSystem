@@ -13,49 +13,38 @@ import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Email;
 
 @Entity
-public class WaitingPerson {
-	
+public class OnboardingData {
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
+	@Nullable
+	private int memberNumber;
+	
+	@Nullable
+	private int token;
+	
 	private String firstName;
 	private String lastName;
+	
 	@Email
 	private String email;
 	private String phone;
 	private LocalDate dateOfBirth;
-	private int associationId;
-	private LocalDate dateOfRegistration;
-	
-	private boolean isOnboaring;
 	
 	@Nullable
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private MemberData memberData;
-	
+	private int associationId;
+
 	@Nullable
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private Person member;
-	
-	public Person getMember() {
-		return member;
+	private MemberData memberData;
+
+	public int getMemberNumber() {
+		return memberNumber;
 	}
-	public void setMember(Person member) {
-		this.member = member;
-	}
-	public MemberData getMemberData() {
-		return memberData;
-	}
-	public void setMemberData(MemberData memberData) {
-		this.memberData = memberData;
-	} 
-	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
+
+	public void setMemberNumber(int memberNumber) {
+		this.memberNumber = memberNumber;
 	}
 
 	public String getFirstName() {
@@ -106,17 +95,27 @@ public class WaitingPerson {
 		this.associationId = associationId;
 	}
 
-	public LocalDate getDateOfRegistration() {
-		return dateOfRegistration;
+	public MemberData getMemberData() {
+		return memberData;
 	}
 
-	public void setDateOfRegistration(LocalDate dateOfRegistration) {
-		this.dateOfRegistration = dateOfRegistration;
+	public void setMemberData(MemberData memberData) {
+		this.memberData = memberData;
 	}
-	public boolean isOnboaring() {
-		return isOnboaring;
+	
+	public Long getId() {
+		return id;
 	}
-	public void setOnboaring(boolean isOnboaring) {
-		this.isOnboaring = isOnboaring;
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public int getToken() {
+		return token;
+	}
+
+	public void setToken(int token) {
+		this.token = token;
 	}
 }

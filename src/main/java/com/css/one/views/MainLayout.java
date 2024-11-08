@@ -91,10 +91,7 @@ public class MainLayout extends AppLayout {
 
         Avatar avatar = new Avatar("logo_club");
         avatar.setImageResource(imageResource);
-        avatar.addClassNames(
-//        		LumoUtility.Border.ALL, 
-//        		LumoUtility.BorderColor.CONTRAST_50, 
-        		LumoUtility.Padding.LARGE);
+        avatar.addClassNames(LumoUtility.Padding.LARGE);
         avatar.setWidth(200, Unit.PIXELS);
         avatar.setHeight(150, Unit.PIXELS);
 
@@ -118,14 +115,22 @@ public class MainLayout extends AppLayout {
     }
 
     private SideNav createNavigation() {
+        SideNavItem sideNavItemOnboarding = new SideNavItem("Onboarding", OnboardingView.class, LineAwesomeIcon.HANDS_HELPING_SOLID.create());
+
         SideNav nav = new SideNav();
         nav.addClassNames("vaadin-app-layout");
         nav.setWidth("100%");
         
         if (accessChecker.hasAccess(ÜbersichtView.class)) {
             nav.addItem(new SideNavItem("Übersicht", ÜbersichtView.class, LineAwesomeIcon.GLOBE_SOLID.create()));
-
+            
+            clearNavigation(nav, sideNavItemOnboarding);            
+        } else {
+        	if (accessChecker.hasAccess(OnboardingView.class)) {
+                nav.addItem(sideNavItemOnboarding);
+            }
         }
+        
         if (accessChecker.hasAccess(FinanzenView.class)) {
             nav.addItem(
                     new SideNavItem("Finanzen", FinanzenView.class, LineAwesomeIcon.MONEY_BILL_WAVE_SOLID.create()));
@@ -170,10 +175,6 @@ public class MainLayout extends AppLayout {
             nav.addItem(new SideNavItem("Konfiguration", ConfigurationView.class, LineAwesomeIcon.COG_SOLID.create()));
 
         }
-        if (accessChecker.hasAccess(OnboardingView.class)) {
-            nav.addItem(new SideNavItem("Onboarding", OnboardingView.class, LineAwesomeIcon.COG_SOLID.create()));
-
-        }
 //        if (accessChecker.hasAccess(AiWizzardView.class)) {
 //            nav.addItem(new SideNavItem("AI Wizzard", AiWizzardView.class, LineAwesomeIcon.MAGIC_SOLID.create()));
 //
@@ -182,7 +183,13 @@ public class MainLayout extends AppLayout {
         return nav;
     }
 
-    private Footer createFooter() {
+    private void clearNavigation(SideNav nav, SideNavItem sideNavItemOnboarding) {
+        if(nav.getItems().contains(sideNavItemOnboarding)) {        	
+        	nav.remove(sideNavItemOnboarding);
+        }
+	}
+
+	private Footer createFooter() {
         Footer layout = new Footer();
 
         Optional<User> maybeUser = authenticatedUser.get();

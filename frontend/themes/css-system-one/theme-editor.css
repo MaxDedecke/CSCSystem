@@ -592,6 +592,22 @@ vaadin-vertical-layout.uebersicht-box {
   padding-top:none;
 }
 
+vaadin-vertical-layout.onboarding-box {
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #8ABD3E;
+  gap:var(--lumo-space-xs);
+  margin-bottom:none;
+  max-width:750px;
+  padding-bottom:none;
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:none;
+}
+
 vaadin-vertical-layout.uebersicht-box-grid {
   background:rgba(191,191,191,0.08);
   border-color:#000000;
@@ -608,6 +624,11 @@ vaadin-vertical-layout.uebersicht-box-grid {
 
 .save-button {
   background-color: #8ABD3E;
+  color: white;
+}
+
+.save-button[disabled] {
+  background-color: #efefef;
   color: white;
 }
 
@@ -657,4 +678,8 @@ vaadin-dialog-overlay::part(footer) {
 	border: thick;
 	box-shadow: 2px 2px 7px 2px #8ABD3E;
 	gap: var(--lumo-space-xs);
+}
+
+.red {
+	background: #ffbbbb;
 }
