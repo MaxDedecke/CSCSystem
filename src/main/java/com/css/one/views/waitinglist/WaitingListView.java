@@ -1,6 +1,7 @@
 package com.css.one.views.waitinglist;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
@@ -74,6 +75,8 @@ public class WaitingListView extends FlexLayout {
 	private Dialog newMemberDialog = new Dialog();
 	private H3 memberCount;
 	
+	private H2 headerPersonInfo;
+	
 	private Dialog personInfoDialog = new Dialog();
 
 	private WaitingPerson waitingPerson;
@@ -82,6 +85,7 @@ public class WaitingListView extends FlexLayout {
     private MemberDataService memberDataService;
 
 	private int associationId;
+	private boolean isNewPerson = true;
 
 	public WaitingListView(WaitingPersonService waitingPersonService, PersonService personService, MemberSubscriptionService subscriptionService, MemberDataService memberDataService) {
 		this.waitingPersonService = waitingPersonService;
@@ -105,16 +109,26 @@ public class WaitingListView extends FlexLayout {
 private void createAddPersonDialog() {
 		VerticalLayout mainWrapper = new VerticalLayout();
 		
-		H2 header = new H2("Person hinzufügen");
-		header.addClassName("customheader");
+		headerPersonInfo = new H2("Person hinzufügen");
+		headerPersonInfo.addClassName("customheader");
 		
-		mainWrapper.add(header, createAddPersonContent(), new Hr(), createAdditionalDataContent());
+		mainWrapper.add(headerPersonInfo, createAddPersonContent(), new Hr(), createAdditionalDataContent());
 
 		save = new Button("hinzufügen");
 		save.addClassNames("save-button");
 
 		save.addClickListener(e -> {
 			savePersonData();
+			
+			if (isNewPerson) {
+				Notification notification = Notification.show("Person wurde auf die Warteliste gesetzt.");
+				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			} else {
+				Notification notification = Notification.show("Infos aktualisiert");
+				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			}
+			
+			isNewPerson = true;
 		});
 		
 		Button buttonCancel = new Button("abbrechen");
@@ -180,20 +194,26 @@ private void savePersonData() {
 			memberData.setDateOfRegistration(LocalDate.now());
 			waitingPerson.setMemberData(memberData);
 		} else {
-			MemberData memberData = waitingPerson.getMemberData();
+			Optional<MemberData> memberDataOptional = memberDataService.findByMember(waitingPerson);			
+			MemberData memberData;
+			
+			if(memberDataOptional.isPresent()) {
+				memberData = memberDataOptional.get();
+			} else {
+				memberData = new MemberData();
+			}
+			
 			memberData.setStreetName(streetName.getValue());	
 			memberData.setCityName(city.getValue());
 			memberData.setPostalCode(Integer.parseInt(postalCode.getValue()));
-			memberData.setStreetNumber(streetNumber.getValue());
+			memberData.setStreetNumber(streetNumber.getValue());			
+	
 			waitingPerson.setMemberData(memberData);
 		}
 		
 		waitingPersonService.update(this.waitingPerson);
 		clearPersonInfoDialog();
 		refreshGrid();
-		
-		Notification notification = Notification.show("Person wurd auf die Warteliste gesetzt.");
-		notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 		personInfoDialog.close();
 		this.waitingPerson = null;
 		
@@ -331,14 +351,18 @@ private void createSingleSubscriptionForNewMember(Person member) {
 				person.setAssociationId(associationId);
 				person.setAssociationRole(comboBox.getValue());
 				person.setDateOfBirth(waitingPerson.getDateOfBirth());
-//TODO			person.setDateOfRegistration(LocalDate.now());
 				person.setEmail(waitingPerson.getEmail());
 				person.setPhone(waitingPerson.getPhone());
 				person.setFirstName(waitingPerson.getFirstName());
 				person.setLastName(waitingPerson.getLastName());
 				person.setMemberNumber(personService.getFreeMemberNumber(associationId));
 				person = personService.update(person);
-
+				
+				Optional<MemberData> optMemberData = memberDataService.findByMember(waitingPerson);
+				if(optMemberData.isPresent()) {					
+					person.setMemberData(optMemberData.get());
+				}
+				
 				if(waitingPerson.getId() != null) {				
 					waitingPersonService.delete(waitingPerson.getId());
 				}
@@ -437,6 +461,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		buttonAddPerson.addClassName("button-neutral");
 		
 		buttonAddPerson.addClickListener(e -> {
+			headerPersonInfo.setText("Person hinzufügen");
 			personInfoDialog.open();
 		});
 		
@@ -473,7 +498,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		grid.addComponentColumn(status -> {
 			VerticalLayout wrapper = new VerticalLayout();
 
-//			if (status.isOnboaring()) {
+			if (status.isOnboaring()) {
 				ProgressBar bar = new ProgressBar();
 				bar.setValue(0.5);
 
@@ -487,10 +512,10 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 				wrapper.add(progressBarLabel, bar);
 				return wrapper;
-//			} else {
-//				wrapper.add(new Span("-"));
-//				return wrapper;
-//			}
+			} else {
+				wrapper.add(new Span("-"));
+				return wrapper;
+			}
 		}).setWidth("75px").setAutoWidth(false);
 
 		grid.addComponentColumn(person -> {
@@ -501,6 +526,8 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 			menuBar.addItem("bearbeiten", event -> {
 				this.waitingPerson = person;
+				isNewPerson = false;
+				headerPersonInfo.setText("Infos zur Person");
 				initPersonInfoDialog();
 				personInfoDialog.open();
 			});
@@ -589,7 +616,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			emailService.sendHtmlMessageWithTemplate(to, subject, person.getFirstName(), EmailType.ONBOARING);
             Notification notification = Notification.show("E-Mail erfolgreich gesendet");
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-//            person.setOnboaring(true);
+            person.setOnboaring(true);
             waitingPersonService.update(person);
             refreshGrid();
         } catch (Exception e) {
