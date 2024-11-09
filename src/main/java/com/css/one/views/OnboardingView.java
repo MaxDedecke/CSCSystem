@@ -1,11 +1,16 @@
 package com.css.one.views;
 
+import com.css.one.data.SubscriptionModel;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -45,13 +50,21 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	private Checkbox confirmAddressBox;
 	private Checkbox confirmGeneralDataBox;
 	private Button buttonConfirmStepTwo = new Button("weiter zu Schritt 3");
+	
+	private Checkbox confirmExclusiveMemberShipBox = new Checkbox();
+	private Checkbox confirmDataUsageBox = new Checkbox();
+	
+	private	ComboBox<SubscriptionModel> subscBox = new ComboBox<>("Modelle");
+	private Span descriptionSubscription = new Span("testDescription");
 
 	private Tab tabStepTwo;
 	private Tab tabStepThree;
-	
+	private Tab tabStepFour;
+
 	VerticalLayout stepOneWrapper = new VerticalLayout();
 	VerticalLayout stepTwoWrapper = new VerticalLayout();
 	VerticalLayout stepThreeWrapper = new VerticalLayout();
+	VerticalLayout stepFourWrapper = new VerticalLayout();
 
 	public OnboardingView() {
 		addClassNames("onboaring-view", LumoUtility.Padding.NONE);
@@ -60,6 +73,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		createStepOneLayout();
 		createStepTwoLayout();
 		createStepThreeLayout();
+		createStepFourLayout();
 		
 		wizzard.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE ,LumoUtility.AlignItems.CENTER);
 		wizzard.setWidthFull();
@@ -71,32 +85,120 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		tabStepTwo.addClassName(LumoUtility.Width.AUTO);
 		tabStepThree = wizzard.add("Schritt 3", stepThreeWrapper);
 		tabStepThree.setEnabled(false);
-		
+		tabStepFour = wizzard.add("Schritt 4", stepFourWrapper);
+		tabStepFour.setEnabled(false);
+			
 		add(wizzard);
 	}
 	
-	private void createStepThreeLayout() {
-		stepThreeWrapper.addClassNames(LumoUtility.AlignItems.CENTER, "uebersicht-box", LumoUtility.Margin.NONE);
-		H1 stepThreeHeading = new H1("Schritt 3: Einwilligungen");
+	private void createStepFourLayout() {
+		stepFourWrapper.addClassNames(LumoUtility.AlignItems.CENTER);
+		stepFourWrapper.setMaxWidth(1000, Unit.PIXELS);
 		
+		H1 stepThreeHeading = new H1("Abo auswählen");
+		stepThreeHeading.addClassName("customheader");
+		
+		FormLayout dataLayout = new FormLayout();		
+		VerticalLayout buttonWrapper = new VerticalLayout();
+		
+		buttonWrapper.addClassNames(LumoUtility.AlignItems.END);	
+		
+		Button finishOnboarding = new Button("Onboarding abschließen");
+		finishOnboarding.setEnabled(false);
+		finishOnboarding.addClickListener(e -> {
+			if(!subscBox.isEmpty()) {
+				//End data onboarding here 
+			}
+		});
+		
+		finishOnboarding.addClassName("save-button");
+		buttonWrapper.add(finishOnboarding);
+		
+		dataLayout.add(subscBox, descriptionSubscription);
+		stepFourWrapper.add(dataLayout, buttonWrapper);
+	}
+
+	private void createStepThreeLayout() {
+		stepThreeWrapper.addClassNames(LumoUtility.AlignItems.CENTER);
+		stepThreeWrapper.setMaxWidth(1000, Unit.PIXELS);
+		
+		H1 stepThreeHeading = new H1("Einwilligungen");
+		stepThreeHeading.addClassName("customheader");
+				
 		FormLayout dataLayout = new FormLayout();
 		
-//		dataLayout.add(firstName, lastName, dateOfBirth, phone, email);
+		confirmExclusiveMemberShipBox.setLabel("Ich bestätige, dass ich nur in diesem Verein angemeldet bin.");
 		
-		Button buttonConfirmStepThree = new Button("bestätigen und abschließen");
+		confirmDataUsageBox.setLabel("Ich bestätige die Erlaubnis zur Verarbeitung meiner Daten.");
+		
+		dataLayout.add(confirmExclusiveMemberShipBox, createExclusiveMemberDetails(), confirmDataUsageBox, createDataUsageDetails());
+		
+		Button buttonConfirmStepThree = new Button("bestätigen & weiter");
+		buttonConfirmStepThree.setEnabled(false);
+		buttonConfirmStepThree.addClickListener(e -> {
+			if(validateInputStepThree()) {				
+				tabStepFour.setEnabled(true);
+				wizzard.setSelectedTab(tabStepFour);
+			}
+		});
 		buttonConfirmStepThree.addClassName("save-button");
 		VerticalLayout buttonWrapper = new VerticalLayout();
+		
+		confirmDataUsageBox.addValueChangeListener(e -> {
+			buttonConfirmStepThree.setEnabled(e.getValue());
+		});
 		
 		buttonWrapper.addClassNames(LumoUtility.AlignItems.END);
 		buttonWrapper.add(buttonConfirmStepThree);	
 		
 		stepThreeWrapper.add(stepThreeHeading, dataLayout, buttonWrapper);			
 	}
+	
+	private boolean validateInputStepThree() {
+		
+		if(confirmExclusiveMemberShipBox.getValue()) {
+			confirmExclusiveMemberShipBox.removeClassName("red");
+		} else {
+			confirmExclusiveMemberShipBox.addClassName("red");
+			return false;
+		}
+		
+		return true;
+	}
+
+	private Details createDataUsageDetails() {
+		Span titleDataUsage = new Span("Datenverarbeitung");
+		Span textDataUsage = new Span(
+				"Ich bin damit einverstanden, dass meine Daten von der Organisation \"Garden Regensburg e. V.\" zum Zweck der Vertragserfüllung im Rahmen der Mitgliedschaft hinterlegt, verarbeitet und genutzt werden. Ich bin darauf hingewiesen worden, dass die im Rahmen der vorstehend genannten Zwecke erhobenen personenbezogenen Daten unter Beachtung der EU-Datenschutzgrundverordnung, erhoben, verarbeitet, genutzt und übermittelt werden. Ich wurde über meine Rechte als Betroffener unterrichtet. Die Einverständniserklärung erfolgt auf freiwilliger Basis. Ich wurde darüber aufgeklärt, dass ich die Einverständniserklärung jederzeit durch schriftliche Mitteilung für die Zukunft widerrufen kann.");
+		
+		VerticalLayout contentWarpper = new VerticalLayout(titleDataUsage, textDataUsage);
+		contentWarpper.setSpacing(false);
+		contentWarpper.setPadding(false);
+
+		Details detailsDataUsage = new Details("Datenverarbeitung nach DSGVO", contentWarpper);
+		detailsDataUsage.setOpened(false);
+		return detailsDataUsage;
+	}
+	
+	private Details createExclusiveMemberDetails() {
+		Span name = new Span("Abschnitt 2 § 16 des Cannabisgesetzes");	
+		Span law = new Span("(3) Als Mitglied in einer Anbauvereinigung darf nur aufgenommen werden, wer gegenüber der Anbauvereinigung\r\n"
+				+ "schriftlich oder elektronisch versichert, dass er oder sie kein Mitglied in einer anderen Anbauvereinigung ist. Die\r\n"
+				+ "Selbstauskunft nach Satz 1 ist von der Anbauvereinigung drei Jahre aufzubewahren.");
+		
+		VerticalLayout content = new VerticalLayout(name, law);
+		content.setSpacing(false);
+		content.setPadding(false);
+
+		Details details = new Details("Mitgliegschaft nach dem CanG", content);
+		details.setOpened(false);
+		return details;
+	}
 
 	private void createStepOneLayout() {
 
-		stepOneWrapper.addClassNames(LumoUtility.AlignItems.CENTER, "onboarding-box", LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
-		stepOneWrapper.setWidthFull();
+		stepOneWrapper.addClassNames(LumoUtility.AlignItems.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		stepOneWrapper.setMaxWidth(1000, Unit.PIXELS);
 		H1 stepOneHeading = new H1("Angaben zu deiner Person");
 		stepOneHeading.addClassName("customheader");
 		
@@ -272,7 +374,8 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	}
 	
 	private void createStepTwoLayout() {
-		stepTwoWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.AlignItems.CENTER, "onboarding-box");
+		stepTwoWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.AlignItems.CENTER);
+		stepTwoWrapper.setMaxWidth(1000, Unit.PIXELS);
 		
 		H1 stepTwoHeading = new H1("Schritt 2: Angaben zu deinem Wohnort");
 		stepTwoHeading.addClassName("customheader");
