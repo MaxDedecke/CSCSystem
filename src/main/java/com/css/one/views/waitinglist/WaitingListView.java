@@ -1,5 +1,6 @@
 package com.css.one.views.waitinglist;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -9,11 +10,13 @@ import com.css.one.data.AssociationRole;
 import com.css.one.data.EmailType;
 import com.css.one.data.MemberData;
 import com.css.one.data.MemberSubscription;
+import com.css.one.data.OnboardingToken;
 import com.css.one.data.Person;
 import com.css.one.data.WaitingPerson;
 import com.css.one.services.EmailService;
 import com.css.one.services.MemberDataService;
 import com.css.one.services.MemberSubscriptionService;
+import com.css.one.services.OnboardingTokenService;
 import com.css.one.services.PersonService;
 import com.css.one.services.WaitingPersonService;
 import com.css.one.views.MainLayout;
@@ -83,15 +86,18 @@ public class WaitingListView extends FlexLayout {
 	private PersonService personService;
     private MemberSubscriptionService subscriptionService;
     private MemberDataService memberDataService;
-
+    private OnboardingTokenService onboardingTokenService;
+    
 	private int associationId;
 	private boolean isNewPerson = true;
 
-	public WaitingListView(WaitingPersonService waitingPersonService, PersonService personService, MemberSubscriptionService subscriptionService, MemberDataService memberDataService) {
+	public WaitingListView(WaitingPersonService waitingPersonService, PersonService personService, MemberSubscriptionService subscriptionService, MemberDataService memberDataService,
+			OnboardingTokenService onboardingTokenService) {
 		this.waitingPersonService = waitingPersonService;
 		this.personService = personService;
 		this.subscriptionService = subscriptionService;
 		this.memberDataService = memberDataService;
+		this.onboardingTokenService = onboardingTokenService;
 		
 		addClassNames("waitinglist-view");
 
@@ -608,12 +614,13 @@ private void createSingleSubscriptionForNewMember(Person member) {
 	private void sendOnboardingEmail(WaitingPerson person) {
 		
 		EmailService emailService = new EmailService();
-		
 		String to = person.getEmail();
 		String subject = "Onboarding gestartet - " + " Herzlich willkommen " + person.getFirstName() + " " + person.getLastName() + "!";
 		
 		try {
-			emailService.sendHtmlMessageWithTemplate(to, subject, person.getFirstName(), EmailType.ONBOARING);
+			String token = emailService.sendOnboardingEmail(to, subject, person.getFirstName(), EmailType.ONBOARING, onboardingTokenService.generateToken());			
+			saveToken(token, person);
+			
             Notification notification = Notification.show("E-Mail erfolgreich gesendet");
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             person.setOnboaring(true);
@@ -623,5 +630,13 @@ private void createSingleSubscriptionForNewMember(Person member) {
         	Notification notification = Notification.show("Fehler beim Senden der E-Mail: " + e.getMessage());
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
+	}
+
+	private void saveToken(String token, WaitingPerson person) {
+		OnboardingToken onboardingToken = new OnboardingToken();
+		onboardingToken.setToken(token);
+		onboardingToken.setWaintingPerson(person);
+		onboardingToken.setExpirationDate(Date.valueOf(LocalDate.now()));		
+		onboardingTokenService.update(onboardingToken);
 	}
 }

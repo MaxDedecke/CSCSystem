@@ -1,6 +1,15 @@
 package com.css.one.views;
 
+import java.util.UUID;
+
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.css.one.data.SubscriptionModel;
+import com.css.one.services.OnboardingDataService;
+import com.css.one.services.SubscriptionModelService;
+import com.css.one.services.WaitingPersonService;
+import com.css.one.views.login.LoginView;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -65,32 +74,54 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	VerticalLayout stepTwoWrapper = new VerticalLayout();
 	VerticalLayout stepThreeWrapper = new VerticalLayout();
 	VerticalLayout stepFourWrapper = new VerticalLayout();
-
-	public OnboardingView() {
+	
+	private final WaitingPersonService waitingPersonService;
+	private final OnboardingDataService onboardingDataService;
+	private final SubscriptionModelService subscriptionModelService;
+	
+	public OnboardingView(@RequestParam("token") String token, WaitingPersonService waitingPersonService, OnboardingDataService onboardingDataService, SubscriptionModelService subscriptionModelService) {
+		
 		addClassNames("onboaring-view", LumoUtility.Padding.NONE);
 		
-		setWidth("100%");
-		createStepOneLayout();
-		createStepTwoLayout();
-		createStepThreeLayout();
-		createStepFourLayout();
+		this.waitingPersonService = waitingPersonService;
+		this.onboardingDataService = onboardingDataService;
+		this.subscriptionModelService = subscriptionModelService;
 		
-		wizzard.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE ,LumoUtility.AlignItems.CENTER);
-		wizzard.setWidthFull();
-		wizzard.setHeightFull();
-		
-		wizzard.add("Schritt 1", stepOneWrapper);
-		tabStepTwo = wizzard.add("Schritt 2", stepTwoWrapper);
-		tabStepTwo.setEnabled(false);
-		tabStepTwo.addClassName(LumoUtility.Width.AUTO);
-		tabStepThree = wizzard.add("Schritt 3", stepThreeWrapper);
-		tabStepThree.setEnabled(false);
-		tabStepFour = wizzard.add("Schritt 4", stepFourWrapper);
-		tabStepFour.setEnabled(false);
+		if(!tokenIsValid(token)) {
+			UI.getCurrent().navigate(LoginView.class);
+		} else {
+			setWidth("100%");
+			createStepOneLayout();
+			createStepTwoLayout();
+			createStepThreeLayout();
+			createStepFourLayout();
 			
-		add(wizzard);
+			wizzard.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE ,LumoUtility.AlignItems.CENTER);
+			wizzard.setWidthFull();
+			wizzard.setHeightFull();
+			
+			wizzard.add("Schritt 1", stepOneWrapper);
+			tabStepTwo = wizzard.add("Schritt 2", stepTwoWrapper);
+			tabStepTwo.setEnabled(false);
+			tabStepTwo.addClassName(LumoUtility.Width.AUTO);
+			tabStepThree = wizzard.add("Schritt 3", stepThreeWrapper);
+			tabStepThree.setEnabled(false);
+			tabStepFour = wizzard.add("Schritt 4", stepFourWrapper);
+			tabStepFour.setEnabled(false);
+			
+			add(wizzard);
+		}
 	}
 	
+	private boolean tokenIsValid(String token) {
+
+		UUID stringUUID = UUID.fromString(token);
+		
+		//UUID service here
+		
+		return true;
+	}
+
 	private void createStepFourLayout() {
 		stepFourWrapper.addClassNames(LumoUtility.AlignItems.CENTER);
 		stepFourWrapper.setMaxWidth(1000, Unit.PIXELS);

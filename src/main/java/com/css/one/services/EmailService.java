@@ -38,6 +38,7 @@ public class EmailService {
 	String propertySmtpAuth;
 	String propertyStartTls;
 	String propertyCapabilitiesAfterAuth;
+
 	
 	public EmailService() {
 		
@@ -77,8 +78,8 @@ public class EmailService {
 		    htmlContent = htmlContent.replace("${memberName}", userName);
 		    
 		    if(type.equals(EmailType.ONBOARING)) {
-		    	htmlContent = htmlContent.replace("${onboardingLink}", "https://cl-os.code-green-systems.de/onboarding/?token=" + generateOnboardingToken());
-//		    	htmlContent = htmlContent.replace("${onboardingLink}", "http://localhost:8080/onboarding?token=" + generateOnboardingToken());
+//		    	htmlContent = htmlContent.replace("${onboardingLink}", "https://cl-os.code-green-systems.de/onboarding/?token=" + generateJwtToken(to));
+//		    	htmlContent = htmlContent.replace("${onboardingLink}", "http://localhost:8080/onboarding?token=" + generateToken(to));
 
 		            try (InputStream imageStream = ImageUtil.class.getClassLoader().getResourceAsStream("logoCodeGreen.png")) {
 		                if (imageStream == null) {
@@ -93,14 +94,40 @@ public class EmailService {
 			sendHtmlMessage(to, subject, htmlContent);
 		} else {
 			Notification show = Notification.show("Resource could not be loaded");
-			show.addThemeVariants(NotificationVariant.LUMO_ERROR);
-			
+			show.addThemeVariants(NotificationVariant.LUMO_ERROR);			
 		}
     }
+    
+    public String sendOnboardingEmail(String to, String subject, String userName, EmailType type, String token) throws MessagingException, IOException {
+        // HTML-Vorlage laden
+    	resourceLoader =  new DefaultResourceLoader();
+        Resource resource = resourceLoader.getResource(type.getHtml());
+        
+		if (resource.exists()) {
+			String htmlContent = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+		    htmlContent = htmlContent.replace("${memberName}", userName);
+		    
+		    if(type.equals(EmailType.ONBOARING)) {
+//		    	htmlContent = htmlContent.replace("${onboardingLink}", "https://cl-os.code-green-systems.de/onboarding/?token=" + generateJwtToken(to));
+		    	htmlContent = htmlContent.replace("${onboardingLink}", "http://localhost:8080/onboarding?token=" + token);
 
-    private String generateOnboardingToken() {
-		return "123456789101112";
-	}
+		            try (InputStream imageStream = ImageUtil.class.getClassLoader().getResourceAsStream("logoCodeGreen.png")) {
+		                if (imageStream == null) {
+		                    throw new IOException("Bild konnte nicht geladen werden: " + "logoCodeGreen");
+		                }
+		                byte[] imageBytes = imageStream.readAllBytes();
+		                htmlContent = htmlContent.replace("logoCodeGreen.png","data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes));
+		            }
+		   
+		    }
+			// E-Mail senden
+			sendHtmlMessage(to, subject, htmlContent);
+		} else {
+			Notification show = Notification.show("Resource could not be loaded");
+			show.addThemeVariants(NotificationVariant.LUMO_ERROR);			
+		}
+		return token;
+    }
 
 	public void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {
         MimeMessageHelper message = new MimeMessageHelper(mailSender.createMimeMessage(), "utf-8");
