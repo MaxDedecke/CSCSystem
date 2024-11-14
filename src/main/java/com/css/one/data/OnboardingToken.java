@@ -3,10 +3,13 @@ package com.css.one.data;
 import java.util.Date;
 
 import jakarta.annotation.Nullable;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class OnboardingToken {
@@ -18,9 +21,11 @@ public class OnboardingToken {
 	private String token;
 	
 	@Nullable
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 	private WaitingPerson waintingPerson;
 	
 	@Nullable
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private Person member;
 	
 	private Date expirationDate;

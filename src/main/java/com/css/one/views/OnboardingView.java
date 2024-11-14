@@ -1,14 +1,14 @@
 package com.css.one.views;
 
-import java.util.UUID;
+import java.util.Date;
+import java.util.Optional;
 
-import org.springframework.web.bind.annotation.RequestParam;
-
+import com.css.one.data.OnboardingToken;
 import com.css.one.data.SubscriptionModel;
 import com.css.one.services.OnboardingDataService;
+import com.css.one.services.OnboardingTokenService;
 import com.css.one.services.SubscriptionModelService;
 import com.css.one.services.WaitingPersonService;
-import com.css.one.views.login.LoginView;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
@@ -35,14 +35,16 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @PageTitle("Onboarding - Selbstauskunft")
-@Route(value = "onboarding/:token?", layout = MainLayout.class)
+@Route(value = "onboarding/:token", layout = MainLayout.class)
 @RouteAlias("onboarding")
 @AnonymousAllowed
-public class OnboardingView extends VerticalLayout implements BeforeEnterObserver {
+public class OnboardingView extends VerticalLayout implements BeforeEnterObserver{
 
 	private static final long serialVersionUID = 1862806183284315642L;
 	
 	private TabSheet wizzard = new TabSheet();
+	
+	private String token;
 
 	private TextField firstName;
 	private TextField lastName;
@@ -78,50 +80,43 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	private final WaitingPersonService waitingPersonService;
 	private final OnboardingDataService onboardingDataService;
 	private final SubscriptionModelService subscriptionModelService;
+	private final OnboardingTokenService onboardingTokenService;
 	
-	public OnboardingView(@RequestParam("token") String token, WaitingPersonService waitingPersonService, OnboardingDataService onboardingDataService, SubscriptionModelService subscriptionModelService) {
-		
+	public OnboardingView(WaitingPersonService waitingPersonService,
+			OnboardingDataService onboardingDataService,
+			SubscriptionModelService subscriptionModelService,
+			OnboardingTokenService onboardingTokenService) {
+
 		addClassNames("onboaring-view", LumoUtility.Padding.NONE);
 		
 		this.waitingPersonService = waitingPersonService;
 		this.onboardingDataService = onboardingDataService;
 		this.subscriptionModelService = subscriptionModelService;
+		this.onboardingTokenService = onboardingTokenService;
 		
-		if(!tokenIsValid(token)) {
-			UI.getCurrent().navigate(LoginView.class);
-		} else {
-			setWidth("100%");
-			createStepOneLayout();
-			createStepTwoLayout();
-			createStepThreeLayout();
-			createStepFourLayout();
-			
-			wizzard.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE ,LumoUtility.AlignItems.CENTER);
-			wizzard.setWidthFull();
-			wizzard.setHeightFull();
-			
-			wizzard.add("Schritt 1", stepOneWrapper);
-			tabStepTwo = wizzard.add("Schritt 2", stepTwoWrapper);
-			tabStepTwo.setEnabled(false);
-			tabStepTwo.addClassName(LumoUtility.Width.AUTO);
-			tabStepThree = wizzard.add("Schritt 3", stepThreeWrapper);
-			tabStepThree.setEnabled(false);
-			tabStepFour = wizzard.add("Schritt 4", stepFourWrapper);
-			tabStepFour.setEnabled(false);
-			
-			add(wizzard);
-		}
+		setWidth("100%");
+		createStepOneLayout();
+		createStepTwoLayout();
+		createStepThreeLayout();
+		createStepFourLayout();
+
+		wizzard.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE, LumoUtility.AlignItems.CENTER);
+		wizzard.setWidthFull();
+		wizzard.setHeightFull();
+
+		wizzard.add("Schritt 1", stepOneWrapper);
+		tabStepTwo = wizzard.add("Schritt 2", stepTwoWrapper);
+		tabStepTwo.setEnabled(false);
+		tabStepTwo.addClassName(LumoUtility.Width.AUTO);
+		tabStepThree = wizzard.add("Schritt 3", stepThreeWrapper);
+		tabStepThree.setEnabled(false);
+		tabStepFour = wizzard.add("Schritt 4", stepFourWrapper);
+		tabStepFour.setEnabled(false);
+
+		add(wizzard);
+
 	}
 	
-	private boolean tokenIsValid(String token) {
-
-		UUID stringUUID = UUID.fromString(token);
-		
-		//UUID service here
-		
-		return true;
-	}
-
 	private void createStepFourLayout() {
 		stepFourWrapper.addClassNames(LumoUtility.AlignItems.CENTER);
 		stepFourWrapper.setMaxWidth(1000, Unit.PIXELS);
@@ -451,15 +446,34 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 
 	@Override
 	public void beforeEnter(BeforeEnterEvent event) {
-		// get token
-		String token = event.getRouteParameters().get("token")
-//        		.orElse("Kein token vorhanden!");
-				.orElse("");
+		//takes token + URL refresh or redirect to login	
+		token = event.getRouteParameters().get("token").orElse("");
 
-		if (!token.equals("")) {
-			Notification notification = Notification.show(token);
-			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        if (token.isBlank()) {
+            // No Token
+            event.forwardTo("login");
+            Notification.show("NO TOKEN");
+        } else {
+        	//refresh URL
+            getElement().executeJs("window.history.replaceState({}, '', window.location.pathname);");
+            validateToken();
+        }
+	}
+
+	private void validateToken() {
+		Optional<OnboardingToken> optionalToken = onboardingTokenService.findByToken(token);
+		
+		if(optionalToken.isPresent()) {
+			Date expirationDate = optionalToken.get().getExpirationDate();
+			if(new Date().after(expirationDate)) {
+				UI.getCurrent().navigate("login");
+				Notification show = Notification.show("Onboarding Link abgelaufen. Kontaktiere deinen Verein");
+				show.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			}
+		} else {			
+			UI.getCurrent().navigate("login");
+			Notification show = Notification.show("Onboarding Link abgelaufen. Kontaktiere deinen Verein");
+			show.addThemeVariants(NotificationVariant.LUMO_ERROR);
 		}
-
 	}
 }

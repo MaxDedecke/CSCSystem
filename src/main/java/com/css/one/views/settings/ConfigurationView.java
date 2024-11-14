@@ -85,7 +85,10 @@ public class ConfigurationView extends VerticalLayout {
 		LOCATION, WORKINGCATEGORY;
 	}
 	
-	public ConfigurationView(LocationService locationService, WorkingUnitCategoryService workingUnitCategoryService, BlossomService strainService, SeedService seedService, CuttingService cuttingService,
+	public ConfigurationView(LocationService locationService, WorkingUnitCategoryService workingUnitCategoryService, 
+			BlossomService strainService, 
+			SeedService seedService, 
+			CuttingService cuttingService,
 			WorkingUnitService workingUnitService) {
 		
 		this.locationService = locationService;
@@ -101,16 +104,70 @@ public class ConfigurationView extends VerticalLayout {
 		
 		tabSheet.setSizeFull();
 		tabSheet.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		tabSheet.add("Onboarding", createOnboardingTab());
+		tabSheet.add("Mitgliedsmodelle", createMembershipTab());
 		tabSheet.add("Standorte", createLocationsTab());
 		tabSheet.add("Arbeitsplanung", createWorkingEnvTab());
 		tabSheet.add("Finanzen", createFinancesTab());
 		tabSheet.add("Autorisierung", createAuthorizationTab());
 		tabSheet.add("Import", createImportTab());
 		tabSheet.add("Export", createExportTab());
+		tabSheet.add("Allgemein", createCommonSettingsTab());
 		
 		add(tabSheet);
     }
+	
+	private Component createMembershipTab() {
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.setHeight("100%");
+		
+		mainLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		
+		
+		return mainLayout;
+	}
 
+	private Component createCommonSettingsTab() {
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.setHeight("100%");
+		
+		mainLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		H1 help = new H1("Work in progress.");
+
+		StreamResource imageResource = new StreamResource("potteriepng.png",
+				() -> getClass().getResourceAsStream("/potteriepng.png"));
+
+		Avatar avatar = new Avatar("logo_club");
+		avatar.setImageResource(imageResource);
+		avatar.setHeight(250, Unit.PIXELS);
+	    avatar.setWidth(250, Unit.PIXELS);
+		
+		mainLayout.add(avatar, help);
+		return mainLayout;
+	}
+
+	private Component createOnboardingTab() {
+		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.setHeight("100%");
+		
+		mainLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		H2 headerOnboarding = new H2("Allgemeine Einstellungen");
+
+//		StreamResource imageResource = new StreamResource("potteriepng.png",
+//				() -> getClass().getResourceAsStream("/potteriepng.png"));
+//
+//		Avatar avatar = new Avatar("logo_club");
+//		avatar.setImageResource(imageResource);
+//		avatar.setHeight(250, Unit.PIXELS);
+//	    avatar.setWidth(250, Unit.PIXELS);
+//		
+//		mainLayout.add(avatar, help);
+		
+		mainLayout.add(headerOnboarding);
+		return mainLayout;
+	}
+	
+	
 	private Component createExportTab() {
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setHeight("100%");

@@ -1,7 +1,8 @@
 package com.css.one.views.waitinglist;
 
-import java.sql.Date;
 import java.time.LocalDate;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Optional;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
@@ -540,6 +541,9 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 			menuBar.addItem("Person löschen", event -> {
 				waitingPersonService.delete(person.getId());
+				Notification notification = Notification.show("Person von der Warteliste gelöscht");
+				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+				
 				refreshGrid();
 			});
 
@@ -636,7 +640,16 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		OnboardingToken onboardingToken = new OnboardingToken();
 		onboardingToken.setToken(token);
 		onboardingToken.setWaintingPerson(person);
-		onboardingToken.setExpirationDate(Date.valueOf(LocalDate.now()));		
+		onboardingToken.setExpirationDate(createExpirationDate());		
 		onboardingTokenService.update(onboardingToken);
+	}
+
+	private Date createExpirationDate() {
+		Calendar calendar = Calendar.getInstance();
+
+		//TODO konfigurierbar machen
+		calendar.add(Calendar.DAY_OF_YEAR, 14);
+
+		return calendar.getTime();
 	}
 }
