@@ -29,8 +29,19 @@ public class SubscriptionModel {
 	@Nullable
 	@OneToMany
     List<WaitingPerson> waitingPersonOfModel;
+	
+	@Nullable
+	private double amountSale;
     
-    public Long getId() {
+    public double getAmountSale() {
+		return amountSale;
+	}
+
+	public void setAmountSale(double amountSale) {
+		this.amountSale = amountSale;
+	}
+
+	public Long getId() {
 		return id;
 	}
 

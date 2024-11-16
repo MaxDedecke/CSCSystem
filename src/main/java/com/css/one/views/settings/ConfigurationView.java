@@ -8,12 +8,14 @@ import org.vaadin.lineawesome.LineAwesomeIcon;
 import com.css.one.data.Cutting;
 import com.css.one.data.Location;
 import com.css.one.data.Seed;
+import com.css.one.data.SubscriptionModel;
 import com.css.one.data.Blossom;
 import com.css.one.data.WorkingUnit;
 import com.css.one.data.WorkingUnitCategory;
 import com.css.one.services.CuttingService;
 import com.css.one.services.LocationService;
 import com.css.one.services.SeedService;
+import com.css.one.services.SubscriptionModelService;
 import com.css.one.services.BlossomService;
 import com.css.one.services.WorkingUnitCategoryService;
 import com.css.one.services.WorkingUnitService;
@@ -54,6 +56,7 @@ public class ConfigurationView extends VerticalLayout {
 	private SeedService seedService;
 	private CuttingService cuttingService;
 	private WorkingUnitService workingUnitService;
+	private SubscriptionModelService subscriptionModelService;
 	
 	private WorkingUnitCategoryService workingUnitCategoryService;
 	private int associationId;
@@ -62,6 +65,7 @@ public class ConfigurationView extends VerticalLayout {
 	
 	private Dialog addLocationDialog;
 	private Dialog addCategoryDialog;
+	private Dialog addPricingModelDialog;
 	
 	private TextField nameLocationField = new TextField("Name");
 	private TextField streetLocationField = new TextField("Straße");
@@ -85,11 +89,13 @@ public class ConfigurationView extends VerticalLayout {
 		LOCATION, WORKINGCATEGORY;
 	}
 	
-	public ConfigurationView(LocationService locationService, WorkingUnitCategoryService workingUnitCategoryService, 
+	public ConfigurationView(LocationService locationService,
+			WorkingUnitCategoryService workingUnitCategoryService, 
 			BlossomService strainService, 
 			SeedService seedService, 
 			CuttingService cuttingService,
-			WorkingUnitService workingUnitService) {
+			WorkingUnitService workingUnitService,
+			SubscriptionModelService subscriptionModelService) {
 		
 		this.locationService = locationService;
 		this.workingUnitCategoryService = workingUnitCategoryService;
@@ -97,6 +103,7 @@ public class ConfigurationView extends VerticalLayout {
 		this.seedService = seedService;
 		this.cuttingService = cuttingService;
 		this.workingUnitService = workingUnitService;
+		this.subscriptionModelService = subscriptionModelService;
 		
 		addClassNames("configuration-view", LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		
@@ -105,7 +112,7 @@ public class ConfigurationView extends VerticalLayout {
 		tabSheet.setSizeFull();
 		tabSheet.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		tabSheet.add("Onboarding", createOnboardingTab());
-		tabSheet.add("Mitgliedsmodelle", createMembershipTab());
+		tabSheet.add("Tarife", createMembershipTab());
 		tabSheet.add("Standorte", createLocationsTab());
 		tabSheet.add("Arbeitsplanung", createWorkingEnvTab());
 		tabSheet.add("Finanzen", createFinancesTab());
@@ -114,17 +121,56 @@ public class ConfigurationView extends VerticalLayout {
 		tabSheet.add("Export", createExportTab());
 		tabSheet.add("Allgemein", createCommonSettingsTab());
 		
+		addCategoryDialog();
+		addPricingModelDialog();
+		
 		add(tabSheet);
     }
 	
+	private void addPricingModelDialog() {
+		// TODO Auto-generated method stub
+		addPricingModelDialog = new Dialog();
+		
+	}
+
 	private Component createMembershipTab() {
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setHeight("100%");
+		mainLayout.setWidthFull();
 		
-		mainLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		mainLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE, LumoUtility.AlignItems.CENTER);
+		Button addPricingModelButton = new Button();
+		addPricingModelButton.addClassName("save-button");
 		
+		addPricingModelButton.addClickListener(e -> {
+			addPricingModelDialog.open();
+		});
+		
+		List<SubscriptionModel> models = subscriptionModelService.findAllByAssociation(associationId);
+		
+		if(models.isEmpty()) {
+			addPricingModelButton.setText("Erstelle deinen ersten Tarif");
+			mainLayout.add(addPricingModelButton);
+		} else {
+			addPricingModelButton.setText("Tarif hinzufügen");
+			createMembershipTabContent(mainLayout, models);
+		}
 		
 		return mainLayout;
+	}
+
+	private void createMembershipTabContent(VerticalLayout mainLayout, List<SubscriptionModel> models) {
+ 
+		models.forEach(model -> {
+			VerticalLayout modelWrapper = new VerticalLayout();
+			modelWrapper.setMaxWidth(750, Unit.PIXELS);
+			modelWrapper.addClassNames("bestand-box");
+			
+			H2 h2 = new H2(model.getName());
+			
+			modelWrapper.add(h2);
+			mainLayout.add(modelWrapper);
+		});
 	}
 
 	private Component createCommonSettingsTab() {
@@ -429,7 +475,6 @@ public class ConfigurationView extends VerticalLayout {
 	private Component createWorkingEnvTab() {
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setHeight("100%");
-		addCategoryDialog();
 		
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		Button addCategoryButton = new Button("Kategorie hinzufügen");
