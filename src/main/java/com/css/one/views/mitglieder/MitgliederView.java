@@ -54,7 +54,7 @@ import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Mitglieder")
 @Route(value = "mitglieder-bereich/", layout = MainLayout.class)
-@RouteAlias(value = "mitglieder-bereich/", layout = MainLayout.class)
+@RouteAlias(value = "mitglieder-bereich", layout = MainLayout.class)
 @PermitAll
 @Uses(Icon.class)
 public class MitgliederView extends Div {

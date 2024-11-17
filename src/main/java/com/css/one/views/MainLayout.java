@@ -111,7 +111,7 @@ public class MainLayout extends AppLayout {
         Hr hr2 = new Hr();
         hr2.addClassNames(LumoUtility.Margin.SMALL);
         
-        addToDrawer(header, scroller,createFooter(), versionLayout);
+        addToDrawer(header, scroller, createFooter(), versionLayout);
     }
 
     private SideNav createNavigation() {

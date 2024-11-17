@@ -32,6 +32,9 @@ public class SubscriptionModel {
 	
 	@Nullable
 	private double amountSale;
+	
+	private boolean isOnline;
+	private int maxAllowedMembers;
     
     public double getAmountSale() {
 		return amountSale;
@@ -95,5 +98,21 @@ public class SubscriptionModel {
 
 	public void setAssociationId(int associationid) {
 		this.associationId = associationid;
+	}
+
+	public boolean isOnline() {
+		return isOnline;
+	}
+
+	public void setOnline(boolean isOnline) {
+		this.isOnline = isOnline;
+	}
+
+	public int getMaxAllowedMembers() {
+		return maxAllowedMembers;
+	}
+
+	public void setMaxAllowedMembers(int maxAllowedMembers) {
+		this.maxAllowedMembers = maxAllowedMembers;
 	}
 }

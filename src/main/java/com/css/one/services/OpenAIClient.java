@@ -10,6 +10,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -25,11 +26,16 @@ public class OpenAIClient {
                  .build();
 		
 		JSONObject requestBody = new JSONObject();
-        requestBody.put("model", "gpt-4"); // Set the model you want to use
-        requestBody.put("messages", new JSONObject[] {
-            new JSONObject().put("role", "system").put("content", "Du bist ein helfender Assistent einer Verwaltungssoftware. Antworte ausschließlich auf deutsch!"),
-            new JSONObject().put("role", "user").put("content", prompt)
-        });
+        try {
+        	requestBody.put("model", "gpt-4"); // Set the model you want to use
+			requestBody.put("messages", new JSONObject[] {
+			    new JSONObject().put("role", "system").put("content", "Du bist ein helfender Assistent einer Verwaltungssoftware. Antworte ausschließlich auf deutsch!"),
+			    new JSONObject().put("role", "user").put("content", prompt)
+			});
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
         HttpRequest request = HttpRequest.newBuilder()
                                          .uri(URI.create(API_URL))

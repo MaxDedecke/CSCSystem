@@ -24,17 +24,25 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.shared.Tooltip;
 import com.vaadin.flow.component.tabs.TabSheet;
+import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -74,6 +82,15 @@ public class ConfigurationView extends VerticalLayout {
 	private TextField cityLocationField = new TextField("Stadt");
 	private TextField noteLocationField = new TextField("Notiz");
 
+	private TextField nameOfPlan = new TextField("Titel");
+	private NumberField priceOfPlan = new NumberField("Preis pro Monat");
+	private TextArea descriptionOfModel = new TextArea("Beschreibung");
+	private Checkbox activeBox = new Checkbox("aktiv");
+	private NumberField amountOfMembers = new NumberField("Maximale Anzahl Mitglieder");
+
+	private Span amountPerMonth = new Span();
+	private Span title = new Span();
+	private Span description = new Span();	
 	private TextField categoryNameField = new TextField("Name");
 	
 	private Grid<Location> locationsGrid = new Grid<Location>();
@@ -84,6 +101,7 @@ public class ConfigurationView extends VerticalLayout {
 	
 	private Location selectedLocation;
 	private WorkingUnitCategory selectedCategory;
+	private SubscriptionModel subscriptionModel;
 	
 	public enum ViewStatus {
 		LOCATION, WORKINGCATEGORY;
@@ -128,9 +146,191 @@ public class ConfigurationView extends VerticalLayout {
     }
 	
 	private void addPricingModelDialog() {
-		// TODO Auto-generated method stub
 		addPricingModelDialog = new Dialog();
+		VerticalLayout wrapper = new VerticalLayout();
+		HorizontalLayout twoSidesLayout = new HorizontalLayout();
 		
+		twoSidesLayout.add(createLeftSide(), createRightSide());
+		wrapper.add(twoSidesLayout);
+		
+		Button cancelButton = new Button("Abbrechen");
+		cancelButton.addClassName("cancel-button");
+		cancelButton.addClickListener(e -> {
+			clearPricingModelDialog();
+			addPricingModelDialog.close();
+		});
+		
+		Button saveButton = new Button("Speichern");
+		saveButton.addClassName("save-button");
+		saveButton.addClickListener(e -> {
+			if(validateData()) {
+
+				addPricingModelDialog.close();
+				Notification show = Notification.show("Tarif erfolgreich erstellt");
+				show.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			}
+		});
+		
+		addPricingModelDialog.add(wrapper);
+		addPricingModelDialog.getFooter().add(cancelButton, saveButton);
+		
+		addPricingModelDialog.addDialogCloseActionListener(e -> {
+			addPricingModelDialog.close();
+			clearPricingModelDialog();
+		});
+	}
+
+	private boolean validateData() {
+		
+		if(nameOfPlan.getValue().isBlank()) {
+			nameOfPlan.setInvalid(true);
+			nameOfPlan.setHelperText("Das Angebot muss einen Namen haben");
+			nameOfPlan.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-error-color-10pct");
+			return false;
+		} else {
+			nameOfPlan.setInvalid(false);
+			nameOfPlan.setHelperText("");
+			nameOfPlan.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-contrast-10pct");	
+		}
+		
+		if(priceOfPlan.getValue() == null || priceOfPlan.getValue() == 0.0) {
+			priceOfPlan.setInvalid(true);
+			priceOfPlan.setHelperText("");
+			priceOfPlan.addClassName("invalid-number-field");
+			return false;
+		} else {
+			priceOfPlan.setInvalid(false);
+			priceOfPlan.setHelperText("");
+			priceOfPlan.removeClassName("invalid-number-field");
+			priceOfPlan.addClassName("valid-number-field");
+			priceOfPlan.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-contrast-10pct");		
+		}
+		
+		if(descriptionOfModel.getValue().isBlank()) {
+			descriptionOfModel.setInvalid(true);
+			return false;
+		} else {
+			descriptionOfModel.setInvalid(false);
+			descriptionOfModel.setHelperText("");
+			descriptionOfModel.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-contrast-10pct");				
+		}
+		
+		if(amountOfMembers.getValue() == null) {
+			amountOfMembers.setHelperText("Es muss feststehen, für wieviele Mitlglieder das Angebut buchbar ist");
+			amountOfMembers.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-error-color-10pct");			
+			return false;
+		} else {
+			amountOfMembers.setInvalid(false);
+			amountOfMembers.setHelperText("");
+			amountOfMembers.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-contrast-10pct");				
+		}		
+		
+		return true;
+	}
+
+	private void clearPricingModelDialog() {
+		this.amountOfMembers.setValue(amountOfMembers.getEmptyValue());
+		this.priceOfPlan.setValue(priceOfPlan.getEmptyValue());
+		this.descriptionOfModel.setValue(descriptionOfModel.getEmptyValue());
+		this.activeBox.setValue(false);
+		this.nameOfPlan.setValue(nameOfPlan.getEmptyValue());
+		
+		this.amountPerMonth.setText("100€");
+		this.title.setText("Mustertarif");
+		this.description.setText("They can’t be focused or display tooltips. They’re invisible to screen readers, and their values cannot be selected and copied.\r\n"
+				+ "\r\n"
+				+ "Disabled fields can be useful in situations where they can become enabled based on some user action. Consider hiding fields entirely if there’s nothing the user can do to make them editable.");
+		
+	}
+
+	private Component createRightSide() {
+		VerticalLayout wrapper = new VerticalLayout();
+		
+		VerticalLayout card = new VerticalLayout();
+		card.setMinHeight(500, Unit.PIXELS);
+		card.setMinWidth(500, Unit.PIXELS);
+		card.setMaxWidth(550, Unit.PIXELS);
+		card.addClassNames("bestand-box");
+		
+		VerticalLayout priceWrapper = new VerticalLayout();
+		priceWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		priceWrapper.setWidthFull();
+		amountPerMonth.setText("100€");
+		amountPerMonth.addClassNames("price-membership");
+		
+		Span perMonth = new Span("/pro Monat");
+		perMonth.addClassNames("desc-membership");
+		priceWrapper.add(amountPerMonth, perMonth);
+		
+		VerticalLayout titleWrapper = new VerticalLayout();
+		titleWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		title.setText("Mustertarif");
+		title.addClassNames("title-membership");
+		titleWrapper.add(title);
+		
+		VerticalLayout descWrapper = new VerticalLayout();
+		descWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		description.setText("They can’t be focused or display tooltips. They’re invisible to screen readers, and their values cannot be selected and copied.\r\n"
+				+ "\r\n"
+				+ "Disabled fields can be useful in situations where they can become enabled based on some user action. Consider hiding fields entirely if there’s nothing the user can do to make them editable.");
+		
+		description.addClassNames("desc-membership");
+		descWrapper.add(description);
+		
+		card.add(priceWrapper, titleWrapper, descWrapper);
+		
+		VerticalLayout iconWrapper = new VerticalLayout();
+		iconWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		iconWrapper.setWidthFull();
+		
+		SvgIcon svgIcon = LineAwesomeIcon.INFO_CIRCLE_SOLID.create();
+		Tooltip.forComponent(svgIcon).withText("Mehrere Angebote werden immer von links nach rechts aufgereit");
+		iconWrapper.add(svgIcon);
+		
+		wrapper.add(card, iconWrapper);
+		return wrapper;
+	}
+
+	private Component createLeftSide() {
+		VerticalLayout wrapper = new VerticalLayout();
+		H2 h2 = new H2("Tarif erstellen");
+		h2.addClassName("customheader");
+		
+		FormLayout formLayout = new FormLayout();
+		formLayout.setMinHeight(500, Unit.PIXELS);
+		formLayout.setMinWidth(400, Unit.PIXELS);
+		formLayout.setMaxWidth(500, Unit.PIXELS);
+		
+		nameOfPlan.addValueChangeListener(e -> {
+			title.setText(e.getValue());
+		});
+		
+		priceOfPlan.addValueChangeListener(e -> {
+			if (e.getValue() != null) {
+				String value = e.getValue().toString().replace(".", ",");
+				if(value.endsWith(",0")) {
+					value = value.replace(",0", "");
+				}
+				amountPerMonth.setText(value + "€");
+			}
+		});
+		Div euroSuffix = new Div();
+		euroSuffix.setText("€");
+		priceOfPlan.setSuffixComponent(euroSuffix);
+
+		descriptionOfModel.setMinHeight(200, Unit.PIXELS);
+		String charLimit = "800";
+		descriptionOfModel.setHelperText("0" + "/" + charLimit);
+		descriptionOfModel.addValueChangeListener(e -> {
+			description.setText(e.getValue().toString());
+			e.getSource().setHelperText(e.getValue().length() + "/" + charLimit);
+		});
+		
+		activeBox.addClassNames(LumoUtility.Margin.Top.LARGE);
+				
+		formLayout.add(nameOfPlan, priceOfPlan, descriptionOfModel, new Hr(), amountOfMembers, activeBox);
+		wrapper.add(h2, formLayout);
+		return wrapper;
 	}
 
 	private Component createMembershipTab() {

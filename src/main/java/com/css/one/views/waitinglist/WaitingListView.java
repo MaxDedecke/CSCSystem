@@ -51,8 +51,8 @@ import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Wartebereich")
 @PermitAll
-@Route(value = "waitingroom/", layout = MainLayout.class)
-@RouteAlias(value = "waitingroom/", layout = MainLayout.class)
+@Route(value = "wartebereich/", layout = MainLayout.class)
+@RouteAlias(value = "wartebereich", layout = MainLayout.class)
 
 public class WaitingListView extends FlexLayout {
 
