@@ -5,18 +5,18 @@ import java.util.Optional;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
+import com.css.one.data.Blossom;
 import com.css.one.data.Cutting;
 import com.css.one.data.Location;
 import com.css.one.data.Seed;
 import com.css.one.data.SubscriptionModel;
-import com.css.one.data.Blossom;
 import com.css.one.data.WorkingUnit;
 import com.css.one.data.WorkingUnitCategory;
+import com.css.one.services.BlossomService;
 import com.css.one.services.CuttingService;
 import com.css.one.services.LocationService;
 import com.css.one.services.SeedService;
 import com.css.one.services.SubscriptionModelService;
-import com.css.one.services.BlossomService;
 import com.css.one.services.WorkingUnitCategoryService;
 import com.css.one.services.WorkingUnitService;
 import com.css.one.views.MainLayout;
@@ -87,10 +87,14 @@ public class ConfigurationView extends VerticalLayout {
 	private TextArea descriptionOfModel = new TextArea("Beschreibung");
 	private Checkbox activeBox = new Checkbox("aktiv");
 	private NumberField amountOfMembers = new NumberField("Maximale Anzahl Mitglieder");
+	private Grid<SubscriptionModel> subscriptionModelGrid = new Grid<SubscriptionModel>();
 
 	private Span amountPerMonth = new Span();
 	private Span title = new Span();
-	private Span description = new Span();	
+	private Span description = new Span();
+	private Span amountPerMonthPreview = new Span();
+	private Span titlePreview = new Span();
+	private Span descriptionPreview = new Span();	
 	private TextField categoryNameField = new TextField("Name");
 	
 	private Grid<Location> locationsGrid = new Grid<Location>();
@@ -98,7 +102,8 @@ public class ConfigurationView extends VerticalLayout {
 
 	private Button saveLocationButton = new Button("erfassen");
 	private Button saveCategoryButton = new Button("hinzufügen");
-	
+	private Button addPricingModelButton = new Button();
+
 	private Location selectedLocation;
 	private WorkingUnitCategory selectedCategory;
 	private SubscriptionModel subscriptionModel;
@@ -164,10 +169,8 @@ public class ConfigurationView extends VerticalLayout {
 		saveButton.addClassName("save-button");
 		saveButton.addClickListener(e -> {
 			if(validateData()) {
-
+				saveSubscriptionModel();
 				addPricingModelDialog.close();
-				Notification show = Notification.show("Tarif erfolgreich erstellt");
-				show.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 			}
 		});
 		
@@ -178,6 +181,35 @@ public class ConfigurationView extends VerticalLayout {
 			addPricingModelDialog.close();
 			clearPricingModelDialog();
 		});
+	}
+
+	private void saveSubscriptionModel() {
+		boolean isNew = this.subscriptionModel == null;
+		
+		if(isNew) {
+			this.subscriptionModel = new SubscriptionModel();
+		} 
+		
+		//set data
+		this.subscriptionModel.setAmount(this.priceOfPlan.getValue());
+		this.subscriptionModel.setAssociationId(associationId);
+		this.subscriptionModel.setDescription(descriptionOfModel.getValue());
+		this.subscriptionModel.setMaxAllowedMembers(amountOfMembers.getValue().intValue());
+		this.subscriptionModel.setName(nameOfPlan.getValue());
+		this.subscriptionModel.setOnline(activeBox.getValue());
+		
+		//save to database
+		subscriptionModelService.update(this.subscriptionModel);
+		
+		if(isNew) {			
+			Notification show = Notification.show("Tarif erfolgreich erstellt");
+			show.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+		} else {
+			Notification show = Notification.show("Tarif erfolgreich geupdated");
+			show.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+		}
+		
+		this.subscriptionModel = null;
 	}
 
 	private boolean validateData() {
@@ -195,7 +227,7 @@ public class ConfigurationView extends VerticalLayout {
 		
 		if(priceOfPlan.getValue() == null || priceOfPlan.getValue() == 0.0) {
 			priceOfPlan.setInvalid(true);
-			priceOfPlan.setHelperText("");
+			priceOfPlan.setHelperText("Das Angebot muss einen Preis haben");
 			priceOfPlan.addClassName("invalid-number-field");
 			return false;
 		} else {
@@ -208,6 +240,8 @@ public class ConfigurationView extends VerticalLayout {
 		
 		if(descriptionOfModel.getValue().isBlank()) {
 			descriptionOfModel.setInvalid(true);
+			descriptionOfModel.setHelperText("Das Angebot muss eine Beschreibung haben");
+			descriptionOfModel.addClassName("invalid-number-field");	
 			return false;
 		} else {
 			descriptionOfModel.setInvalid(false);
@@ -216,12 +250,15 @@ public class ConfigurationView extends VerticalLayout {
 		}
 		
 		if(amountOfMembers.getValue() == null) {
+			amountOfMembers.setInvalid(true);
 			amountOfMembers.setHelperText("Es muss feststehen, für wieviele Mitlglieder das Angebut buchbar ist");
-			amountOfMembers.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-error-color-10pct");			
+			amountOfMembers.addClassName("invalid-number-field");
 			return false;
 		} else {
 			amountOfMembers.setInvalid(false);
 			amountOfMembers.setHelperText("");
+			amountOfMembers.removeClassName("invalid-number-field");
+			amountOfMembers.addClassName("valid-number-field");
 			amountOfMembers.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-contrast-10pct");				
 		}		
 		
@@ -239,8 +276,7 @@ public class ConfigurationView extends VerticalLayout {
 		this.title.setText("Mustertarif");
 		this.description.setText("They can’t be focused or display tooltips. They’re invisible to screen readers, and their values cannot be selected and copied.\r\n"
 				+ "\r\n"
-				+ "Disabled fields can be useful in situations where they can become enabled based on some user action. Consider hiding fields entirely if there’s nothing the user can do to make them editable.");
-		
+				+ "Disabled fields can be useful in situations where they can become enabled based on some user action. Consider hiding fields entirely if there’s nothing the user can do to make them editable.");		
 	}
 
 	private Component createRightSide() {
@@ -259,7 +295,7 @@ public class ConfigurationView extends VerticalLayout {
 		amountPerMonth.addClassNames("price-membership");
 		
 		Span perMonth = new Span("/pro Monat");
-		perMonth.addClassNames("desc-membership");
+		perMonth.addClassNames("desc-membership", LumoUtility.Margin.Top.LARGE);
 		priceWrapper.add(amountPerMonth, perMonth);
 		
 		VerticalLayout titleWrapper = new VerticalLayout();
@@ -339,10 +375,10 @@ public class ConfigurationView extends VerticalLayout {
 		mainLayout.setWidthFull();
 		
 		mainLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE, LumoUtility.AlignItems.CENTER);
-		Button addPricingModelButton = new Button();
 		addPricingModelButton.addClassName("save-button");
 		
 		addPricingModelButton.addClickListener(e -> {
+			this.subscriptionModel = null;
 			addPricingModelDialog.open();
 		});
 		
@@ -360,17 +396,148 @@ public class ConfigurationView extends VerticalLayout {
 	}
 
 	private void createMembershipTabContent(VerticalLayout mainLayout, List<SubscriptionModel> models) {
- 
-		models.forEach(model -> {
-			VerticalLayout modelWrapper = new VerticalLayout();
-			modelWrapper.setMaxWidth(750, Unit.PIXELS);
-			modelWrapper.addClassNames("bestand-box");
+		
+		HorizontalLayout twoSidesLayout = new HorizontalLayout();
+		twoSidesLayout.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		twoSidesLayout.setWidthFull();
+		twoSidesLayout.setHeightFull();
+		
+		twoSidesLayout.add(createModelListComponent(models), createModelCardComponent());
+		
+		refreshModelGrid();
+		
+		subscriptionModelGrid.select(models.iterator().next());
+		mainLayout.add(twoSidesLayout);
+	}
+
+	private void refreshModelGrid() {
+		subscriptionModelGrid.setItems(subscriptionModelService.findAllByAssociation(associationId));
+	}
+
+	private Component createModelCardComponent() {
+		VerticalLayout wrapper = new VerticalLayout();
+		wrapper.setWidthFull();
+		wrapper.setHeightFull();
+		wrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		
+		VerticalLayout card = new VerticalLayout();
+		card.setMinHeight(500, Unit.PIXELS);
+		card.setMinWidth(500, Unit.PIXELS);
+		card.setMaxWidth(550, Unit.PIXELS);
+		card.addClassNames("bestand-box");
+		
+		VerticalLayout priceWrapper = new VerticalLayout();
+		priceWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		priceWrapper.setWidthFull();
+		amountPerMonthPreview.setText("100€");
+		amountPerMonthPreview.addClassNames("price-membership");
+		
+		Span perMonth = new Span("/pro Monat");
+		perMonth.addClassNames("desc-membership", LumoUtility.Margin.Top.XLARGE);
+		priceWrapper.add(amountPerMonthPreview, perMonth);
+		
+		VerticalLayout titleWrapper = new VerticalLayout();
+		titleWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		titlePreview.setText("Mustertarif");
+		titlePreview.addClassNames("title-membership");
+		titleWrapper.add(titlePreview);
+		
+		VerticalLayout descWrapper = new VerticalLayout();
+		descWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		descriptionPreview.setText("They can’t be focused or display tooltips. They’re invisible to screen readers, and their values cannot be selected and copied.\r\n"
+				+ "\r\n"
+				+ "Disabled fields can be useful in situations where they can become enabled based on some user action. Consider hiding fields entirely if there’s nothing the user can do to make them editable.");
+		
+		descriptionPreview.addClassNames("desc-membership");
+		descWrapper.add(descriptionPreview);
+		
+		card.add(priceWrapper, titleWrapper, descWrapper);
+		
+		wrapper.add(card);
+		
+		return wrapper;
+	}
+
+	private Component createModelListComponent(List<SubscriptionModel> models) {
+		VerticalLayout wrapper = new VerticalLayout();
+		wrapper.setMaxWidth(400, Unit.PIXELS);
+		
+		subscriptionModelGrid.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.Top.NONE, "custom-scrollbar");
+		subscriptionModelGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+
+		subscriptionModelGrid.addColumn(e -> e.getName()).setAutoWidth(true);
+		subscriptionModelGrid.addColumn(e -> e.isOnline() ? "aktiv" : "nicht aktiv").setAutoWidth(true)
+		.setTooltipGenerator(e -> e.isOnline() ? "Der Tarif wird im Onboarding angeboten" : "Der Tarif wird nicht angeboten");
+		
+		subscriptionModelGrid.addComponentColumn(item -> {
+			SvgIcon icon = LineAwesomeIcon.EDIT.create();
+			icon.addClassName("icon");
+			icon.addClickListener(click -> {
+				this.subscriptionModel = item;
+				initSubscriptionModelDialog();
+				addPricingModelDialog.open();
+			});
 			
-			H2 h2 = new H2(model.getName());
-			
-			modelWrapper.add(h2);
-			mainLayout.add(modelWrapper);
+			Tooltip.forComponent(icon).withText("bearbeiten");
+			return icon;
+		}).setWidth("10%");
+		
+		subscriptionModelGrid.addComponentColumn(item -> {
+			SvgIcon icon = LineAwesomeIcon.TRASH_ALT.create();
+			icon.addClassName("icon");
+			icon.addClickListener(click -> {
+				this.subscriptionModel = item;
+				removeSubscriptionModel();
+			});
+
+			Tooltip.forComponent(icon).withText("löschen");
+			return icon;
+		}).setWidth("10%");
+		
+		subscriptionModelGrid.addSelectionListener(e -> {
+			e.getFirstSelectedItem().ifPresent(model -> {
+				switchModelCard(model);
+			});
 		});
+		
+		wrapper.add(addPricingModelButton, subscriptionModelGrid);
+		return wrapper;
+	}
+
+	private void switchModelCard(SubscriptionModel model) {
+		
+		String value = String.valueOf(model.getAmount()).replace(".", ",");
+		if(value.endsWith(",0")) {
+			value = value.replace(",0", "");
+		}
+		this.amountPerMonthPreview.setText(value + "€");
+		
+		this.descriptionPreview.setText(model.getDescription());
+		this.titlePreview.setText(model.getName());
+	}
+
+	private void removeSubscriptionModel() {
+		if(subscriptionModel.getMemberOfModel().isEmpty()) {
+			if(subscriptionModel.getWaitingPersonOfModel().isEmpty()) {
+				subscriptionModelService.delete(this.subscriptionModel.getId());
+			} else {
+				Notification notification = Notification.show("Es stehen noch Personen auf der Warteliste");
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			}
+		} else {
+			Notification notification = Notification.show("Es gibt noch Mitglieder, die diesen Tarif abonniert haben");
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		}
+		this.subscriptionModel = null;
+		refreshModelGrid();
+	}
+
+	private void initSubscriptionModelDialog() {
+		this.activeBox.setValue(this.subscriptionModel.isOnline());
+		this.nameOfPlan.setValue(this.subscriptionModel.getName());
+		this.descriptionOfModel.setValue(this.subscriptionModel.getDescription());
+		this.amountOfMembers.setValue((double)this.subscriptionModel.getMaxAllowedMembers());
+		this.priceOfPlan.setValue(this.subscriptionModel.getAmount());
 	}
 
 	private Component createCommonSettingsTab() {

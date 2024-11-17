@@ -222,6 +222,30 @@ vaadin-dialog-overlay .save-button {
   color: white;
 }
 
+.price-membership {
+	color: #8ABD3E;
+	display: inline-block; /* Damit die Skalierung korrekt funktioniert */
+    transform: scale(3); /* Skaliert den Text auf das Doppelte */
+    transform-origin: top; /* Optional: Setzt den Ursprung der Skalierung */
+    font-size: x-large; /* Behält die ursprüngliche Schriftgröße bei */
+    font-weight: bolder;
+  	font-family:'Afacad Flux',sans-serif;
+}
+
+.title-membership {
+	font-size: xx-large;
+	color: rgba(69,37,18,1);
+	font-weight: bold;
+	font-family:'Afacad Flux',sans-serif;
+}
+
+.desc-membership {
+	font-size: large;
+	color: rgba(69,37,18,1);
+	font-weight: bold;
+	font-family:'Afacad Flux',sans-serif;
+}
+
 .configuration-view vaadin-dialog-overlay .save-button:hover {
   background-color: #88b149;
   color: white;
@@ -231,4 +255,89 @@ vaadin-dialog-overlay .save-button {
   background-color: rgb(192, 192, 192);
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+vaadin-grid {
+  border-color:#ffffff;
+  border-radius:10px;
+  border-width:0px;
+  font-family:'Afacad Flux',sans-serif;
+  font-size: large;
+  height: 100%;
+  width: 100%;
+  display:flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+vaadin-grid::part(row) {
+	font-size: large;
+	height: 80px;
+}
+
+vaadin-grid::part(row):hover {
+	font-size: large;
+	font-weight: bold;
+}
+
+vaadin-grid::-webkit-scrollbar-thumb {
+  background-color:#8ABD3E;
+  background:#8ABD3E;
+  color:#8ABD3E;
+}
+
+vaadin-grid::part(body-cell) {
+  background-color:#ffffff;
+  color:var(--lumo-header-text-color);
+  font-family:'Afacad Flux',sans-serif;
+  font-size:var(--lumo-font-size-m);
+}
+
+vaadin-grid::part(header-cell) {
+	--lumo-font-size-s: var(--lumo-font-size-l);
+	background: #ffffff;
+	border-bottom: none;
+	border-radius: 10px;
+	color: #ffffff;
+	font-family: 'Afacad Flux', sans-serif;
+}
+
+.configuration-view  .icon:hover {
+	font-size: large;
+}
+
+vaadin-grid::part(selected-row-cell) { background-color:#ffffff; }
+
+
+vaadin-grid::part(collapsed-row-cell):hover {
+	font-size: medium;
+	font-weight: bold;
+}
+
+vaadin-grid::part(collapsed-row-cell){
+	font-size: medium;
+	height: 80px;
+}
+
+vaadin-grid::part(expanded-row-cell):hover {
+	font-size: medium;
+	font-weight: bold;
+}
+
+vaadin-grid::part(expanded-row-cell) {
+	font-size: medium;
+	height: 80px;
+}
+
+vaadin-grid-tree-toggle::part(toggle) {
+	font-size: medium;
+}
+
+vaadin-grid-tree-toggle:hover {
+	font-size: medium;
+	font-weight: bold;
+}
+
+vaadin-grid-tree-toggle[expanded]:hover {
+	font-size: medium;
 }

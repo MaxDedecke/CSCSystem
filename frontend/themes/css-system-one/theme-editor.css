@@ -40,6 +40,8 @@ vaadin-button {
   font-family:'Afacad Flux',sans-serif;
 }
 
+vaadin-text-area::part(label) { color:#8ABD3E; }
+
 vaadin-button.button-neutral {
   background-color:transparent;
   border-color: rgba(69,37,18,1);
