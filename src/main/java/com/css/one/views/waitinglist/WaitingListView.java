@@ -540,6 +540,9 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			});
 
 			menuBar.addItem("Person löschen", event -> {
+				Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
+				optToken.ifPresent(e -> onboardingTokenService.delete(e.getId()));
+				
 				waitingPersonService.delete(person.getId());
 				Notification notification = Notification.show("Person von der Warteliste gelöscht");
 				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
@@ -557,6 +560,16 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			if (!person.isOnboaring()) {
 				menuBar.addItem("Onboarding starten", event -> {
 					if (person.getEmail() != null) {
+						sendOnboardingEmail(person);
+						
+					}
+				});
+			} else {
+				menuBar.addItem("Einladung erneut senden", event -> {
+					if (person.getEmail() != null) {
+						Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
+						optToken.ifPresent(e -> onboardingTokenService.delete(e.getId()));
+						
 						sendOnboardingEmail(person);
 					}
 				});

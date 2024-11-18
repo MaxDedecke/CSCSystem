@@ -519,6 +519,8 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 			onboardingToken = optionalToken.get();
 			if(new Date().after(expirationDate)) {
 				UI.getCurrent().navigate("login");
+				onboardingDataService.delete(onboardingToken.getId());
+				onboardingToken = null;
 				Notification show = Notification.show("Onboarding Link abgelaufen. Kontaktiere deinen Verein");
 				show.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			}

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.css.one.data.OnboardingToken;
 import com.css.one.data.OnboardingTokenRepository;
+import com.css.one.data.WaitingPerson;
 
 @Service
 public class OnboardingTokenService {
@@ -45,6 +46,11 @@ public class OnboardingTokenService {
     
     public Optional<OnboardingToken> findByToken(String token) {
     	Optional<OnboardingToken> optionalToken = repository.findAll().stream().filter(e -> e.getToken().equals(token)).findAny();
+    	return optionalToken;
+    }
+    
+    public Optional<OnboardingToken> findByWaitingPerson(WaitingPerson person) {
+    	Optional<OnboardingToken> optionalToken = repository.findAll().stream().filter(e -> e.getWaintingPerson().getId().equals(person.getId())).findAny();
     	return optionalToken;
     }
     
