@@ -9,6 +9,7 @@ import com.css.one.services.OnboardingDataService;
 import com.css.one.services.OnboardingTokenService;
 import com.css.one.services.SubscriptionModelService;
 import com.css.one.services.WaitingPersonService;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
@@ -22,6 +23,7 @@ import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
@@ -45,7 +47,8 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	private TabSheet wizzard = new TabSheet();
 	
 	private String token;
-
+	private OnboardingToken onboardingToken;
+	
 	private TextField firstName;
 	private TextField lastName;
 	private TextField email;
@@ -114,7 +117,6 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		tabStepFour.setEnabled(false);
 
 		add(wizzard);
-
 	}
 	
 	private void createStepFourLayout() {
@@ -124,25 +126,74 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		H1 stepThreeHeading = new H1("Abo auswählen");
 		stepThreeHeading.addClassName("customheader");
 		
-		FormLayout dataLayout = new FormLayout();		
 		VerticalLayout buttonWrapper = new VerticalLayout();
-		
 		buttonWrapper.addClassNames(LumoUtility.AlignItems.END);	
 		
 		Button finishOnboarding = new Button("Onboarding abschließen");
 		finishOnboarding.setEnabled(false);
 		finishOnboarding.addClickListener(e -> {
-			if(!subscBox.isEmpty()) {
-				//End data onboarding here 
-			}
+			
 		});
 		
 		finishOnboarding.addClassName("save-button");
 		buttonWrapper.add(finishOnboarding);
 		
-		dataLayout.add(subscBox, descriptionSubscription);
-		stepFourWrapper.add(dataLayout, buttonWrapper);
+		stepFourWrapper.add(createPricingModelsLayout(), buttonWrapper);
 	}
+	
+	private Component createPricingModelsLayout() {
+		HorizontalLayout modelsLayout = new HorizontalLayout();
+		
+		//associationid in onboarding token so we can use it here
+		//subscriptionModelService.findAllByAssociation(onboardingToken.getAssociationId());
+		
+		return modelsLayout;
+	}
+	
+//	private Component createModelCardComponent() {
+//		VerticalLayout wrapper = new VerticalLayout();
+//		wrapper.setWidthFull();
+//		wrapper.setHeightFull();
+//		wrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+//		
+//		VerticalLayout card = new VerticalLayout();
+//		card.setMinHeight(500, Unit.PIXELS);
+//		card.setMinWidth(500, Unit.PIXELS);
+//		card.setMaxWidth(550, Unit.PIXELS);
+//		card.addClassNames("bestand-box");
+//		
+//		VerticalLayout priceWrapper = new VerticalLayout();
+//		priceWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+//		priceWrapper.setWidthFull();
+//		amountPerMonthPreview.setText("100€");
+//		amountPerMonthPreview.addClassNames("price-membership");
+//		
+//		Span perMonth = new Span("/pro Monat");
+//		perMonth.addClassNames("desc-membership", LumoUtility.Margin.Top.XLARGE);
+//		priceWrapper.add(amountPerMonthPreview, perMonth);
+//		
+//		VerticalLayout titleWrapper = new VerticalLayout();
+//		titleWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+//		titlePreview.setText("Mustertarif");
+//		titlePreview.addClassNames("title-membership");
+//		titleWrapper.add(titlePreview);
+//		
+//		VerticalLayout descWrapper = new VerticalLayout();
+//		descWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+//		descriptionPreview.setText("They can’t be focused or display tooltips. They’re invisible to screen readers, and their values cannot be selected and copied.\r\n"
+//				+ "\r\n"
+//				+ "Disabled fields can be useful in situations where they can become enabled based on some user action. Consider hiding fields entirely if there’s nothing the user can do to make them editable.");
+//		
+//		descriptionPreview.addClassNames("desc-membership");
+//		descWrapper.add(descriptionPreview);
+//		
+//		card.add(priceWrapper, titleWrapper, descWrapper);
+//		
+//		wrapper.add(card);
+//		
+//		return wrapper;
+//	}
+
 
 	private void createStepThreeLayout() {
 		stepThreeWrapper.addClassNames(LumoUtility.AlignItems.CENTER);
@@ -465,6 +516,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		
 		if(optionalToken.isPresent()) {
 			Date expirationDate = optionalToken.get().getExpirationDate();
+			onboardingToken = optionalToken.get();
 			if(new Date().after(expirationDate)) {
 				UI.getCurrent().navigate("login");
 				Notification show = Notification.show("Onboarding Link abgelaufen. Kontaktiere deinen Verein");
