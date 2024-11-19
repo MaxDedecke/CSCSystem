@@ -3,7 +3,9 @@ package com.css.one.data;
 import java.util.List;
 
 import jakarta.annotation.Nullable;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,10 +26,12 @@ public class SubscriptionModel {
     
     @Nullable
     @OneToMany
+    (fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     List<Person> memberOfModel;
     
 	@Nullable
 	@OneToMany
+	(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     List<WaitingPerson> waitingPersonOfModel;
 	
 	@Nullable

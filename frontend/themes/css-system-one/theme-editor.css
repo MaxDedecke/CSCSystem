@@ -97,6 +97,7 @@ vaadin-horizontal-layout.header-bar-custom {
 vaadin-tab {
   color: #333;  /* Farbe des Textes auf den Tabs */
   border-radius: 5px 5px 0 0; /* Abgerundete Ecken oben am Tab */
+  font-family:'Afacad Flux',sans-serif;
 }
 
 vaadin-tab::before, vaadin-tab::after {
@@ -124,6 +125,8 @@ vaadin-tab[active] {
 vaadin-tab[selected] {
   color:  #FFFFFF;  /* Dunklere Textfarbe für bessere Lesbarkeit */
   background-color: #8ABD3E;
+  font-family:'Afacad Flux',sans-serif;
+  font-size: large;
 }
 
 vaadin-button.diary-view-button-1 { margin-top:37px; }
@@ -263,7 +266,7 @@ vaadin-grid {
   height: 100%;
   width: 100%;
   display:flex;
-  flex-direction: column;
+  flex-direction: c 	olumn;
   background: #efefef;
 }
 
@@ -292,7 +295,6 @@ vaadin-grid::part(body-cell) {
 
 vaadin-grid::part(header-cell) {
 	--lumo-font-size-s: var(--lumo-font-size-l);
-	background: #efefef;
 	border-bottom: none;
 	border-radius: 10px;
 	color: rgba(69, 37, 18, 1);

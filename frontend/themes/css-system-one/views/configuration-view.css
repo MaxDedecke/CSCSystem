@@ -298,7 +298,6 @@ vaadin-grid::part(header-cell) {
 	background: #ffffff;
 	border-bottom: none;
 	border-radius: 10px;
-	color: #ffffff;
 	font-family: 'Afacad Flux', sans-serif;
 }
 

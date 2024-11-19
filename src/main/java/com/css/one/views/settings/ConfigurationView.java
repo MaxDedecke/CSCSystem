@@ -82,6 +82,10 @@ public class ConfigurationView extends VerticalLayout {
 	private TextField cityLocationField = new TextField("Stadt");
 	private TextField noteLocationField = new TextField("Notiz");
 
+	private VerticalLayout membershipTabLayout = new VerticalLayout();
+	private HorizontalLayout twoSidesMembershipLayout = new HorizontalLayout();
+	private VerticalLayout modelCardWrapper = new VerticalLayout();
+
 	private TextField nameOfPlan = new TextField("Titel");
 	private NumberField priceOfPlan = new NumberField("Preis pro Monat");
 	private TextArea descriptionOfModel = new TextArea("Beschreibung");
@@ -171,6 +175,8 @@ public class ConfigurationView extends VerticalLayout {
 			if(validateData()) {
 				saveSubscriptionModel();
 				addPricingModelDialog.close();
+				refreshModelGrid();
+				switchToModelList();
 			}
 		});
 		
@@ -370,11 +376,10 @@ public class ConfigurationView extends VerticalLayout {
 	}
 
 	private Component createMembershipTab() {
-		VerticalLayout mainLayout = new VerticalLayout();
-		mainLayout.setHeight("100%");
-		mainLayout.setWidthFull();
+		membershipTabLayout.setHeight("100%");
+		membershipTabLayout.setWidthFull();
 		
-		mainLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE, LumoUtility.AlignItems.CENTER);
+		membershipTabLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE, LumoUtility.AlignItems.CENTER);
 		addPricingModelButton.addClassName("save-button");
 		
 		addPricingModelButton.addClickListener(e -> {
@@ -386,39 +391,55 @@ public class ConfigurationView extends VerticalLayout {
 		
 		if(models.isEmpty()) {
 			addPricingModelButton.setText("Erstelle deinen ersten Tarif");
-			mainLayout.add(addPricingModelButton);
+			membershipTabLayout.add(addPricingModelButton);
 		} else {
 			addPricingModelButton.setText("Tarif hinzufügen");
-			createMembershipTabContent(mainLayout, models);
+			createMembershipTabContent(membershipTabLayout, models);
 		}
 		
-		return mainLayout;
+		return membershipTabLayout;
 	}
 
 	private void createMembershipTabContent(VerticalLayout mainLayout, List<SubscriptionModel> models) {
 		
-		HorizontalLayout twoSidesLayout = new HorizontalLayout();
-		twoSidesLayout.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
-		twoSidesLayout.setWidthFull();
-		twoSidesLayout.setHeightFull();
+		twoSidesMembershipLayout.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		twoSidesMembershipLayout.setWidthFull();
+		twoSidesMembershipLayout.setHeightFull();
 		
-		twoSidesLayout.add(createModelListComponent(models), createModelCardComponent());
+		twoSidesMembershipLayout.add(createModelListComponent(models), createModelCardComponent());
 		
 		refreshModelGrid();
 		
 		subscriptionModelGrid.select(models.iterator().next());
-		mainLayout.add(twoSidesLayout);
+		mainLayout.add(twoSidesMembershipLayout);
 	}
 
 	private void refreshModelGrid() {
-		subscriptionModelGrid.setItems(subscriptionModelService.findAllByAssociation(associationId));
+		List<SubscriptionModel> models = subscriptionModelService.findAllByAssociation(associationId);
+		
+		if(models != null) {			
+			subscriptionModelGrid.setItems(models);
+		} else {
+			switchToNoModelView();
+		}
+	}
+	
+	private void switchToNoModelView() {	
+		modelCardWrapper.removeAll();
+		twoSidesMembershipLayout.removeAll();
+		membershipTabLayout.removeAll();
+		membershipTabLayout.add(addPricingModelButton);
+	}
+	
+	private void switchToModelList() {	
+		List<SubscriptionModel> models = subscriptionModelService.findAllByAssociation(associationId);
+		createMembershipTabContent(membershipTabLayout, models);
 	}
 
 	private Component createModelCardComponent() {
-		VerticalLayout wrapper = new VerticalLayout();
-		wrapper.setWidthFull();
-		wrapper.setHeightFull();
-		wrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		modelCardWrapper.setWidthFull();
+		modelCardWrapper.setHeightFull();
+		modelCardWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
 		
 		VerticalLayout card = new VerticalLayout();
 		card.setMinHeight(500, Unit.PIXELS);
@@ -453,9 +474,9 @@ public class ConfigurationView extends VerticalLayout {
 		
 		card.add(priceWrapper, titleWrapper, descWrapper);
 		
-		wrapper.add(card);
+		modelCardWrapper.add(card);
 		
-		return wrapper;
+		return modelCardWrapper;
 	}
 
 	private Component createModelListComponent(List<SubscriptionModel> models) {
@@ -517,19 +538,25 @@ public class ConfigurationView extends VerticalLayout {
 	}
 
 	private void removeSubscriptionModel() {
-		if(subscriptionModel.getMemberOfModel().isEmpty()) {
-			if(subscriptionModel.getWaitingPersonOfModel().isEmpty()) {
-				subscriptionModelService.delete(this.subscriptionModel.getId());
+		Optional<SubscriptionModel> optModel = subscriptionModelService.get(subscriptionModel.getId());
+		
+		optModel.ifPresent(model -> {
+			if (subscriptionModel.getMemberOfModel().isEmpty()) {
+				if (subscriptionModel.getWaitingPersonOfModel().isEmpty()) {
+					subscriptionModelService.delete(this.subscriptionModel.getId());
+				} else {
+					Notification notification = Notification.show("Es stehen noch Personen auf der Warteliste");
+					notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+				}
 			} else {
-				Notification notification = Notification.show("Es stehen noch Personen auf der Warteliste");
+				Notification notification = Notification
+						.show("Es gibt noch Mitglieder, die diesen Tarif abonniert haben");
 				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			}
-		} else {
-			Notification notification = Notification.show("Es gibt noch Mitglieder, die diesen Tarif abonniert haben");
-			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-		}
-		this.subscriptionModel = null;
-		refreshModelGrid();
+			this.subscriptionModel = null;
+			refreshModelGrid();
+			
+		});
 	}
 
 	private void initSubscriptionModelDialog() {
