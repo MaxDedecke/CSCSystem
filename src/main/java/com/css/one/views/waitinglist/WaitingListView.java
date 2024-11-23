@@ -654,6 +654,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		onboardingToken.setToken(token);
 		onboardingToken.setWaintingPerson(person);
 		onboardingToken.setExpirationDate(createExpirationDate());		
+		onboardingToken.setAssociationId(associationId);
 		onboardingTokenService.update(onboardingToken);
 	}
 

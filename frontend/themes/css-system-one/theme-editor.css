@@ -545,6 +545,41 @@ vaadin-vertical-layout.bestand-box {
   padding-top:8px;
 }
 
+vaadin-vertical-layout.onboarding-model-box {
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:4px 4px 4px 7px #8ABD3E;;
+  margin-bottom:8px;
+  margin-left:8px;
+  margin-top:8px;
+  padding-bottom:8px;
+  padding-bottom:none;
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:8px;
+  font-weight: bold;
+}
+
+vaadin-vertical-layout.onboarding-model-box-grey {
+  background:rgba(191,191,191,0.08);
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:1px 1px 1px 3px rgb(192, 192, 192);
+  margin-bottom:8px;
+  margin-left:8px;
+  margin-top:8px;
+  padding-bottom:8px;
+  padding-bottom:none;
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:8px;
+}
+
 vaadin-vertical-layout.diary-view-button-1 { background-color:rgb(255,255,255); }
 
 vaadin-vertical-layout.diary-view-vertical-layout-1 {
@@ -686,4 +721,9 @@ vaadin-dialog-overlay::part(footer) {
 
 .red {
 	background: #ffbbbb;
+}
+
+.onboarding-intro {
+	font-family:'Afacad Flux',sans-serif;
+	font-size: xx-large;
 }

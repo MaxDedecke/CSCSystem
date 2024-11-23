@@ -278,6 +278,7 @@ vaadin-grid::part(row) {
 vaadin-grid::part(row):hover {
 	font-size: large;
 	font-weight: bold;
+	border-radius: 16px;
 }
 
 vaadin-grid::-webkit-scrollbar-thumb {
@@ -305,7 +306,10 @@ vaadin-grid::part(header-cell) {
 	font-size: large;
 }
 
-vaadin-grid::part(selected-row-cell) { background-color:#ffffff; }
+vaadin-grid::part(selected-row-cell) { 
+	background-color:#ffffff; 
+	font-size: large;
+}
 
 
 vaadin-grid::part(collapsed-row-cell):hover {
@@ -339,4 +343,17 @@ vaadin-grid-tree-toggle:hover {
 
 vaadin-grid-tree-toggle[expanded]:hover {
 	font-size: medium;
+}
+
+.animation-button-fade {	
+  animation: fadeIn 2s ease-out, change-background 3s 1s forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }

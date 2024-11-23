@@ -1,5 +1,6 @@
 package com.css.one.views.settings;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +22,7 @@ import com.css.one.services.WorkingUnitCategoryService;
 import com.css.one.services.WorkingUnitService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
@@ -112,6 +114,8 @@ public class ConfigurationView extends VerticalLayout {
 	private WorkingUnitCategory selectedCategory;
 	private SubscriptionModel subscriptionModel;
 	
+	List<SubscriptionModel> pricingModels = new ArrayList<SubscriptionModel>();
+	
 	public enum ViewStatus {
 		LOCATION, WORKINGCATEGORY;
 	}
@@ -175,8 +179,11 @@ public class ConfigurationView extends VerticalLayout {
 			if(validateData()) {
 				saveSubscriptionModel();
 				addPricingModelDialog.close();
+				if(pricingModels.isEmpty()) {					
+					switchToModelList();
+				}
 				refreshModelGrid();
-				switchToModelList();
+				clearPricingModelDialog();
 			}
 		});
 		
@@ -380,21 +387,22 @@ public class ConfigurationView extends VerticalLayout {
 		membershipTabLayout.setWidthFull();
 		
 		membershipTabLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE, LumoUtility.AlignItems.CENTER);
-		addPricingModelButton.addClassName("save-button");
+		addPricingModelButton.addClassNames("save-button", "animation-button-fade");
 		
 		addPricingModelButton.addClickListener(e -> {
 			this.subscriptionModel = null;
 			addPricingModelDialog.open();
 		});
 		
-		List<SubscriptionModel> models = subscriptionModelService.findAllByAssociation(associationId);
+		pricingModels = subscriptionModelService.findAllByAssociation(associationId);
 		
-		if(models.isEmpty()) {
-			addPricingModelButton.setText("Erstelle deinen ersten Tarif");
+		if(pricingModels.isEmpty()) {
+			addPricingModelButton.setText("Erstelle deinen ersten Tarif");			
+
 			membershipTabLayout.add(addPricingModelButton);
 		} else {
 			addPricingModelButton.setText("Tarif hinzufügen");
-			createMembershipTabContent(membershipTabLayout, models);
+			createMembershipTabContent(membershipTabLayout, pricingModels);
 		}
 		
 		return membershipTabLayout;
@@ -415,12 +423,10 @@ public class ConfigurationView extends VerticalLayout {
 	}
 
 	private void refreshModelGrid() {
-		List<SubscriptionModel> models = subscriptionModelService.findAllByAssociation(associationId);
+		pricingModels = subscriptionModelService.findAllByAssociation(associationId);
 		
-		if(models != null) {			
-			subscriptionModelGrid.setItems(models);
-		} else {
-			switchToNoModelView();
+		if(!pricingModels.isEmpty()) {			
+			subscriptionModelGrid.setItems(pricingModels);
 		}
 	}
 	
@@ -429,11 +435,21 @@ public class ConfigurationView extends VerticalLayout {
 		twoSidesMembershipLayout.removeAll();
 		membershipTabLayout.removeAll();
 		membershipTabLayout.add(addPricingModelButton);
+		
+		addPricingModelButton.addClassName("fade-in");
+
+		// Layout mit Button hinzufügen
+		membershipTabLayout.add(addPricingModelButton);
+
+		// Transition aktivieren
+		UI.getCurrent().access(() -> {
+			addPricingModelButton.addClassName("fade-in-active");
+		});
 	}
 	
 	private void switchToModelList() {	
-		List<SubscriptionModel> models = subscriptionModelService.findAllByAssociation(associationId);
-		createMembershipTabContent(membershipTabLayout, models);
+		pricingModels = subscriptionModelService.findAllByAssociation(associationId);
+		createMembershipTabContent(membershipTabLayout, pricingModels);
 	}
 
 	private Component createModelCardComponent() {
@@ -483,6 +499,8 @@ public class ConfigurationView extends VerticalLayout {
 		VerticalLayout wrapper = new VerticalLayout();
 		wrapper.setMaxWidth(400, Unit.PIXELS);
 		
+		subscriptionModelGrid.removeAllColumns();
+		
 		subscriptionModelGrid.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.Top.NONE, "custom-scrollbar");
 		subscriptionModelGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
@@ -509,6 +527,8 @@ public class ConfigurationView extends VerticalLayout {
 			icon.addClickListener(click -> {
 				this.subscriptionModel = item;
 				removeSubscriptionModel();
+				Notification notification = Notification.show("Tarif erfolgreich gelöscht");
+				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 			});
 
 			Tooltip.forComponent(icon).withText("löschen");
@@ -556,6 +576,9 @@ public class ConfigurationView extends VerticalLayout {
 			this.subscriptionModel = null;
 			refreshModelGrid();
 			
+			if(subscriptionModelService.findAllByAssociation(associationId).isEmpty()) {				
+				switchToNoModelView();
+			}
 		});
 	}
 

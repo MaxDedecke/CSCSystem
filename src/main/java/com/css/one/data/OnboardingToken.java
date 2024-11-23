@@ -29,6 +29,8 @@ public class OnboardingToken {
 	private Person member;
 	
 	private Date expirationDate;
+	
+	private int associationId;
 
 	public Long getId() {
 		return id;
@@ -68,5 +70,13 @@ public class OnboardingToken {
 
 	public void setExpirationDate(Date expirationDate) {
 		this.expirationDate = expirationDate;
+	}
+
+	public int getAssociationId() {
+		return associationId;
+	}
+
+	public void setAssociationId(int associationId) {
+		this.associationId = associationId;
 	}	
 }

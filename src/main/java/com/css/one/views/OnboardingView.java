@@ -1,6 +1,8 @@
 package com.css.one.views;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import com.css.one.data.OnboardingToken;
@@ -71,26 +73,34 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	private	ComboBox<SubscriptionModel> subscBox = new ComboBox<>("Modelle");
 	private Span descriptionSubscription = new Span("testDescription");
 
+	private Tab tabBegin;
+	private Tab tabStepOne;
 	private Tab tabStepTwo;
 	private Tab tabStepThree;
 	private Tab tabStepFour;
+	private Tab tabEnd;
 
+	VerticalLayout beginWrapper = new VerticalLayout();
 	VerticalLayout stepOneWrapper = new VerticalLayout();
 	VerticalLayout stepTwoWrapper = new VerticalLayout();
 	VerticalLayout stepThreeWrapper = new VerticalLayout();
 	VerticalLayout stepFourWrapper = new VerticalLayout();
-	
+	VerticalLayout endWrapper = new VerticalLayout();
+
 	private final WaitingPersonService waitingPersonService;
 	private final OnboardingDataService onboardingDataService;
 	private final SubscriptionModelService subscriptionModelService;
 	private final OnboardingTokenService onboardingTokenService;
 	
+	private List<VerticalLayout> cards = new ArrayList<>();
+	private Button finishOnboarding = new Button("Onboarding abschließen");
+
 	public OnboardingView(WaitingPersonService waitingPersonService,
 			OnboardingDataService onboardingDataService,
 			SubscriptionModelService subscriptionModelService,
 			OnboardingTokenService onboardingTokenService) {
 
-		addClassNames("onboaring-view", LumoUtility.Padding.NONE);
+		addClassNames("onboarding-view", LumoUtility.Padding.NONE);
 		
 		this.waitingPersonService = waitingPersonService;
 		this.onboardingDataService = onboardingDataService;
@@ -98,38 +108,52 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		this.onboardingTokenService = onboardingTokenService;
 		
 		setWidth("100%");
-		createStepOneLayout();
-		createStepTwoLayout();
-		createStepThreeLayout();
-		createStepFourLayout();
-
+		
 		wizzard.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE, LumoUtility.AlignItems.CENTER);
 		wizzard.setWidthFull();
 		wizzard.setHeightFull();
-
-		wizzard.add("Schritt 1", stepOneWrapper);
-		tabStepTwo = wizzard.add("Schritt 2", stepTwoWrapper);
-		tabStepTwo.setEnabled(false);
-		tabStepTwo.addClassName(LumoUtility.Width.AUTO);
-		tabStepThree = wizzard.add("Schritt 3", stepThreeWrapper);
-		tabStepThree.setEnabled(false);
-		tabStepFour = wizzard.add("Schritt 4", stepFourWrapper);
-		tabStepFour.setEnabled(false);
-
 		add(wizzard);
 	}
 	
+	private void createBegin() {
+		
+		beginWrapper.addClassNames(LumoUtility.AlignItems.CENTER);
+		beginWrapper.setWidthFull();
+		beginWrapper.setHeightFull();
+		
+		VerticalLayout innerLayout = new VerticalLayout();
+		innerLayout.addClassNames(LumoUtility.AlignItems.CENTER);
+		innerLayout.setHeightFull();
+		innerLayout.setWidthFull();
+		
+		Span introduction = new Span();
+		introduction.addClassName("onboarding-intro");
+		introduction.setText("Herzlich willkommen zum Onboarding in deinem Cannabis Social Club!");
+		
+		Button startButton = new Button("Los geht*s");
+		startButton.addClassName("save-button");;
+		startButton.addClickListener(e -> {
+			tabStepOne.setEnabled(true);
+			wizzard.setSelectedTab(tabStepOne);
+			wizzard.remove(tabBegin);
+		});		
+		
+		innerLayout.add(introduction, startButton);
+		beginWrapper.add(innerLayout);
+		
+		tabBegin = new Tab("Start");
+		tabBegin = wizzard.add(tabBegin, beginWrapper);
+	}
+
 	private void createStepFourLayout() {
 		stepFourWrapper.addClassNames(LumoUtility.AlignItems.CENTER);
-		stepFourWrapper.setMaxWidth(1000, Unit.PIXELS);
 		
 		H1 stepThreeHeading = new H1("Abo auswählen");
 		stepThreeHeading.addClassName("customheader");
 		
 		VerticalLayout buttonWrapper = new VerticalLayout();
-		buttonWrapper.addClassNames(LumoUtility.AlignItems.END);	
+		buttonWrapper.addClassNames(LumoUtility.AlignItems.CENTER);	
 		
-		Button finishOnboarding = new Button("Onboarding abschließen");
 		finishOnboarding.setEnabled(false);
 		finishOnboarding.addClickListener(e -> {
 			
@@ -143,57 +167,84 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	
 	private Component createPricingModelsLayout() {
 		HorizontalLayout modelsLayout = new HorizontalLayout();
+		modelsLayout.setWidthFull();
 		
-		//associationid in onboarding token so we can use it here
-		//subscriptionModelService.findAllByAssociation(onboardingToken.getAssociationId());
+		List<SubscriptionModel> models = subscriptionModelService.findAllByAssociation(onboardingToken.getAssociationId());
+		
+		models.forEach(model -> {
+			modelsLayout.add(createModelCardComponent(model.getName(), model.getDescription(), String.valueOf(model.getAmount())));
+		});
 		
 		return modelsLayout;
 	}
 	
-//	private Component createModelCardComponent() {
-//		VerticalLayout wrapper = new VerticalLayout();
-//		wrapper.setWidthFull();
-//		wrapper.setHeightFull();
-//		wrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
-//		
-//		VerticalLayout card = new VerticalLayout();
-//		card.setMinHeight(500, Unit.PIXELS);
-//		card.setMinWidth(500, Unit.PIXELS);
-//		card.setMaxWidth(550, Unit.PIXELS);
-//		card.addClassNames("bestand-box");
-//		
-//		VerticalLayout priceWrapper = new VerticalLayout();
-//		priceWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
-//		priceWrapper.setWidthFull();
-//		amountPerMonthPreview.setText("100€");
-//		amountPerMonthPreview.addClassNames("price-membership");
-//		
-//		Span perMonth = new Span("/pro Monat");
-//		perMonth.addClassNames("desc-membership", LumoUtility.Margin.Top.XLARGE);
-//		priceWrapper.add(amountPerMonthPreview, perMonth);
-//		
-//		VerticalLayout titleWrapper = new VerticalLayout();
-//		titleWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
-//		titlePreview.setText("Mustertarif");
-//		titlePreview.addClassNames("title-membership");
-//		titleWrapper.add(titlePreview);
-//		
-//		VerticalLayout descWrapper = new VerticalLayout();
-//		descWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
-//		descriptionPreview.setText("They can’t be focused or display tooltips. They’re invisible to screen readers, and their values cannot be selected and copied.\r\n"
-//				+ "\r\n"
-//				+ "Disabled fields can be useful in situations where they can become enabled based on some user action. Consider hiding fields entirely if there’s nothing the user can do to make them editable.");
-//		
-//		descriptionPreview.addClassNames("desc-membership");
-//		descWrapper.add(descriptionPreview);
-//		
-//		card.add(priceWrapper, titleWrapper, descWrapper);
-//		
-//		wrapper.add(card);
-//		
-//		return wrapper;
-//	}
+	private Component createModelCardComponent(String titleValue, String descValue, String priceValue) {
+		
+		VerticalLayout modelCardWrapper = new VerticalLayout();
+		Span amountPerMonth = new Span();
+		Span title = new Span();
+		Span description = new Span();
+		
+		modelCardWrapper.setWidthFull();
+		modelCardWrapper.setHeightFull();
+		modelCardWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		
+		VerticalLayout card = new VerticalLayout();
+		card.setMinHeight(500, Unit.PIXELS);
+		card.setMinWidth(500, Unit.PIXELS);
+		card.setMaxWidth(550, Unit.PIXELS);
+		card.addClassNames("onboarding-model-box-grey");
+		cards.add(card);
+		
+		VerticalLayout priceWrapper = new VerticalLayout();
+		priceWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		priceWrapper.setWidthFull();
+		amountPerMonth.setText(priceValue + "€");
+		amountPerMonth.addClassNames("price-membership");
+		
+		Span perMonth = new Span("/pro Monat");
+		perMonth.addClassNames("desc-membership", LumoUtility.Margin.Top.XLARGE);
+		priceWrapper.add(amountPerMonth, perMonth);
+		
+		VerticalLayout titleWrapper = new VerticalLayout();
+		titleWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		title.setText(titleValue);
+		title.addClassNames("title-membership");
+		titleWrapper.add(title);
+		
+		VerticalLayout descWrapper = new VerticalLayout();
+		descWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		description.setText(descValue);
+		
+		description.addClassNames("desc-membership");
+		descWrapper.add(description);
+		
+		VerticalLayout buttonWrapper = new VerticalLayout();
+		buttonWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
+		Button choiceButton = new Button("Auswählen");
+		choiceButton.addClassName("save-button");
+		
+		choiceButton.addClickListener(e -> {
+			resetCards();
+			card.removeClassName("onboarding-model-box-grey");
+			card.addClassNames("onboarding-model-box");
+			finishOnboarding.setEnabled(true);
+		});
+		
+		buttonWrapper.add(choiceButton);
+		card.add(priceWrapper, titleWrapper, descWrapper, buttonWrapper);	
+		modelCardWrapper.add(card);
+		
+		return modelCardWrapper;
+	}
 
+
+	private void resetCards() {
+		cards.forEach(card -> {
+			card.removeClassName("onboarding-model-box");
+			card.addClassNames("onboarding-model-box-grey");
+		});
+	}
 
 	private void createStepThreeLayout() {
 		stepThreeWrapper.addClassNames(LumoUtility.AlignItems.CENTER);
@@ -211,12 +262,12 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		dataLayout.add(confirmExclusiveMemberShipBox, createExclusiveMemberDetails(), confirmDataUsageBox, createDataUsageDetails());
 		
 		Button buttonConfirmStepThree = new Button("bestätigen & weiter");
-		buttonConfirmStepThree.setEnabled(false);
+		buttonConfirmStepThree.setEnabled(true);
 		buttonConfirmStepThree.addClickListener(e -> {
-			if(validateInputStepThree()) {				
+//			if(validateInputStepThree()) {				
 				tabStepFour.setEnabled(true);
 				wizzard.setSelectedTab(tabStepFour);
-			}
+//			}
 		});
 		buttonConfirmStepThree.addClassName("save-button");
 		VerticalLayout buttonWrapper = new VerticalLayout();
@@ -274,7 +325,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 
 	private void createStepOneLayout() {
 
-		stepOneWrapper.addClassNames(LumoUtility.AlignItems.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		stepOneWrapper.addClassNames(LumoUtility.AlignItems.CENTER, LumoUtility.Margin.NONE);
 		stepOneWrapper.setMaxWidth(1000, Unit.PIXELS);
 		H1 stepOneHeading = new H1("Angaben zu deiner Person");
 		stepOneHeading.addClassName("customheader");
@@ -318,13 +369,13 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		city = new TextField("Ort");
 		
 		buttonConfirmStepOne.addClassName("save-button");
-		buttonConfirmStepOne.setEnabled(false);
+		buttonConfirmStepOne.setEnabled(true);
 		
 		buttonConfirmStepOne.addClickListener(e -> {
-			if(validateInputGeneralData()) {
+//			if(validateInputGeneralData()) {
 				tabStepTwo.setEnabled(true);
 				wizzard.setSelectedTab(tabStepTwo);
-			}
+//			}
 		});
 		
 		VerticalLayout buttonWrapper = new VerticalLayout();		
@@ -454,7 +505,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		stepTwoWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.AlignItems.CENTER);
 		stepTwoWrapper.setMaxWidth(1000, Unit.PIXELS);
 		
-		H1 stepTwoHeading = new H1("Schritt 2: Angaben zu deinem Wohnort");
+		H1 stepTwoHeading = new H1("Angaben zu deinem Wohnort");
 		stepTwoHeading.addClassName("customheader");
 		
 		FormLayout dataLayout = new FormLayout();
@@ -479,12 +530,12 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		dataLayout.setColspan(hr, 2);
 
 		buttonConfirmStepTwo.addClassName("save-button");
-		buttonConfirmStepTwo.setEnabled(false);
+		buttonConfirmStepTwo.setEnabled(true);
 		buttonConfirmStepTwo.addClickListener(e -> {
-			if(validateInputAddressData()) {
+//			if(validateInputAddressData()) {
 				tabStepThree.setEnabled(true);	
 				wizzard.setSelectedTab(tabStepThree);
-			}
+//			}
 		});
 		
 		VerticalLayout buttonWrapper = new VerticalLayout();
@@ -517,6 +568,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		if(optionalToken.isPresent()) {
 			Date expirationDate = optionalToken.get().getExpirationDate();
 			onboardingToken = optionalToken.get();
+
 			if(new Date().after(expirationDate)) {
 				UI.getCurrent().navigate("login");
 				onboardingDataService.delete(onboardingToken.getId());
@@ -524,6 +576,25 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 				Notification show = Notification.show("Onboarding Link abgelaufen. Kontaktiere deinen Verein");
 				show.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			}
+			
+			createBegin();
+			createStepOneLayout();
+			createStepTwoLayout();
+			createStepThreeLayout();
+			createStepFourLayout();
+			
+			tabStepOne = wizzard.add("Schritt 1", stepOneWrapper);
+			tabStepOne.setEnabled(false);
+
+			tabStepTwo = wizzard.add("Schritt 2", stepTwoWrapper);
+			tabStepTwo.setEnabled(false);
+			
+			tabStepThree = wizzard.add("Schritt 3", stepThreeWrapper);
+			tabStepThree.setEnabled(false);
+			
+			tabStepFour = wizzard.add("Schritt 4", stepFourWrapper);
+			tabStepFour.setEnabled(false);
+
 		} else {			
 			UI.getCurrent().navigate("login");
 			Notification show = Notification.show("Onboarding Link abgelaufen. Kontaktiere deinen Verein");
