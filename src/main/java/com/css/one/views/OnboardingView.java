@@ -16,7 +16,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -69,9 +68,6 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	
 	private Checkbox confirmExclusiveMemberShipBox = new Checkbox();
 	private Checkbox confirmDataUsageBox = new Checkbox();
-	
-	private	ComboBox<SubscriptionModel> subscBox = new ComboBox<>("Modelle");
-	private Span descriptionSubscription = new Span("testDescription");
 
 	private Tab tabBegin;
 	private Tab tabStepOne;
@@ -115,6 +111,31 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		add(wizzard);
 	}
 	
+	private void createEnd() {
+		
+		endWrapper.addClassNames(LumoUtility.AlignItems.CENTER);
+		endWrapper.setWidthFull();
+		endWrapper.setHeightFull();
+		
+		VerticalLayout innerLayout = new VerticalLayout();
+		innerLayout.addClassNames(LumoUtility.AlignItems.CENTER);
+		innerLayout.setHeightFull();
+		innerLayout.setWidthFull();
+		
+		Span header = new Span();
+		header.addClassName("onboarding-intro");
+		header.setText("Und schon fertig !");
+		
+		Span outro = new Span();
+		outro.addClassName("onboarding-intro");
+		outro.setText("Dein Verein wird sich per Email an dich wenden. Du kannst den Tab jetzt schließen :)");
+		
+		innerLayout.add(header, outro);
+		endWrapper.add(innerLayout);
+		
+		tabEnd = new Tab("Erfolgreich");
+}
+	
 	private void createBegin() {
 		
 		beginWrapper.addClassNames(LumoUtility.AlignItems.CENTER);
@@ -156,7 +177,12 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		
 		finishOnboarding.setEnabled(false);
 		finishOnboarding.addClickListener(e -> {
-			
+			wizzard.add(tabEnd, endWrapper);
+			wizzard.setSelectedTab(tabEnd);
+			wizzard.remove(tabStepOne);
+			wizzard.remove(tabStepTwo);
+			wizzard.remove(tabStepThree);
+			wizzard.remove(tabStepFour);
 		});
 		
 		finishOnboarding.addClassName("save-button");
@@ -582,6 +608,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 			createStepTwoLayout();
 			createStepThreeLayout();
 			createStepFourLayout();
+			createEnd();
 			
 			tabStepOne = wizzard.add("Schritt 1", stepOneWrapper);
 			tabStepOne.setEnabled(false);
