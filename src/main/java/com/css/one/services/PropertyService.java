@@ -18,7 +18,7 @@ public class PropertyService {
 	}
 	
 	private static Properties getPropertiesInitial() {
-
+		
 		try (InputStream input = new FileInputStream(new File("/application.properties"))) {
 			// Load the properties file
 			properties.load(input);

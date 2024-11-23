@@ -21,6 +21,7 @@ import com.css.one.services.AssociationService;
 import com.css.one.services.LawInfoService;
 import com.css.one.services.PersonService;
 import com.css.one.services.PromptingService;
+import com.css.one.services.PropertyService;
 import com.css.one.services.BlossomService;
 import com.css.one.views.MainLayout;
 import com.css.one.views.warenlager.WarenlagerView;
@@ -701,24 +702,7 @@ public class RechtlichesView extends FlexLayout {
 	}
 	
 	private void preparePath() {
-		final Properties properties = new Properties();
-		try (InputStream input = new FileInputStream(new File("/application.properties"))) {
-
-			// Load the properties file
-			properties.load(input);
-		} catch (IOException ex) {
-			try (InputStream input = WarenlagerView.class.getClassLoader().getResourceAsStream("application.properties")) {
-				if (input == null) {
-					System.out.println("Sorry, unable to find application.properties");
-					System.exit(1);
-				}
-
-				// Load the properties file
-				properties.load(input);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+		final Properties properties = PropertyService.getProperties();
 		
 		directoryPath = properties.getProperty("certificate.upload.path") + File.separator +  associationId + File.separator + "statute" + File.separator;
 	    Path path = Paths.get(directoryPath);
@@ -737,24 +721,7 @@ public class RechtlichesView extends FlexLayout {
 	}
 	
 	private void preparePathTrainingCert(Person p) {
-		final Properties properties = new Properties();
-		try (InputStream input = new FileInputStream(new File("/application.properties"))) {
-
-			// Load the properties file
-			properties.load(input);
-		} catch (IOException ex) {
-			try (InputStream input = WarenlagerView.class.getClassLoader().getResourceAsStream("application.properties")) {
-				if (input == null) {
-					System.out.println("Sorry, unable to find application.properties");
-					System.exit(1);
-				}
-
-				// Load the properties file
-				properties.load(input);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+		final Properties properties = PropertyService.getProperties();
 		
 		directoryPath = properties.getProperty("certificate.upload.path") + File.separator +  associationId + File.separator + "prevention" + File.separator + "training" + File.separator + p.getId();
 	    Path path = Paths.get(directoryPath);

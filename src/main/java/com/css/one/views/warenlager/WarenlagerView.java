@@ -34,6 +34,7 @@ import com.css.one.services.LocationService;
 import com.css.one.services.OutputService;
 import com.css.one.services.PersonService;
 import com.css.one.services.PlantService;
+import com.css.one.services.PropertyService;
 import com.css.one.services.SeedService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
@@ -2075,26 +2076,8 @@ public class WarenlagerView extends Div {
 	}
 
 	private void preparePath() {
-		final Properties properties = new Properties();
-		try (InputStream input = new FileInputStream(new File("/application.properties"))) {
-
-			// Load the properties file
-			properties.load(input);
-		} catch (IOException ex) {
-			try (InputStream input = WarenlagerView.class.getClassLoader()
-					.getResourceAsStream("application.properties")) {
-				if (input == null) {
-					System.out.println("Sorry, unable to find application.properties");
-					System.exit(1);
-				}
-
-				// Load the properties file
-				properties.load(input);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
+		final Properties properties = PropertyService.getProperties();
+		
 		directoryPath = properties.getProperty("certificate.upload.path") + File.separator + associationId
 				+ File.separator + "strains" + File.separator + numberField.getValue() + File.separator + "certificates"
 				+ File.separator;
