@@ -5,6 +5,7 @@ public enum EmailType {
 	ONBOARING("Onboarding", "classpath:email.html"),
 	
 	//for later use
+	ONBOARDING_DATA_FINISHED("Data input finished", ""),
 	ONBOARDING_FINISHED("Onboarding finished", ""),
 	RESET_PASSWORD("Reset password", ""),
 	NEW_ROLE("New role", ""),

@@ -10,13 +10,16 @@ import org.vaadin.lineawesome.LineAwesomeIcon;
 import com.css.one.data.Blossom;
 import com.css.one.data.Cutting;
 import com.css.one.data.Location;
+import com.css.one.data.OnboardingQuestion;
 import com.css.one.data.Seed;
 import com.css.one.data.SubscriptionModel;
 import com.css.one.data.WorkingUnit;
 import com.css.one.data.WorkingUnitCategory;
+import com.css.one.data.enums.ExpirationTime;
 import com.css.one.services.BlossomService;
 import com.css.one.services.CuttingService;
 import com.css.one.services.LocationService;
+import com.css.one.services.OnboardingQuestionService;
 import com.css.one.services.SeedService;
 import com.css.one.services.SubscriptionModelService;
 import com.css.one.services.WorkingUnitCategoryService;
@@ -71,6 +74,7 @@ public class ConfigurationView extends VerticalLayout {
 	private CuttingService cuttingService;
 	private WorkingUnitService workingUnitService;
 	private SubscriptionModelService subscriptionModelService;
+	private OnboardingQuestionService onboardingQuestionService;
 	
 	private WorkingUnitCategoryService workingUnitCategoryService;
 	private int associationId;
@@ -80,6 +84,7 @@ public class ConfigurationView extends VerticalLayout {
 	private Dialog addLocationDialog;
 	private Dialog addCategoryDialog;
 	private Dialog addPricingModelDialog;
+	private Dialog addOnboardingQuestionDialog;
 	
 	private TextField nameLocationField = new TextField("Name");
 	private TextField streetLocationField = new TextField("Straße");
@@ -109,6 +114,7 @@ public class ConfigurationView extends VerticalLayout {
 	
 	private Grid<Location> locationsGrid = new Grid<Location>();
 	private Grid<WorkingUnitCategory> categoriesGrid = new Grid<WorkingUnitCategory>();
+	private Grid<OnboardingQuestion> questionGrid = new Grid<OnboardingQuestion>();
 
 	private Button saveLocationButton = new Button("erfassen");
 	private Button saveCategoryButton = new Button("hinzufügen");
@@ -120,7 +126,8 @@ public class ConfigurationView extends VerticalLayout {
 	private SubscriptionModel subscriptionModel;
 	
 	List<SubscriptionModel> pricingModels = new ArrayList<SubscriptionModel>();
-	
+	List<OnboardingQuestion> onboardingQuestions = new ArrayList<OnboardingQuestion>();
+
 	public enum ViewStatus {
 		LOCATION, WORKINGCATEGORY;
 	}
@@ -131,7 +138,8 @@ public class ConfigurationView extends VerticalLayout {
 			SeedService seedService, 
 			CuttingService cuttingService,
 			WorkingUnitService workingUnitService,
-			SubscriptionModelService subscriptionModelService) {
+			SubscriptionModelService subscriptionModelService,
+			OnboardingQuestionService onboardingQuestionService) {
 		
 		this.locationService = locationService;
 		this.workingUnitCategoryService = workingUnitCategoryService;
@@ -140,6 +148,7 @@ public class ConfigurationView extends VerticalLayout {
 		this.cuttingService = cuttingService;
 		this.workingUnitService = workingUnitService;
 		this.subscriptionModelService = subscriptionModelService;
+		this.onboardingQuestionService = onboardingQuestionService;
 		
 		addClassNames("configuration-view", LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		
@@ -159,10 +168,65 @@ public class ConfigurationView extends VerticalLayout {
 		
 		addCategoryDialog();
 		addPricingModelDialog();
+		addOnboardingQuestionDialog();
 		
 		add(tabSheet);
     }
 	
+	private void addOnboardingQuestionDialog() {
+
+		addOnboardingQuestionDialog = new Dialog();
+		
+		VerticalLayout wrapper = new VerticalLayout();
+		
+		H3 h3 = new H3("Frage hinzufügen");
+		h3.addClassName("customheader");
+		
+		TextArea questionArea = new TextArea();
+		questionArea.setMinWidth(500, Unit.PIXELS);
+		questionArea.setMinHeight(120, Unit.PIXELS);
+		wrapper.add(h3, questionArea);
+		
+		Button saveButton = new Button("Speichern");
+		saveButton.addClassNames("save-button");
+		saveButton.addClickListener(e -> {
+			if(!questionArea.getValue().equals("")) {				
+				addOnboardingQuestion(questionArea.getValue());
+				addOnboardingQuestionDialog.close();
+				questionArea.clear();
+				Notification notification = Notification.show("Frage erfolgreich hinzugefügt.");
+				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			} else {
+				Notification notification = Notification.show("Zuerst muss eine Frage existieren.");
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			}
+		});
+		
+		Button cancelButton = new Button("Abbrechen");
+		cancelButton.addClassNames("cancel-button");
+		cancelButton.addClickListener(e -> {
+			addOnboardingQuestionDialog.close();
+			questionArea.clear();
+		});
+		
+		addOnboardingQuestionDialog.addDialogCloseActionListener(e -> {
+			questionArea.clear();
+			addOnboardingQuestionDialog.close();
+		});
+		
+		addOnboardingQuestionDialog.getFooter().add(cancelButton, saveButton);
+		addOnboardingQuestionDialog.add(wrapper);
+	}
+
+	private void addOnboardingQuestion(String questionText) {
+		OnboardingQuestion question = new OnboardingQuestion();
+		question.setAssociationId(associationId);
+		question.setQuestion(questionText);
+		
+		onboardingQuestionService.update(question);
+		refreshOnboardingQuestionGrid();
+	}
+
 	private void addPricingModelDialog() {
 		addPricingModelDialog = new Dialog();
 		VerticalLayout wrapper = new VerticalLayout();
@@ -176,6 +240,8 @@ public class ConfigurationView extends VerticalLayout {
 		cancelButton.addClickListener(e -> {
 			clearPricingModelDialog();
 			addPricingModelDialog.close();
+			Notification notification = Notification.show("Tarif erfolgreich hinzugefügt.");
+			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 		});
 		
 		Button saveButton = new Button("Speichern");
@@ -620,14 +686,102 @@ public class ConfigurationView extends VerticalLayout {
 		mainLayout.setWidthFull();
 		mainLayout.addClassNames(LumoUtility.AlignItems.STRETCH);
 						
-		mainLayout.add(createTokenLengtWrapper(), createQuestionsWrapper(), createSaveButtonWrapper());
+		mainLayout.add(createTokenLengtWrapper(), createQuestionsWrapper());
+		refreshOnboardingQuestionGrid();
 		return mainLayout;
 	}
+
+	private Component createQuestionsWrapper() {
+		VerticalLayout questionsMainWrapper = new VerticalLayout();
+		questionsMainWrapper.addClassNames(LumoUtility.Margin.Top.XLARGE);
+		questionsMainWrapper.setMaxWidth(1000, Unit.PIXELS);
+		
+		HorizontalLayout headerWrapper = new HorizontalLayout();
+		headerWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		
+		H3 questionsHeader = new H3();
+		questionsHeader.setText("Onboarding Fragen");
+		questionsHeader.addClassNames("customheader", "lower");
+		
+		Button addQuestionButton = new Button(LineAwesomeIcon.PLUS_SOLID.create());
+		addQuestionButton.addClassNames("add-cross");
+		addQuestionButton.addClickListener(e -> {
+			addOnboardingQuestionDialog.open();
+		});
+		
+		headerWrapper.add(questionsHeader, addQuestionButton);
+		questionGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+		questionGrid.setMinHeight(300, Unit.PIXELS);
+		questionGrid.addColumn(e -> e.getQuestion()).setTooltipGenerator(e -> e.getQuestion()).setAutoWidth(true);
+		questionGrid.addComponentColumn(item -> {
+			SvgIcon icon = LineAwesomeIcon.TRASH_ALT.create();
+			icon.addClassName("icon");
+			icon.addClickListener(click -> {
+				removeOnboardingQuestion(item);
+				refreshOnboardingQuestionGrid();
+				Notification notification = Notification.show("Frage erfolgreich gelöscht");
+				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			});
+
+			Tooltip.forComponent(icon).withText("löschen");
+			return icon;
+		
+		}).setWidth("1%");
+		
+		questionsMainWrapper.add(headerWrapper, questionGrid);
+		return questionsMainWrapper;
+	}
+
+	private void removeOnboardingQuestion(OnboardingQuestion item) {
+		onboardingQuestionService.delete(item.getId());
+	}
 	
-	
-	private Component createSaveButtonWrapper() {
-		VerticalLayout saveWrapper = new VerticalLayout();
-		saveWrapper.addClassNames(LumoUtility.AlignItems.END);
+	private void refreshOnboardingQuestionGrid() {
+		onboardingQuestions = onboardingQuestionService.findAllByAssociation(associationId);
+		this.questionGrid.setItems(onboardingQuestions);
+	}
+
+	private Component createTokenLengtWrapper() {
+		VerticalLayout tokenLengthWrapper = new VerticalLayout();
+		tokenLengthWrapper.addClassNames(LumoUtility.Margin.Top.XLARGE);
+		
+		H3 tokenLengthHeader = new H3();
+		tokenLengthHeader.setText("Onboarding Link Gültigkeit");
+		tokenLengthHeader.addClassName("customHeader");
+		
+		HorizontalLayout innerWrapper = new HorizontalLayout();
+		
+		ComboBox<ExpirationTime> periodBox = new ComboBox<ExpirationTime>("Zeitraum");
+		periodBox.setItems(ExpirationTime.values());
+		periodBox.setItemLabelGenerator(time -> time.getLabel());
+		periodBox.setMinWidth(400, Unit.PIXELS);
+		
+		Checkbox exactBox = new Checkbox();
+		exactBox.addClassNames(LumoUtility.Margin.Top.XLARGE, LumoUtility.Margin.Left.XLARGE, LumoUtility.Margin.Right.XLARGE);
+		exactBox.setLabel("Genauer Zeitpunkt");
+		
+		
+		DatePicker expirePicker = new DatePicker("Datum");
+		expirePicker.setMinWidth(400, Unit.PIXELS);
+		expirePicker.setEnabled(false);
+		expirePicker.addValueChangeListener(e -> {
+			if (e.getValue() != null) {
+				expirePicker.setInvalid(!e.getValue().isAfter(LocalDate.now()));
+			}
+		});
+		
+		exactBox.addValueChangeListener(e -> {
+			expirePicker.setEnabled(e.getValue());
+			periodBox.setEnabled(!e.getValue());
+			
+			if(!e.getValue()) {
+				expirePicker.clear();
+				periodBox.setValue(periodBox.getListDataView().getItem(0));
+			} else {
+				periodBox.clear();
+			}
+		});
+		
 		SvgIcon svgIcon = LineAwesomeIcon.SAVE_SOLID.create();
 		svgIcon.addClassNames("save-icon");
 		
@@ -642,47 +796,8 @@ public class ConfigurationView extends VerticalLayout {
 		saveOnboardingSettingsButton.addClassNames("save-button", "extra-margin-right");
 		saveOnboardingSettingsButton.setEnabled(false);
 		
-		saveWrapper.add(saveOnboardingSettingsButton);
-		return saveWrapper;
-	}
-
-	private Component createQuestionsWrapper() {
-		VerticalLayout questionsMainWrapper = new VerticalLayout();
-		questionsMainWrapper.addClassNames(LumoUtility.Margin.Top.XLARGE);
 		
-		H3 questionsHeader = new H3();
-		questionsHeader.setText("Onboarding Fragen");
-		
-		Grid<String> questionGrid = new Grid<String>();
-		
-		
-		questionsMainWrapper.add(questionsHeader, questionGrid);
-		return questionsMainWrapper;
-	}
-
-	private Component createTokenLengtWrapper() {
-		VerticalLayout tokenLengthWrapper = new VerticalLayout();
-		tokenLengthWrapper.addClassNames(LumoUtility.Margin.Top.XLARGE);
-		
-		H3 tokenLengthHeader = new H3();
-		tokenLengthHeader.setText("Onboarding Link Gültigkeit");
-		
-		HorizontalLayout innerWrapper = new HorizontalLayout();
-		
-		ComboBox<String> periodBox = new ComboBox<String>("Zeitraum");
-		periodBox.setMinWidth(400, Unit.PIXELS);
-		
-		Checkbox exactBox = new Checkbox();
-		exactBox.addClassNames(LumoUtility.Margin.Top.XLARGE);
-		exactBox.setLabel("Genauer Zeitpunkt");
-		
-		DatePicker expirePicker = new DatePicker("Datum");
-		expirePicker.setMinWidth(400, Unit.PIXELS);
-		expirePicker.addValueChangeListener(e -> {
-			if(e.getValue().isAfter(LocalDate.now())) {
-			}
-		});
-		innerWrapper.add(periodBox, exactBox, expirePicker);
+		innerWrapper.add(periodBox, exactBox, expirePicker, saveOnboardingSettingsButton);
 		tokenLengthWrapper.add(tokenLengthHeader, innerWrapper);
 		return tokenLengthWrapper;
 	}

@@ -37,8 +37,9 @@
 }
 
 .extra-margin-right {
-	margin-right: 100px;
+	margin-left: 100px;
 	font-size: large;
+	margin-top: 30px;
 }
 
 .save-icon {
@@ -47,6 +48,30 @@
 	color: #ffffff;
 }
 
+.lower {
+	padding-top: 8px;
+}
+
+.add-cross {
+  background-color: #ffffff;
+  color: white;
+  padding-top: none;
+  margin-top: none;
+}
+
+.add-cross > vaadin-icon{
+  color: #8ABD3E;
+}
+
+.add-cross[disabled] {
+  background-color: #a3a3a3;
+  color: white;
+}
+
+.add-cross:hover {
+  background-color: #efefef;
+  color: white;
+}
 .configuration-view .button-category {
   max-width: 100%;
   min-width: 150px;

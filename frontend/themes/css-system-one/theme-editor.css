@@ -688,13 +688,17 @@ vaadin-vertical-layout.uebersicht-box-grid {
   color: white;
 }
 
+.save-button > vaadin-icon{
+  color: white;
+}
+
 .save-button[disabled] {
   background-color: #a3a3a3;
   color: white;
 }
 
 .save-button:hover {
-  background-color: #efefef;
+  background-color: #729b33;
   color: white;
 }
 
