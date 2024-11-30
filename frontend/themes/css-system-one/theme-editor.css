@@ -141,11 +141,33 @@ vaadin-checkbox::part(checkbox)::after { color:rgb(255,255,255); }
 
 vaadin-checkbox[checked]::part(checkbox) { background-color:#8ABD3E; }
 
-vaadin-combo-box { font-family:'Afacad Flux',sans-serif; }
+vaadin-combo-box { 
+	font-family:'Afacad Flux',sans-serif; 
+	border-bottom: medium;
+	border-bottom-color: lime;
+}
+
+vaadin-combo-box::part(input-field) {
+	background: #ffffff;
+}
 
 vaadin-combo-box.diary-view-combo-box-1::part(label) { color:#8ABD3E; }
 
 vaadin-combo-box::part(label) { color:#8ABD3E; }
+
+vaadin-date-picker::part(input-field) {
+	background: #ffffff;
+}
+
+vaadin-date-picker-overlay {
+	border-bottom-color: fuchsia;
+	
+}
+
+vaadin-date-picker-overlay-content {
+	border-bottom: medium;
+	border-bottom-color: black;
+}
 
 vaadin-date-picker-overlay vaadin-date-picker-year::part(year-number) { color:#8ABD3E; }
 
@@ -667,6 +689,11 @@ vaadin-vertical-layout.uebersicht-box-grid {
 }
 
 .save-button[disabled] {
+  background-color: #a3a3a3;
+  color: white;
+}
+
+.save-button:hover {
   background-color: #efefef;
   color: white;
 }

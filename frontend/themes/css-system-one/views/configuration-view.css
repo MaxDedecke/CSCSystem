@@ -27,6 +27,26 @@
   padding-top: var(--lumo-space-m);
 }
 
+.save-icon {
+	margin-top: 10px;
+}
+
+.save-icon:hover {
+	font-size: large;
+	background: #efefef;
+}
+
+.extra-margin-right {
+	margin-right: 100px;
+	font-size: large;
+}
+
+.save-icon {
+	margin-top: none;
+	padding-bottom: 8px;
+	color: #ffffff;
+}
+
 .configuration-view .button-category {
   max-width: 100%;
   min-width: 150px;
@@ -72,11 +92,6 @@
   background-color: rgb(192, 192, 192);
   color: white;
 }
-
-.configuration-view .save-button {
-  background-color: #8ABD3E;
-  color: white;
-} 
 
 .configuration-view .button-layout-common {
    max-width: 100%;
@@ -212,11 +227,6 @@ vaadin-dialog-overlay .cancel-button {
   color: white;
 }
 
-vaadin-dialog-overlay .save-button {
-  background-color: #8ABD3E;
-  color: white;
-}
-
 .configuration-view vaadin-dialog-overlay .cancel-button:hover {
   background-color: rgb(192, 192, 192);
   color: white;
@@ -244,17 +254,6 @@ vaadin-dialog-overlay .save-button {
 	color: rgba(69,37,18,1);
 	font-weight: bold;
 	font-family:'Afacad Flux',sans-serif;
-}
-
-.configuration-view vaadin-dialog-overlay .save-button:hover {
-  background-color: #88b149;
-  color: white;
-}
-
-.configuration-view vaadin-dialog-overlay .save-button[disabled] {
-  background-color: rgb(192, 192, 192);
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 vaadin-grid {

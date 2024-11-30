@@ -10,11 +10,11 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Transactional;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
-import com.css.one.data.AssociationRole;
 import com.css.one.data.Blossom;
 import com.css.one.data.MemberData;
 import com.css.one.data.MemberSubscription;
 import com.css.one.data.Person;
+import com.css.one.data.enums.AssociationRole;
 import com.css.one.services.BlossomService;
 import com.css.one.services.MemberDataService;
 import com.css.one.services.MemberSubscriptionService;

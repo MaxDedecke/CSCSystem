@@ -7,13 +7,13 @@ import java.util.Optional;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
-import com.css.one.data.AssociationRole;
-import com.css.one.data.EmailType;
 import com.css.one.data.MemberData;
 import com.css.one.data.MemberSubscription;
 import com.css.one.data.OnboardingToken;
 import com.css.one.data.Person;
 import com.css.one.data.WaitingPerson;
+import com.css.one.data.enums.AssociationRole;
+import com.css.one.data.enums.EmailType;
 import com.css.one.services.EmailService;
 import com.css.one.services.MemberDataService;
 import com.css.one.services.MemberSubscriptionService;

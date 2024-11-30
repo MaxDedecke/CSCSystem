@@ -16,13 +16,13 @@ import org.vaadin.addons.MoneyField;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.data.MemberSubscription;
-import com.css.one.data.PaymentMethod;
 import com.css.one.data.Person;
 import com.css.one.data.RecurringPayment;
-import com.css.one.data.TimeDelcaration;
-import com.css.one.data.Timezone;
 import com.css.one.data.Transaction;
 import com.css.one.data.TransactionType;
+import com.css.one.data.enums.PaymentMethod;
+import com.css.one.data.enums.TimeDelcaration;
+import com.css.one.data.enums.Timezone;
 import com.css.one.services.AssociationService;
 import com.css.one.services.MemberSubscriptionService;
 import com.css.one.services.PersonService;

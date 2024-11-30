@@ -1,5 +1,6 @@
 package com.css.one.views.settings;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,8 @@ import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -34,6 +37,7 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.SvgIcon;
@@ -109,7 +113,8 @@ public class ConfigurationView extends VerticalLayout {
 	private Button saveLocationButton = new Button("erfassen");
 	private Button saveCategoryButton = new Button("hinzufügen");
 	private Button addPricingModelButton = new Button();
-
+	private Button saveOnboardingSettingsButton;
+	
 	private Location selectedLocation;
 	private WorkingUnitCategory selectedCategory;
 	private SubscriptionModel subscriptionModel;
@@ -144,7 +149,7 @@ public class ConfigurationView extends VerticalLayout {
 		tabSheet.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		tabSheet.add("Onboarding", createOnboardingTab());
 		tabSheet.add("Tarife", createMembershipTab());
-		tabSheet.add("Standorte", createLocationsTab());
+		tabSheet.add("Standorte", createLocationsTab());	
 		tabSheet.add("Arbeitsplanung", createWorkingEnvTab());
 		tabSheet.add("Finanzen", createFinancesTab());
 		tabSheet.add("Autorisierung", createAuthorizationTab());
@@ -612,25 +617,76 @@ public class ConfigurationView extends VerticalLayout {
 	private Component createOnboardingTab() {
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setHeight("100%");
-		
-		mainLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
-		H2 headerOnboarding = new H2("Allgemeine Einstellungen");
-
-//		StreamResource imageResource = new StreamResource("potteriepng.png",
-//				() -> getClass().getResourceAsStream("/potteriepng.png"));
-//
-//		Avatar avatar = new Avatar("logo_club");
-//		avatar.setImageResource(imageResource);
-//		avatar.setHeight(250, Unit.PIXELS);
-//	    avatar.setWidth(250, Unit.PIXELS);
-//		
-//		mainLayout.add(avatar, help);
-		
-		mainLayout.add(headerOnboarding);
+		mainLayout.setWidthFull();
+		mainLayout.addClassNames(LumoUtility.AlignItems.STRETCH);
+						
+		mainLayout.add(createTokenLengtWrapper(), createQuestionsWrapper(), createSaveButtonWrapper());
 		return mainLayout;
 	}
 	
 	
+	private Component createSaveButtonWrapper() {
+		VerticalLayout saveWrapper = new VerticalLayout();
+		saveWrapper.addClassNames(LumoUtility.AlignItems.END);
+		SvgIcon svgIcon = LineAwesomeIcon.SAVE_SOLID.create();
+		svgIcon.addClassNames("save-icon");
+		
+		saveOnboardingSettingsButton = new Button("speichern", svgIcon);
+		saveOnboardingSettingsButton.setMinWidth(200, Unit.PIXELS);
+		saveOnboardingSettingsButton.setMinHeight(50, Unit.PIXELS);
+		saveOnboardingSettingsButton.addClickListener(e -> {
+			//TODO
+			Notification notification = Notification.show("Erfolgreich gespeichert.");
+			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+		});
+		saveOnboardingSettingsButton.addClassNames("save-button", "extra-margin-right");
+		saveOnboardingSettingsButton.setEnabled(false);
+		
+		saveWrapper.add(saveOnboardingSettingsButton);
+		return saveWrapper;
+	}
+
+	private Component createQuestionsWrapper() {
+		VerticalLayout questionsMainWrapper = new VerticalLayout();
+		questionsMainWrapper.addClassNames(LumoUtility.Margin.Top.XLARGE);
+		
+		H3 questionsHeader = new H3();
+		questionsHeader.setText("Onboarding Fragen");
+		
+		Grid<String> questionGrid = new Grid<String>();
+		
+		
+		questionsMainWrapper.add(questionsHeader, questionGrid);
+		return questionsMainWrapper;
+	}
+
+	private Component createTokenLengtWrapper() {
+		VerticalLayout tokenLengthWrapper = new VerticalLayout();
+		tokenLengthWrapper.addClassNames(LumoUtility.Margin.Top.XLARGE);
+		
+		H3 tokenLengthHeader = new H3();
+		tokenLengthHeader.setText("Onboarding Link Gültigkeit");
+		
+		HorizontalLayout innerWrapper = new HorizontalLayout();
+		
+		ComboBox<String> periodBox = new ComboBox<String>("Zeitraum");
+		periodBox.setMinWidth(400, Unit.PIXELS);
+		
+		Checkbox exactBox = new Checkbox();
+		exactBox.addClassNames(LumoUtility.Margin.Top.XLARGE);
+		exactBox.setLabel("Genauer Zeitpunkt");
+		
+		DatePicker expirePicker = new DatePicker("Datum");
+		expirePicker.setMinWidth(400, Unit.PIXELS);
+		expirePicker.addValueChangeListener(e -> {
+			if(e.getValue().isAfter(LocalDate.now())) {
+			}
+		});
+		innerWrapper.add(periodBox, exactBox, expirePicker);
+		tokenLengthWrapper.add(tokenLengthHeader, innerWrapper);
+		return tokenLengthWrapper;
+	}
+
 	private Component createExportTab() {
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setHeight("100%");

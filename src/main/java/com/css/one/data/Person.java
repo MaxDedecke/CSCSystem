@@ -11,6 +11,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Email;
 import java.time.LocalDate;
 
+import com.css.one.data.enums.AssociationRole;
+
 @Entity
 public class Person {
 	

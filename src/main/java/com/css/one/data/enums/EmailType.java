@@ -1,4 +1,4 @@
-package com.css.one.data;
+package com.css.one.data.enums;
 
 public enum EmailType {
 	

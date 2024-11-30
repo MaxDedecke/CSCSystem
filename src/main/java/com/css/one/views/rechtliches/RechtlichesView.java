@@ -13,9 +13,9 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
-import com.css.one.data.AssociationRole;
 import com.css.one.data.LawInfo;
 import com.css.one.data.Person;
+import com.css.one.data.enums.AssociationRole;
 import com.css.one.data.Blossom;
 import com.css.one.services.AssociationService;
 import com.css.one.services.LawInfoService;

@@ -2,6 +2,8 @@ package com.css.one.data;
 
 import java.time.LocalDate;
 
+import com.css.one.data.enums.GrowStatus;
+
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;

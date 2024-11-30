@@ -20,11 +20,11 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import com.css.one.data.Association;
-import com.css.one.data.AssociationRole;
 import com.css.one.data.Person;
 import com.css.one.data.Transaction;
 import com.css.one.data.TransactionType;
 import com.css.one.data.WorkingUnit;
+import com.css.one.data.enums.AssociationRole;
 import com.css.one.services.AssociationService;
 import com.css.one.services.LocationService;
 import com.css.one.services.PersonService;
