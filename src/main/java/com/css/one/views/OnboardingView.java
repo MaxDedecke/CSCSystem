@@ -1,5 +1,6 @@
 package com.css.one.views;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -592,10 +593,10 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		Optional<OnboardingToken> optionalToken = onboardingTokenService.findByToken(token);
 		
 		if(optionalToken.isPresent()) {
-			Date expirationDate = optionalToken.get().getExpirationDate();
+			LocalDate expirationDate = optionalToken.get().getExpirationDate();
 			onboardingToken = optionalToken.get();
 
-			if(new Date().after(expirationDate)) {
+			if(LocalDate.now().isAfter(expirationDate)) {
 				UI.getCurrent().navigate("login");
 				onboardingDataService.delete(onboardingToken.getId());
 				onboardingToken = null;
