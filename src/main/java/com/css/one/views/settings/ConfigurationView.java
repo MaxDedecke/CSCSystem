@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
+import com.css.one.data.AssociationSettings;
 import com.css.one.data.Blossom;
 import com.css.one.data.Cutting;
 import com.css.one.data.Location;
@@ -16,6 +17,7 @@ import com.css.one.data.SubscriptionModel;
 import com.css.one.data.WorkingUnit;
 import com.css.one.data.WorkingUnitCategory;
 import com.css.one.data.enums.ExpirationTime;
+import com.css.one.services.AssociationSettingsService;
 import com.css.one.services.BlossomService;
 import com.css.one.services.CuttingService;
 import com.css.one.services.LocationService;
@@ -75,6 +77,7 @@ public class ConfigurationView extends VerticalLayout {
 	private WorkingUnitService workingUnitService;
 	private SubscriptionModelService subscriptionModelService;
 	private OnboardingQuestionService onboardingQuestionService;
+	private AssociationSettingsService associationSettingsService;
 	
 	private WorkingUnitCategoryService workingUnitCategoryService;
 	private int associationId;
@@ -121,6 +124,7 @@ public class ConfigurationView extends VerticalLayout {
 	private Button addPricingModelButton = new Button();
 	private Button saveOnboardingSettingsButton;
 	
+	private AssociationSettings associationSettings;
 	private Location selectedLocation;
 	private WorkingUnitCategory selectedCategory;
 	private SubscriptionModel subscriptionModel;
@@ -139,7 +143,8 @@ public class ConfigurationView extends VerticalLayout {
 			CuttingService cuttingService,
 			WorkingUnitService workingUnitService,
 			SubscriptionModelService subscriptionModelService,
-			OnboardingQuestionService onboardingQuestionService) {
+			OnboardingQuestionService onboardingQuestionService,
+			AssociationSettingsService associationSettingsService) {
 		
 		this.locationService = locationService;
 		this.workingUnitCategoryService = workingUnitCategoryService;
@@ -149,10 +154,13 @@ public class ConfigurationView extends VerticalLayout {
 		this.workingUnitService = workingUnitService;
 		this.subscriptionModelService = subscriptionModelService;
 		this.onboardingQuestionService = onboardingQuestionService;
+		this.associationSettingsService = associationSettingsService;
 		
 		addClassNames("configuration-view", LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		
 		associationId = MainLayout.getAssociationId();
+		
+		loadAssociationSettings();
 		
 		tabSheet.setSizeFull();
 		tabSheet.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
@@ -173,6 +181,11 @@ public class ConfigurationView extends VerticalLayout {
 		add(tabSheet);
     }
 	
+	private void loadAssociationSettings() {
+		Optional<AssociationSettings> optSettings = associationSettingsService.findAllByAssociation(associationId);	
+		associationSettings = optSettings.isPresent() ? optSettings.get() : associationSettingsService.createInitialSettings(associationId);		
+	}
+
 	private void addOnboardingQuestionDialog() {
 
 		addOnboardingQuestionDialog = new Dialog();
@@ -694,7 +707,7 @@ public class ConfigurationView extends VerticalLayout {
 	private Component createQuestionsWrapper() {
 		VerticalLayout questionsMainWrapper = new VerticalLayout();
 		questionsMainWrapper.addClassNames(LumoUtility.Margin.Top.XLARGE);
-		questionsMainWrapper.setMaxWidth(1000, Unit.PIXELS);
+		questionsMainWrapper.setMaxWidth(1200, Unit.PIXELS);
 		
 		HorizontalLayout headerWrapper = new HorizontalLayout();
 		headerWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
@@ -712,7 +725,7 @@ public class ConfigurationView extends VerticalLayout {
 		headerWrapper.add(questionsHeader, addQuestionButton);
 		questionGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 		questionGrid.setMinHeight(300, Unit.PIXELS);
-		questionGrid.addColumn(e -> e.getQuestion()).setTooltipGenerator(e -> e.getQuestion()).setAutoWidth(true);
+		questionGrid.addColumn(e -> e.getQuestion()).setTooltipGenerator(e -> e.getQuestion()).setFlexGrow(9);
 		questionGrid.addComponentColumn(item -> {
 			SvgIcon icon = LineAwesomeIcon.TRASH_ALT.create();
 			icon.addClassName("icon");
@@ -726,8 +739,9 @@ public class ConfigurationView extends VerticalLayout {
 			Tooltip.forComponent(icon).withText("löschen");
 			return icon;
 		
-		}).setWidth("1%");
+		}).setFlexGrow(1);
 		
+		questionGrid.addClassName("custom-scrollbar");
 		questionsMainWrapper.add(headerWrapper, questionGrid);
 		return questionsMainWrapper;
 	}
@@ -746,7 +760,7 @@ public class ConfigurationView extends VerticalLayout {
 		tokenLengthWrapper.addClassNames(LumoUtility.Margin.Top.XLARGE);
 		
 		H3 tokenLengthHeader = new H3();
-		tokenLengthHeader.setText("Onboarding Link Gültigkeit");
+		tokenLengthHeader.setText("Onboarding Link - Ablaufdatum");
 		tokenLengthHeader.addClassName("customHeader");
 		
 		HorizontalLayout innerWrapper = new HorizontalLayout();
@@ -756,17 +770,40 @@ public class ConfigurationView extends VerticalLayout {
 		periodBox.setItemLabelGenerator(time -> time.getLabel());
 		periodBox.setMinWidth(400, Unit.PIXELS);
 		
+		if(associationSettings.getOnboardingTokenExpirationTime() != null) {
+			periodBox.setValue(associationSettings.getOnboardingTokenExpirationTime());		
+		} else {
+			periodBox.setValue(periodBox.getListDataView().getItem(0));
+		}
+		
 		Checkbox exactBox = new Checkbox();
 		exactBox.addClassNames(LumoUtility.Margin.Top.XLARGE, LumoUtility.Margin.Left.XLARGE, LumoUtility.Margin.Right.XLARGE);
-		exactBox.setLabel("Genauer Zeitpunkt");
-		
+		exactBox.setLabel("spezifisch");
 		
 		DatePicker expirePicker = new DatePicker("Datum");
 		expirePicker.setMinWidth(400, Unit.PIXELS);
 		expirePicker.setEnabled(false);
+		
+		if (associationSettings.getOnboardingTokenExpirationDate() != null) {
+			expirePicker.setValue(associationSettings.getOnboardingTokenExpirationDate());
+			exactBox.setValue(true);
+			periodBox.setEnabled(false);
+			periodBox.setValue(periodBox.getEmptyValue());
+			expirePicker.setEnabled(true);
+		}
+		
+		periodBox.addValueChangeListener(e -> {
+			if(e.getValue() != periodBox.getEmptyValue()) {
+				saveOnboardingSettingsButton.setVisible(true);
+				saveOnboardingSettingsButton.setEnabled(true);
+			}
+		});
+		
 		expirePicker.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
 				expirePicker.setInvalid(!e.getValue().isAfter(LocalDate.now()));
+				saveOnboardingSettingsButton.setVisible(true);
+				saveOnboardingSettingsButton.setEnabled(true);
 			}
 		});
 		
@@ -776,10 +813,22 @@ public class ConfigurationView extends VerticalLayout {
 			
 			if(!e.getValue()) {
 				expirePicker.clear();
-				periodBox.setValue(periodBox.getListDataView().getItem(0));
+
+				if(associationSettings.getOnboardingTokenExpirationTime() != null) {
+					periodBox.setValue(associationSettings.getOnboardingTokenExpirationTime());
+				} else {					
+					periodBox.setValue(periodBox.getListDataView().getItem(0));
+				}
 			} else {
 				periodBox.clear();
+				
+				if(associationSettings.getOnboardingTokenExpirationDate() != null) {
+					expirePicker.setValue(associationSettings.getOnboardingTokenExpirationDate());
+					
+				}
 			}
+			saveOnboardingSettingsButton.setVisible(false);
+			saveOnboardingSettingsButton.setEnabled(false);
 		});
 		
 		SvgIcon svgIcon = LineAwesomeIcon.SAVE_SOLID.create();
@@ -789,13 +838,23 @@ public class ConfigurationView extends VerticalLayout {
 		saveOnboardingSettingsButton.setMinWidth(200, Unit.PIXELS);
 		saveOnboardingSettingsButton.setMinHeight(50, Unit.PIXELS);
 		saveOnboardingSettingsButton.addClickListener(e -> {
-			//TODO
+			
+			if(exactBox.getValue()) {
+				associationSettings.setOnboardingTokenExpirationDate(expirePicker.getValue());
+				associationSettings.setOnboardingTokenExpirationTime(null);
+			} else {
+				associationSettings.setOnboardingTokenExpirationDate(null);
+				associationSettings.setOnboardingTokenExpirationTime(periodBox.getValue());
+			}
+			
+			associationSettings = associationSettingsService.update(associationSettings);
+			
 			Notification notification = Notification.show("Erfolgreich gespeichert.");
 			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 		});
 		saveOnboardingSettingsButton.addClassNames("save-button", "extra-margin-right");
 		saveOnboardingSettingsButton.setEnabled(false);
-		
+		saveOnboardingSettingsButton.setVisible(false);
 		
 		innerWrapper.add(periodBox, exactBox, expirePicker, saveOnboardingSettingsButton);
 		tokenLengthWrapper.add(tokenLengthHeader, innerWrapper);

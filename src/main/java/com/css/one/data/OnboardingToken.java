@@ -1,6 +1,6 @@
 package com.css.one.data;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.CascadeType;
@@ -28,7 +28,7 @@ public class OnboardingToken {
 	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private Person member;
 	
-	private Date expirationDate;
+	private LocalDate expirationDate;
 	
 	private int associationId;
 
@@ -64,11 +64,11 @@ public class OnboardingToken {
 		this.member = member;
 	}
 
-	public Date getExpirationDate() {
+	public LocalDate getExpirationDate() {
 		return expirationDate;
 	}
 
-	public void setExpirationDate(Date expirationDate) {
+	public void setExpirationDate(LocalDate expirationDate) {
 		this.expirationDate = expirationDate;
 	}
 

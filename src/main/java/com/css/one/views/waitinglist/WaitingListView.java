@@ -1,12 +1,11 @@
 package com.css.one.views.waitinglist;
 
 import java.time.LocalDate;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Optional;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
+import com.css.one.data.AssociationSettings;
 import com.css.one.data.MemberData;
 import com.css.one.data.MemberSubscription;
 import com.css.one.data.OnboardingToken;
@@ -14,6 +13,8 @@ import com.css.one.data.Person;
 import com.css.one.data.WaitingPerson;
 import com.css.one.data.enums.AssociationRole;
 import com.css.one.data.enums.EmailType;
+import com.css.one.data.enums.ExpirationTime;
+import com.css.one.services.AssociationSettingsService;
 import com.css.one.services.EmailService;
 import com.css.one.services.MemberDataService;
 import com.css.one.services.MemberSubscriptionService;
@@ -88,17 +89,24 @@ public class WaitingListView extends FlexLayout {
     private MemberSubscriptionService subscriptionService;
     private MemberDataService memberDataService;
     private OnboardingTokenService onboardingTokenService;
+    private AssociationSettingsService associationSettingsService;
     
 	private int associationId;
 	private boolean isNewPerson = true;
 
-	public WaitingListView(WaitingPersonService waitingPersonService, PersonService personService, MemberSubscriptionService subscriptionService, MemberDataService memberDataService,
-			OnboardingTokenService onboardingTokenService) {
+	public WaitingListView(WaitingPersonService waitingPersonService, 
+			PersonService personService,
+			MemberSubscriptionService subscriptionService,
+			MemberDataService memberDataService,
+			OnboardingTokenService onboardingTokenService,
+			AssociationSettingsService associationSettingsService) {
+		
 		this.waitingPersonService = waitingPersonService;
 		this.personService = personService;
 		this.subscriptionService = subscriptionService;
 		this.memberDataService = memberDataService;
 		this.onboardingTokenService = onboardingTokenService;
+		this.associationSettingsService = associationSettingsService;
 		
 		addClassNames("waitinglist-view");
 
@@ -658,12 +666,21 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		onboardingTokenService.update(onboardingToken);
 	}
 
-	private Date createExpirationDate() {
-		Calendar calendar = Calendar.getInstance();
+	private LocalDate createExpirationDate() {
+		Optional<AssociationSettings> optOnboardingSettings = associationSettingsService.findAllByAssociation(associationId);
+		
+		if (optOnboardingSettings.isPresent()) {
+			if(optOnboardingSettings.get().getOnboardingTokenExpirationTime() != null) {
+				return calculateExpirationDate(optOnboardingSettings.get().getOnboardingTokenExpirationTime());													
+			} else {				
+				return optOnboardingSettings.get().getOnboardingTokenExpirationDate();
+			}
+		} else {
+			return LocalDate.now().plusDays(14);
+		}
+	}
 
-		//TODO konfigurierbar machen
-		calendar.add(Calendar.DAY_OF_YEAR, 14);
-
-		return calendar.getTime();
+	private LocalDate calculateExpirationDate(ExpirationTime expirationTime) {
+		return LocalDate.now().plusDays(expirationTime.getDayUntilExpiration());
 	}
 }

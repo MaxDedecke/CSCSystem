@@ -171,22 +171,6 @@
     padding:none;
 }
 
-.uebersicht-view .custom-scrollbar {
-    scrollbar-width: thin; /* Width of the scrollbar */
-    scrollbar-color: #88b149 #efefef; /* Color of the scrollbar thumb and track */
-    border-radius: 24px;
-}
-
-.uebersicht-view .custom-scrollbar::-webkit-scrollbar-button {
-    display: none; /* Entfernt die Pfeile */
-}
-
-
-/* Entfernen der Pfeile in Firefox */
-.uebersicht-view .custom-scrollbar::-moz-scrollbar-button {
-  display: none;
-}
-
 @keyframes shadowPulse {
     0% {
         box-shadow: 0 4px 8px #5918ab;

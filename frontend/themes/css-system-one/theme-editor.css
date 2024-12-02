@@ -15,6 +15,49 @@ h3.diary-view-h3-1 { font-weight:bold; }
 	  font-family:'Afacad Flux', sans-serif;
 }
 
+@keyframes shadowPulse {
+    0% {
+        box-shadow: 0 4px 8px #5918ab;
+    }
+    50% {
+        box-shadow: 0 4px 16px rgb(69, 18, 131);
+    }
+    100% {
+        box-shadow: 0 4px 8px #1f0247;
+    }
+}
+
+.pulsing-shadow {
+    animation: shadowPulse 2s infinite;
+}
+
+.custom-scrollbar {
+    scrollbar-width: thin; /* Width of the scrollbar */
+    scrollbar-color: #88b149 #ffffff; /* Color of the scrollbar thumb and track */
+    border-radius: 48px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-button {
+    display: none; /* Entfernt die Pfeile */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #ffffff; /* Hintergrund des Scrollbar-Tracks */
+    border-radius: 10px; /* Abgerundete Ecken */  
+}
+
+/* Entfernen der Pfeile in Firefox */
+.custom-scrollbar::-moz-scrollbar-button {
+  display: none;
+  border-radius: 10px; /* Abgerundete Ecken */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #00aaff; /* Farbe des Scrollbar-Thumbs */
+    border-radius: 10px; /* Abgerundete Ecken */
+    border: 3px solid #ffffff; /* Abstand zwischen Daumen und Track */
+}
+
 .header-statistics {
 	font-size: medium;
 	padding-bottom: none;
@@ -82,7 +125,7 @@ vaadin-button > vaadin-icon {
 }
 
 vaadin-horizontal-layout.header-bar-custom {
-  background:rgba(191,191,191,0.08);
+  background:#ffffff;
   border-color:#000000;
   border-radius:10px;
   border-width:10px;
@@ -339,7 +382,7 @@ vaadin-horizontal-layout.diary-view-horizontal-layout-1 {
 }
 
 vaadin-horizontal-layout.rechtliches-box-horizontal {
-  background:rgba(191,191,191,0.08);
+  background:#ffffff;
   border-color:#000000;
   border-radius:10px;
   border-width:10px;
@@ -384,7 +427,7 @@ vaadin-combo-box-item:hover {
 }
 
 vaadin-horizontal-layout.rechtliches-box-horizontal-start {
-  background:rgba(191,191,191,0.08);
+  background:#ffffff;;
   border-color:#000000;
   border-radius:10px;
   border-width:10px;
@@ -551,7 +594,7 @@ vaadin-text-field.finanzen-view-text-field-1::part(label) { color:#8ABD3E; }
 vaadin-text-field::part(label) { color:#8ABD3E; }
 
 vaadin-vertical-layout.bestand-box {
-  background:rgba(191,191,191,0.08);
+  background:#ffffff;
   border-color:#000000;
   border-radius:10px;
   border-width:10px;
@@ -619,7 +662,7 @@ vaadin-vertical-layout.diary-view-vertical-layout-2 {
 }
 
 vaadin-vertical-layout.rechtliches-box {
-  background:rgba(191,191,191,0.08);
+  background:#ffffff;;
   border-color:#000000;
   border-radius:10px;
   border-width:10px;
@@ -638,7 +681,7 @@ vaadin-vertical-layout.rechtliches-box {
 }
 
 vaadin-vertical-layout.uebersicht-box {
-  background:rgba(191,191,191,0.08);
+  background:#ffffff;;
   border-color:#000000;
   border-radius:10px;
   border-width:10px;
@@ -654,7 +697,7 @@ vaadin-vertical-layout.uebersicht-box {
 }
 
 vaadin-vertical-layout.onboarding-box {
-  background:rgba(191,191,191,0.08);
+  background:#ffffff;;
   border-color:#000000;
   border-radius:10px;
   border-width:10px;
@@ -670,7 +713,7 @@ vaadin-vertical-layout.onboarding-box {
 }
 
 vaadin-vertical-layout.uebersicht-box-grid {
-  background:rgba(191,191,191,0.08);
+  background:#ffffff;;
   border-color:#000000;
   border-radius:10px;
   border-width:10px;
@@ -703,7 +746,7 @@ vaadin-vertical-layout.uebersicht-box-grid {
 }
 
 vaadin-vertical-layout.uebersicht-box-header {
-  background:rgba(191,191,191,0.08);
+  background:#ffffff;;	
   border-color:#000000;
   border-radius:10px;
   border-width:10px;
