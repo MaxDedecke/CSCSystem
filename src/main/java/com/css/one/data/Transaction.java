@@ -3,6 +3,7 @@ package com.css.one.data;
 import java.time.LocalDate;
 
 import com.css.one.data.enums.PaymentMethod;
+import com.css.one.data.enums.TransactionType;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;

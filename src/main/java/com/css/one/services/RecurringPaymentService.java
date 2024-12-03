@@ -11,9 +11,9 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.RecurringPayment;
-import com.css.one.data.RecurringPaymentRepository;
 import com.css.one.data.Transaction;
 import com.css.one.data.enums.TimeDelcaration;
+import com.css.one.data.repos.RecurringPaymentRepository;
 
 @Service
 public class RecurringPaymentService {

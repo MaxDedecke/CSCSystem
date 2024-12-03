@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.LawInfo;
-import com.css.one.data.LawInfoRepository;
+import com.css.one.data.repos.LawInfoRepository;
 
 @Service
 public class LawInfoService {

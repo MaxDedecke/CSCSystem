@@ -1,7 +1,7 @@
 package com.css.one.services;
 
 import com.css.one.data.Person;
-import com.css.one.data.PersonRepository;
+import com.css.one.data.repos.PersonRepository;
 
 import java.util.List;
 import java.util.Optional;

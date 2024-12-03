@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.css.one.data.WorkingUnit;
 import com.css.one.data.WorkingUnitCategory;
-import com.css.one.data.WorkingUnitRepository;
+import com.css.one.data.repos.WorkingUnitRepository;
 
 @Service
 public class WorkingUnitService {

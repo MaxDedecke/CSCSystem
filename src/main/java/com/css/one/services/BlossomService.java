@@ -11,8 +11,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.Blossom;
-import com.css.one.data.BlossomRepository;
 import com.css.one.data.enums.GrowStatus;
+import com.css.one.data.repos.BlossomRepository;
 
 @Service
 public class BlossomService {

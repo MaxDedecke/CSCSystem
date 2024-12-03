@@ -8,8 +8,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.AssociationSettings;
-import com.css.one.data.AssociationSettingsRepository;
 import com.css.one.data.enums.ExpirationTime;
+import com.css.one.data.repos.AssociationSettingsRepository;
 
 @Service
 public class AssociationSettingsService {

@@ -9,8 +9,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.OnboardingToken;
-import com.css.one.data.OnboardingTokenRepository;
 import com.css.one.data.WaitingPerson;
+import com.css.one.data.repos.OnboardingTokenRepository;
 
 @Service
 public class OnboardingTokenService {

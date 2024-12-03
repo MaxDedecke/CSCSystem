@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.Association;
-import com.css.one.data.AssociationRepository;
+import com.css.one.data.repos.AssociationRepository;
 
 @Service
 public class AssociationService {

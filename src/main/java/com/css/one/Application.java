@@ -1,6 +1,6 @@
 package com.css.one;
 
-import com.css.one.data.PersonRepository;
+import com.css.one.data.repos.PersonRepository;
 import com.css.one.services.MigrationService;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.AppShellSettings;

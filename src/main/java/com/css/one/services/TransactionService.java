@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 
 import com.css.one.data.CalculationResult;
 import com.css.one.data.Transaction;
-import com.css.one.data.TransactionRepository;
-import com.css.one.data.TransactionType;
+import com.css.one.data.enums.TransactionType;
+import com.css.one.data.repos.TransactionRepository;
 
 @Service
 public class TransactionService {

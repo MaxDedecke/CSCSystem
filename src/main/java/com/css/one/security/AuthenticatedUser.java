@@ -1,7 +1,7 @@
 package com.css.one.security;
 
 import com.css.one.data.User;
-import com.css.one.data.UserRepository;
+import com.css.one.data.repos.UserRepository;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import java.util.Optional;
 import org.springframework.security.core.userdetails.UserDetails;

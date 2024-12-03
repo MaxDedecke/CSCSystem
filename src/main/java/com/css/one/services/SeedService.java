@@ -11,7 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.Seed;
-import com.css.one.data.SeedRepository;
+import com.css.one.data.repos.SeedRepository;
 import com.css.one.data.Blossom;
 
 @Service

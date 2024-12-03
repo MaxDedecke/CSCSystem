@@ -9,7 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.WaitingPerson;
-import com.css.one.data.WaitingPersonRepository;
+import com.css.one.data.repos.WaitingPersonRepository;
 
 @Service
 public class WaitingPersonService {

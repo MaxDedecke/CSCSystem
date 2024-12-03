@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.DiaryEntry;
-import com.css.one.data.DiaryEntryRepository;
+import com.css.one.data.repos.DiaryEntryRepository;
 
 @Service
 public class DiaryEntryService {

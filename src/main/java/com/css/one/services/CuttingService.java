@@ -11,7 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.Cutting;
-import com.css.one.data.CuttingRepository;
+import com.css.one.data.repos.CuttingRepository;
 import com.css.one.data.Blossom;
 
 @Service

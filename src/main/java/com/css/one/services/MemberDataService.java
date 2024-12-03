@@ -9,9 +9,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.MemberData;
-import com.css.one.data.MemberDataRepository;
 import com.css.one.data.Person;
 import com.css.one.data.WaitingPerson;
+import com.css.one.data.repos.MemberDataRepository;
 
 @Service
 public class MemberDataService {

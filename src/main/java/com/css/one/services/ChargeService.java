@@ -9,8 +9,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.Charge;
-import com.css.one.data.ChargeRepository;
 import com.css.one.data.Plant;
+import com.css.one.data.repos.ChargeRepository;
 
 @Service
 public class ChargeService {

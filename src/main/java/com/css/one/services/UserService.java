@@ -1,7 +1,8 @@
 package com.css.one.services;
 
 import com.css.one.data.User;
-import com.css.one.data.UserRepository;
+import com.css.one.data.repos.UserRepository;
+
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

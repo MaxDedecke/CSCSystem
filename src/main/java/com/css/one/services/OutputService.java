@@ -9,7 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.Output;
-import com.css.one.data.OutputRepository;
+import com.css.one.data.repos.OutputRepository;
 
 @Service
 public class OutputService {

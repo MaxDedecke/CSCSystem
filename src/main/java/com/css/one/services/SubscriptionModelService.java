@@ -10,7 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.SubscriptionModel;
-import com.css.one.data.SubscriptionModelRepository;
+import com.css.one.data.repos.SubscriptionModelRepository;
 
 @Service
 public class SubscriptionModelService {

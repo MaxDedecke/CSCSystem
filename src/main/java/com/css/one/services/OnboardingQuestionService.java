@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.OnboardingQuestion;
-import com.css.one.data.OnboardingQuestionRepository;
+import com.css.one.data.repos.OnboardingQuestionRepository;
 
 @Service
 public class OnboardingQuestionService {

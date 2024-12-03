@@ -9,7 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.OnboardingData;
-import com.css.one.data.OnboardingDataRepository;
+import com.css.one.data.repos.OnboardingDataRepository;
 
 @Service
 public class OnboardingDataService {

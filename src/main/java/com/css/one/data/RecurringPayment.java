@@ -5,6 +5,7 @@ import java.util.List;
 import com.css.one.data.enums.PaymentMethod;
 import com.css.one.data.enums.TimeDelcaration;
 import com.css.one.data.enums.Timezone;
+import com.css.one.data.enums.TransactionType;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.CascadeType;

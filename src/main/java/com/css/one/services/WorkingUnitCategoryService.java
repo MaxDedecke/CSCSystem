@@ -11,7 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.WorkingUnitCategory;
-import com.css.one.data.WorkingUnitCategoryRepository;
+import com.css.one.data.repos.WorkingUnitCategoryRepository;
 
 @Service
 public class WorkingUnitCategoryService {

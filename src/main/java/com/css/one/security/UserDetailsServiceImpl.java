@@ -1,7 +1,8 @@
 package com.css.one.security;
 
 import com.css.one.data.User;
-import com.css.one.data.UserRepository;
+import com.css.one.data.repos.UserRepository;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.security.core.GrantedAuthority;

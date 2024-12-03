@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.css.one.data.Location;
-import com.css.one.data.LocationRepository;
+import com.css.one.data.repos.LocationRepository;
 
 @Service
 public class LocationService {
