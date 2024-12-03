@@ -579,7 +579,9 @@ vaadin-menu-bar vaadin-menu-bar-button vaadin-menu-bar-item {
 
 vaadin-number-field::part(label) { color:#8ABD3E; }
 
-vaadin-number-field::part(label) { color:#8ABD3E; }
+vaadin-number-field::part(input-field) {
+	background: #ffffff;
+}
 
 vaadin-tab { font-family:'Afacad Flux',sans-serif; }
 
@@ -592,6 +594,10 @@ vaadin-text-field { font-family:'Afacad Flux',sans-serif; }
 vaadin-text-field.finanzen-view-text-field-1::part(label) { color:#8ABD3E; }
 
 vaadin-text-field::part(label) { color:#8ABD3E; }
+
+vaadin-text-field::part(input-field) {
+	background: #ffffff;
+}
 
 vaadin-vertical-layout.bestand-box {
   background:#ffffff;

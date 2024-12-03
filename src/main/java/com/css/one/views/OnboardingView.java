@@ -3,12 +3,23 @@ package com.css.one.views;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
+import com.css.one.data.AssociationSettings;
+import com.css.one.data.MemberData;
+import com.css.one.data.OnboardingData;
+import com.css.one.data.OnboardingQuestion;
 import com.css.one.data.OnboardingToken;
 import com.css.one.data.SubscriptionModel;
+import com.css.one.services.AssociationSettingsService;
+import com.css.one.services.EmailService;
+import com.css.one.services.MemberDataService;
 import com.css.one.services.OnboardingDataService;
+import com.css.one.services.OnboardingQuestionService;
 import com.css.one.services.OnboardingTokenService;
 import com.css.one.services.SubscriptionModelService;
 import com.css.one.services.WaitingPersonService;
@@ -21,6 +32,7 @@ import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
@@ -29,6 +41,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -75,6 +88,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	private Tab tabStepTwo;
 	private Tab tabStepThree;
 	private Tab tabStepFour;
+	private Tab tabQuestions;
 	private Tab tabEnd;
 
 	VerticalLayout beginWrapper = new VerticalLayout();
@@ -82,20 +96,25 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	VerticalLayout stepTwoWrapper = new VerticalLayout();
 	VerticalLayout stepThreeWrapper = new VerticalLayout();
 	VerticalLayout stepFourWrapper = new VerticalLayout();
+	VerticalLayout questionsWrapper = new VerticalLayout();
 	VerticalLayout endWrapper = new VerticalLayout();
 
 	private final WaitingPersonService waitingPersonService;
 	private final OnboardingDataService onboardingDataService;
 	private final SubscriptionModelService subscriptionModelService;
 	private final OnboardingTokenService onboardingTokenService;
+	private final OnboardingQuestionService onboardingQuestionService;
+	private final MemberDataService memberDataService;
 	
 	private List<VerticalLayout> cards = new ArrayList<>();
-	private Button finishOnboarding = new Button("Onboarding abschließen");
+	private Button finishStepFour = new Button("weiter");
 
 	public OnboardingView(WaitingPersonService waitingPersonService,
 			OnboardingDataService onboardingDataService,
 			SubscriptionModelService subscriptionModelService,
-			OnboardingTokenService onboardingTokenService) {
+			OnboardingTokenService onboardingTokenService,
+			OnboardingQuestionService onboardingQuestionService,
+			MemberDataService memberDataService) {
 
 		addClassNames("onboarding-view", LumoUtility.Padding.NONE);
 		
@@ -103,6 +122,8 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		this.onboardingDataService = onboardingDataService;
 		this.subscriptionModelService = subscriptionModelService;
 		this.onboardingTokenService = onboardingTokenService;
+		this.onboardingQuestionService = onboardingQuestionService;
+		this.memberDataService = memberDataService;
 		
 		setWidth("100%");
 		
@@ -176,18 +197,14 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		VerticalLayout buttonWrapper = new VerticalLayout();
 		buttonWrapper.addClassNames(LumoUtility.AlignItems.CENTER);	
 		
-		finishOnboarding.setEnabled(false);
-		finishOnboarding.addClickListener(e -> {
-			wizzard.add(tabEnd, endWrapper);
-			wizzard.setSelectedTab(tabEnd);
-			wizzard.remove(tabStepOne);
-			wizzard.remove(tabStepTwo);
-			wizzard.remove(tabStepThree);
-			wizzard.remove(tabStepFour);
+		finishStepFour.setEnabled(false);
+		finishStepFour.addClickListener(e -> {
+			tabQuestions.setEnabled(true);
+			wizzard.setSelectedTab(tabQuestions);
 		});
 		
-		finishOnboarding.addClassName("save-button");
-		buttonWrapper.add(finishOnboarding);
+		finishStepFour.addClassName("save-button");
+		buttonWrapper.add(finishStepFour);
 		
 		stepFourWrapper.add(createPricingModelsLayout(), buttonWrapper);
 	}
@@ -255,7 +272,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 			resetCards();
 			card.removeClassName("onboarding-model-box-grey");
 			card.addClassNames("onboarding-model-box");
-			finishOnboarding.setEnabled(true);
+			finishStepFour.setEnabled(true);
 		});
 		
 		buttonWrapper.add(choiceButton);
@@ -360,13 +377,19 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		FormLayout dataLayout = new FormLayout();
 		
 		firstName = new TextField("Vorname");
+		firstName.setPlaceholder("\"Max\"");
 		lastName = new TextField("Nachname");
+		lastName.setPlaceholder("\"Mustermann\"");
 		email = new TextField("Email");
+		email.setPlaceholder("\"max.mustermann@beispiel.de\"");
 		phone = new TextField("Telefonnummer");
         phone.setAllowedCharPattern("[0-9/]");
+        phone.setPlaceholder("\"0941420420\"");
 		dateOfBirth = new DatePicker("Geburtstag");
 		dateOfBirth.setOverlayClassName("waiting-list-view-date-picker-1");
 		dateOfBirth.addClassName("waiting-list-view-date-picker-1");
+		dateOfBirth.setPlaceholder("\"01.01.2000\"");		
+		dateOfBirth.setLocale(Locale.GERMANY);
 		
 		confirmAgeBox = new Checkbox();
 		confirmAgeBox.setLabel("Ich bestätige, dass ich 21 Jahre alt bin.");
@@ -537,10 +560,14 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		
 		FormLayout dataLayout = new FormLayout();
 		
-		streetName = new TextField("Straße");	
+		streetName = new TextField("Straße");
+		streetName.setPlaceholder("\"Musterstraße\"");
 		streetNumber = new TextField("Hausnummer");
+		streetNumber.setPlaceholder("\"1\"");
 		postalCode = new TextField("PLZ");
+		postalCode.setPlaceholder("\"93049\"");
 		city = new TextField("Ort");
+		city.setPlaceholder("\"Musterstadt\"");
 		
 		Hr hr = new Hr();
 		
@@ -609,6 +636,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 			createStepTwoLayout();
 			createStepThreeLayout();
 			createStepFourLayout();
+			createQuestionsTab();
 			createEnd();
 			
 			tabStepOne = wizzard.add("Schritt 1", stepOneWrapper);
@@ -622,11 +650,82 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 			
 			tabStepFour = wizzard.add("Schritt 4", stepFourWrapper);
 			tabStepFour.setEnabled(false);
+			
+			tabQuestions = wizzard.add("Fragen des Vereins", questionsWrapper);
+			tabQuestions.setEnabled(false);
 
 		} else {			
 			UI.getCurrent().navigate("login");
 			Notification show = Notification.show("Onboarding Link abgelaufen. Kontaktiere deinen Verein");
 			show.addThemeVariants(NotificationVariant.LUMO_ERROR);
 		}
+	}
+
+	private void createQuestionsTab() {
+		
+		List<OnboardingQuestion> questions = onboardingQuestionService.findAllByAssociation(onboardingToken.getAssociationId());
+		Map<OnboardingQuestion, TextArea> inputs = new HashMap<>();
+		
+		if (!questions.isEmpty()) {
+			FormLayout innerLayout = new FormLayout();
+			questions.forEach(question -> {
+
+				H3 qHeader = new H3(question.getQuestion());
+				TextArea answerField = new TextArea("Antwort");
+				innerLayout.add(qHeader, answerField);
+				inputs.put(question, answerField);
+			});
+
+			Button continueButton = new Button("Onboarding abschließen");
+			continueButton.addClassName("save-button");
+			continueButton.addClickListener(e -> {
+				wizzard.add(tabEnd, endWrapper);
+				wizzard.setSelectedTab(tabEnd);
+				wizzard.remove(tabStepOne);
+				wizzard.remove(tabStepTwo);
+				wizzard.remove(tabStepThree);
+				wizzard.remove(tabStepFour);
+				
+				finishOnboardingDataInputProcess(inputs);
+				sendNextStepsEmailToWaitingPerson();
+			});
+			questionsWrapper.add(innerLayout, continueButton);
+		}
+	}
+
+	private void sendNextStepsEmailToWaitingPerson() {
+		// TODO send email to user here
+		EmailService emailService = new EmailService();
+//		emailService.sendOnboardingEmail(token, token, token, null, token);
+		
+	}
+
+	private void finishOnboardingDataInputProcess(Map<OnboardingQuestion, TextArea> inputs) {
+		
+		OnboardingData data = new OnboardingData();
+		data.setAssociationId(onboardingToken.getAssociationId());
+		data.setDateOfBirth(dateOfBirth.getValue());
+		data.setEmail(email.getValue());
+		data.setFirstName(firstName.getValue());
+		data.setLastName(lastName.getValue());
+		data.setPhone(phone.getValue());
+		
+		MemberData memberData = new MemberData();
+		memberData.setCityName(city.getValue());
+		memberData.setDateOfRegistration(LocalDate.now());
+		memberData.setPostalCode(Integer.valueOf(postalCode.getValue()));
+		memberData.setStreetName(streetName.getValue());
+		memberData.setStreetNumber(streetNumber.getValue());
+		
+		memberData = memberDataService.update(memberData);
+		data.setMemberData(memberData);
+		data.setToken(onboardingToken);
+		
+		inputs.keySet().forEach(question -> {
+			question.setAnswer(inputs.get(question).getValue());	
+		});
+		data.setQuestions(inputs.keySet().stream().toList());
+		
+		onboardingDataService.update(data);
 	}
 }

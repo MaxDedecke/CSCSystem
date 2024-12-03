@@ -1,6 +1,7 @@
 package com.css.one.data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.CascadeType;
@@ -9,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Email;
 
@@ -22,7 +24,7 @@ public class OnboardingData {
 	private int memberNumber;
 	
 	@Nullable
-	private int token;
+	private OnboardingToken token;
 	
 	private String firstName;
 	private String lastName;
@@ -38,6 +40,18 @@ public class OnboardingData {
 	@Nullable
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private MemberData memberData;
+	
+	@Nullable
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	List<OnboardingQuestion> questions;
+	
+	public List<OnboardingQuestion> getQuestions() {
+		return questions;
+	}
+
+	public void setQuestions(List<OnboardingQuestion> questions) {
+		this.questions = questions;
+	}
 
 	public int getMemberNumber() {
 		return memberNumber;
@@ -111,11 +125,11 @@ public class OnboardingData {
 		this.id = id;
 	}
 
-	public int getToken() {
+	public OnboardingToken getToken() {
 		return token;
 	}
 
-	public void setToken(int token) {
+	public void setToken(OnboardingToken token) {
 		this.token = token;
 	}
 }
