@@ -41,9 +41,9 @@ public class MemberDataService {
         return repository.findAll(filter, pageable);
     }
     
-//    public List<MemberData> findAllByAssociation(int associationId) {
-//    	return repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).toList();
-//    }
+    public Optional<MemberData> findById(Long id) {
+    	return repository.findById(id);
+    }
     
     public Optional<MemberData> findByMember(WaitingPerson person) {
     	return repository.findById(person.getMemberData().getId());
@@ -60,12 +60,4 @@ public class MemberDataService {
     public List<MemberData> getAllAsList() {
     	return repository.findAll();
     }
-    
-//    public List<MemberData> findOutputByMember(int personId) {
-//    	return repository.findAll().stream().filter(e -> e.getPersonId() == personId).toList();
-//    }
-//    
-//    public List<MemberData> findOutputByStrain(int strainId) {
-//    	return repository.findAll().stream().filter(e -> e.getEntityId() == strainId).toList();
-//    }
 }

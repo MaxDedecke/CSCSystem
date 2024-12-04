@@ -2,27 +2,24 @@ package com.css.one.views;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import com.css.one.data.AssociationSettings;
 import com.css.one.data.MemberData;
 import com.css.one.data.OnboardingData;
 import com.css.one.data.OnboardingQuestion;
 import com.css.one.data.OnboardingToken;
 import com.css.one.data.SubscriptionModel;
-import com.css.one.services.AssociationSettingsService;
+import com.css.one.data.WaitingPerson;
 import com.css.one.services.EmailService;
 import com.css.one.services.MemberDataService;
 import com.css.one.services.OnboardingDataService;
 import com.css.one.services.OnboardingQuestionService;
 import com.css.one.services.OnboardingTokenService;
 import com.css.one.services.SubscriptionModelService;
-import com.css.one.services.WaitingPersonService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
@@ -99,7 +96,6 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	VerticalLayout questionsWrapper = new VerticalLayout();
 	VerticalLayout endWrapper = new VerticalLayout();
 
-	private final WaitingPersonService waitingPersonService;
 	private final OnboardingDataService onboardingDataService;
 	private final SubscriptionModelService subscriptionModelService;
 	private final OnboardingTokenService onboardingTokenService;
@@ -109,7 +105,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	private List<VerticalLayout> cards = new ArrayList<>();
 	private Button finishStepFour = new Button("weiter");
 
-	public OnboardingView(WaitingPersonService waitingPersonService,
+	public OnboardingView(
 			OnboardingDataService onboardingDataService,
 			SubscriptionModelService subscriptionModelService,
 			OnboardingTokenService onboardingTokenService,
@@ -118,7 +114,6 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 
 		addClassNames("onboarding-view", LumoUtility.Padding.NONE);
 		
-		this.waitingPersonService = waitingPersonService;
 		this.onboardingDataService = onboardingDataService;
 		this.subscriptionModelService = subscriptionModelService;
 		this.onboardingTokenService = onboardingTokenService;
@@ -685,6 +680,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 				wizzard.remove(tabStepTwo);
 				wizzard.remove(tabStepThree);
 				wizzard.remove(tabStepFour);
+				wizzard.remove(tabQuestions);
 				
 				finishOnboardingDataInputProcess(inputs);
 				sendNextStepsEmailToWaitingPerson();
@@ -694,9 +690,18 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	}
 
 	private void sendNextStepsEmailToWaitingPerson() {
-		// TODO send email to user here
+		
+		WaitingPerson waintingPerson = onboardingToken.getWaintingPerson();
+		String to = waintingPerson.getEmail();
+		String subject = "Onboarding -" + " Nächste Schritte";
+		
 		EmailService emailService = new EmailService();
-//		emailService.sendOnboardingEmail(token, token, token, null, token);
+		try {
+			emailService.sendOnboardingFinishedEmail(to, subject, waintingPerson.getFirstName());
+		}  catch (Exception e) {
+        	Notification notification = Notification.show("Fehler beim Senden der E-Mail: " + e.getMessage());
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }		
 		
 	}
 
@@ -718,14 +723,30 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		memberData.setStreetNumber(streetNumber.getValue());
 		
 		memberData = memberDataService.update(memberData);
-		data.setMemberData(memberData);
-		data.setToken(onboardingToken);
+		Optional<MemberData> optMemberData = memberDataService.findById(memberData.getId());
 		
-		inputs.keySet().forEach(question -> {
-			question.setAnswer(inputs.get(question).getValue());	
+		optMemberData.ifPresentOrElse(e -> {
+			data.setMemberData(e);			
+		}, () -> {
+			Notification notification = Notification.show("Fehler beim Senden der E-Mail - kontaktiere am Besten den Support!");
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);	
 		});
-		data.setQuestions(inputs.keySet().stream().toList());
 		
+		
+		Optional<OnboardingToken> optToken = onboardingTokenService.findByToken(onboardingToken.getToken());
+		optToken.ifPresentOrElse(e -> {
+			data.setToken(e);
+		}, () -> {
+			Notification notification = Notification.show("Fehler beim Senden der E-Mail - kontaktiere am Besten den Support!");
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		});
+		
+		
+//		inputs.keySet().forEach(question -> {
+//			question.setAnswer(inputs.get(question).getValue());	
+//		});
+//		data.setQuestions(inputs.keySet().stream().toList());
+//		
 		onboardingDataService.update(data);
 	}
 }

@@ -24,6 +24,7 @@ public class OnboardingData {
 	private int memberNumber;
 	
 	@Nullable
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private OnboardingToken token;
 	
 	private String firstName;
@@ -38,7 +39,7 @@ public class OnboardingData {
 	private int associationId;
 
 	@Nullable
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private MemberData memberData;
 	
 	@Nullable
