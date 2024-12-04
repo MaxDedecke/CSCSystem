@@ -16,6 +16,17 @@ services:
         ports:
             - 17080:8080
 
+    cscs-test:
+        image: cgs/cscs:latest
+        build: .
+        hostname: test.cscs.local
+        restart: always
+        depends_on:
+            - postgresql
+        volumes:
+            - ~/docker_data/cscs-test/application.properties:/application.properties
+            - cscs_test_data:/Data
+
     cscs:
         image: cgs/cscs:latest
         build: .
@@ -98,3 +109,4 @@ volumes:
     cscs_data:
     mariadb_data:
     caddy_data:
+    cscs_test_data:
