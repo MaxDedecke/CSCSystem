@@ -1,12 +1,11 @@
 services:
     postgresql:
-        image: postgres:16
+        image: postgres:latest
         hostname: postgres.local
         restart: always
         shm_size: 128mb
         env_file: ~/docker_data/postgres/postgres.env
         volumes:
-            - ./docker/postgres/:/docker-entrypoint-initdb.d/
             - postgres_data:/var/lib/postgresql/data/
 
     adminer:

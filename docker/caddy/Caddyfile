@@ -1,0 +1,23 @@
+code-green-systems.de {
+    redir https://www.{host}{uri}
+}
+
+www.code-green-systems.de {
+    reverse_proxy http://joomla.local:80
+}
+
+portainer.code-green-systems.de {
+    reverse_proxy http://portainer.local:9000
+}
+
+joomla.code-green-systems.de {
+    reverse_proxy http://joomla.local:80
+}
+
+cl-os.code-green-systems.de {
+    reverse_proxy http://cscs.local:8080
+}
+
+test.code-green-systems.de {
+    reverse_proxy http://test.cscs.local:8080
+}
