@@ -515,14 +515,16 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 			if (status.isOnboaring()) {
 				ProgressBar bar = new ProgressBar();
-				bar.setValue(0.5);
+				bar.setValue(0.3);
 
 				NativeLabel progressBarLabelText = new NativeLabel("Onboarding gestartet..");
 				progressBarLabelText.setId("pblabel");
 				bar.getElement().setAttribute("aria-labelledby", "pblabel");
 
-				Span progressBarLabelValue = new Span("50%");
-				HorizontalLayout progressBarLabel = new HorizontalLayout(progressBarLabelText, progressBarLabelValue);
+//				Span progressBarLabelValue = new Span("50%");
+				HorizontalLayout progressBarLabel = new HorizontalLayout(progressBarLabelText
+//						, progressBarLabelValue
+						);
 				progressBarLabel.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
 				wrapper.add(progressBarLabel, bar);

@@ -596,7 +596,7 @@ vaadin-text-field.finanzen-view-text-field-1::part(label) { color:#8ABD3E; }
 vaadin-text-field::part(label) { color:#8ABD3E; }
 
 vaadin-text-field::part(input-field) {
-	background: #ffffff;
+	background: #f9f9f9;
 }
 
 vaadin-vertical-layout.bestand-box {
