@@ -168,8 +168,8 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		introduction.addClassName("onboarding-intro");
 		introduction.setText("Herzlich willkommen zum Onboarding in deinem Cannabis Social Club!");
 		
-		Button startButton = new Button("Los geht*s");
-		startButton.addClassName("save-button");;
+		Button startButton = new Button("Los geht's");
+		startButton.addClassName("save-button");
 		startButton.addClickListener(e -> {
 			tabStepOne.setEnabled(true);
 			wizzard.setSelectedTab(tabStepOne);
