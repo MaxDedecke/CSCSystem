@@ -24,7 +24,7 @@ public class OnboardingData {
 	private int memberNumber;
 	
 	@Nullable
-	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 	private OnboardingToken token;
 	
 	private String firstName;
@@ -39,19 +39,19 @@ public class OnboardingData {
 	private int associationId;
 
 	@Nullable
-	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 	private MemberData memberData;
 	
 	@Nullable
 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	List<OnboardingQuestion> questions;
+	List<OnboardingAnswer> answers;
 	
-	public List<OnboardingQuestion> getQuestions() {
-		return questions;
+	public List<OnboardingAnswer> getAnswers() {
+		return answers;
 	}
 
-	public void setQuestions(List<OnboardingQuestion> questions) {
-		this.questions = questions;
+	public void setAnswers(List<OnboardingAnswer> answers) {
+		this.answers = answers;
 	}
 
 	public int getMemberNumber() {

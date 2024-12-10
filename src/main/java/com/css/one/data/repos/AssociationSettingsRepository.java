@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.css.one.data.AssociationSettings;
 
-public interface AssociationSettingsRepository extends JpaRepository<AssociationSettings, Long>, JpaSpecificationExecutor<AssociationSettings>{
+public interface AssociationSettingsRepository extends JpaRepository<AssociationSettings, Long>, JpaSpecificationExecutor<AssociationSettings> {
 
 }

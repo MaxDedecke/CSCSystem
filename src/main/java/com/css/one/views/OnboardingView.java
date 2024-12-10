@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.css.one.data.MemberData;
+import com.css.one.data.OnboardingAnswer;
 import com.css.one.data.OnboardingData;
 import com.css.one.data.OnboardingQuestion;
 import com.css.one.data.OnboardingToken;
@@ -16,6 +17,7 @@ import com.css.one.data.SubscriptionModel;
 import com.css.one.data.WaitingPerson;
 import com.css.one.services.EmailService;
 import com.css.one.services.MemberDataService;
+import com.css.one.services.OnboardingAnswerService;
 import com.css.one.services.OnboardingDataService;
 import com.css.one.services.OnboardingQuestionService;
 import com.css.one.services.OnboardingTokenService;
@@ -103,6 +105,8 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	private final MemberDataService memberDataService;
 	
 	private List<VerticalLayout> cards = new ArrayList<>();
+	private List<OnboardingAnswer> tmpAnswers = new ArrayList<>();
+	
 	private Button finishStepFour = new Button("weiter");
 
 	public OnboardingView(
@@ -732,7 +736,6 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);	
 		});
 		
-		
 		Optional<OnboardingToken> optToken = onboardingTokenService.findByToken(onboardingToken.getToken());
 		optToken.ifPresentOrElse(e -> {
 			data.setToken(e);
@@ -741,12 +744,16 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 		});
 		
+		inputs.keySet().forEach(question -> {
+			OnboardingAnswer answer = new OnboardingAnswer();
+			answer.setAssociationId(onboardingToken.getAssociationId());
+			answer.setQuestion(question);
+			answer.setAnswer(inputs.get(question).getValue());
+			tmpAnswers.add(answer);
+		});
 		
-//		inputs.keySet().forEach(question -> {
-//			question.setAnswer(inputs.get(question).getValue());	
-//		});
-//		data.setQuestions(inputs.keySet().stream().toList());
-//		
+		data.setAnswers(tmpAnswers);
+		
 		onboardingDataService.update(data);
 	}
 }

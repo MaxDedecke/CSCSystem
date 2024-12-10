@@ -78,8 +78,8 @@ public class EmailService {
 		    htmlContent = htmlContent.replace("${memberName}", userName);
 		    
 		    if(type.equals(EmailType.ONBOARING)) {
-		    	htmlContent = htmlContent.replace("${onboardingLink}", "https://cl-os.code-green-systems.de/onboarding?token=" + token);
-//		    	htmlContent = htmlContent.replace("${onboardingLink}", "http://localhost:8080/onboarding?token=" + token);
+//		    	htmlContent = htmlContent.replace("${onboardingLink}", "https://cl-os.code-green-systems.de/onboarding?token=" + token);
+		    	htmlContent = htmlContent.replace("${onboardingLink}", "http://localhost:8080/onboarding?token=" + token);
 
 		            try (InputStream imageStream = ImageUtil.class.getClassLoader().getResourceAsStream("logoCodeGreen.png")) {
 		                if (imageStream == null) {

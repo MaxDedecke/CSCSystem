@@ -8,6 +8,7 @@ import org.vaadin.lineawesome.LineAwesomeIcon;
 import com.css.one.data.AssociationSettings;
 import com.css.one.data.MemberData;
 import com.css.one.data.MemberSubscription;
+import com.css.one.data.OnboardingData;
 import com.css.one.data.OnboardingToken;
 import com.css.one.data.Person;
 import com.css.one.data.WaitingPerson;
@@ -18,6 +19,7 @@ import com.css.one.services.AssociationSettingsService;
 import com.css.one.services.EmailService;
 import com.css.one.services.MemberDataService;
 import com.css.one.services.MemberSubscriptionService;
+import com.css.one.services.OnboardingDataService;
 import com.css.one.services.OnboardingTokenService;
 import com.css.one.services.PersonService;
 import com.css.one.services.WaitingPersonService;
@@ -90,6 +92,7 @@ public class WaitingListView extends FlexLayout {
     private MemberDataService memberDataService;
     private OnboardingTokenService onboardingTokenService;
     private AssociationSettingsService associationSettingsService;
+    private OnboardingDataService onboardingDataService;
     
 	private int associationId;
 	private boolean isNewPerson = true;
@@ -99,7 +102,8 @@ public class WaitingListView extends FlexLayout {
 			MemberSubscriptionService subscriptionService,
 			MemberDataService memberDataService,
 			OnboardingTokenService onboardingTokenService,
-			AssociationSettingsService associationSettingsService) {
+			AssociationSettingsService associationSettingsService,
+			OnboardingDataService onboardingDataService) {
 		
 		this.waitingPersonService = waitingPersonService;
 		this.personService = personService;
@@ -107,6 +111,7 @@ public class WaitingListView extends FlexLayout {
 		this.memberDataService = memberDataService;
 		this.onboardingTokenService = onboardingTokenService;
 		this.associationSettingsService = associationSettingsService;
+		this.onboardingDataService = onboardingDataService;
 		
 		addClassNames("waitinglist-view");
 
@@ -578,9 +583,18 @@ private void createSingleSubscriptionForNewMember(Person member) {
 				menuBar.addItem("Einladung erneut senden", event -> {
 					if (person.getEmail() != null) {
 						Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
-						optToken.ifPresent(e -> onboardingTokenService.delete(e.getId()));
 						
-						sendOnboardingEmail(person);
+						if(optToken.isPresent()) {
+							
+							Optional<OnboardingData> dataByToken = onboardingDataService.findByToken(optToken.get().getId());
+							dataByToken.ifPresent(e -> onboardingDataService.delete(e.getId()));
+							
+							onboardingTokenService.delete(optToken.get().getId());
+							sendOnboardingEmail(person);
+						} else {
+							Notification notification = Notification.show("Fehler: Problem mit Onboarding Token!");
+							notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+						}					
 					}
 				});
 			}

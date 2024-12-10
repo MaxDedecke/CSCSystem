@@ -34,6 +34,10 @@ public class OnboardingDataService {
     public List<OnboardingData> findAllByAssociation(int associationId) {
     	return repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).toList();
     }
+    
+    public Optional<OnboardingData> findByToken(Long tokenId) {
+    	return repository.findAll().stream().filter(e -> e.getToken().getId().equals(tokenId)).findAny();
+    }
 
     public Page<OnboardingData> list(Pageable pageable) {
         return repository.findAll(pageable);

@@ -1,6 +1,5 @@
 package com.css.one.data;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,9 +16,6 @@ public class OnboardingQuestion {
 	
 	private String question;
 	
-	@Nullable
-	private String answer;
-	
 	public Long getId() {
 		return id;
 	}
@@ -34,14 +30,6 @@ public class OnboardingQuestion {
 
 	public void setQuestion(String question) {
 		this.question = question;
-	}
-	
-	public String getAnswer() {
-		return answer;
-	}
-
-	public void setAnswer(String answer) {
-		this.answer = answer;
 	}
 
 	public int getAssociationId() {
