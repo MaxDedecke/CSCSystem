@@ -24,9 +24,9 @@ public class OnboardingToken {
 	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 	private WaitingPerson waintingPerson;
 	
-	@Nullable
-	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	private Person member;
+//	@Nullable
+//	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+//	private Person member;
 	
 	private LocalDate expirationDate;
 	
@@ -56,13 +56,13 @@ public class OnboardingToken {
 		this.waintingPerson = waintingPerson;
 	}
 
-	public Person getMember() {
-		return member;
-	}
-
-	public void setMember(Person member) {
-		this.member = member;
-	}
+//	public Person getMember() {
+//		return member;
+//	}
+//
+//	public void setMember(Person member) {
+//		this.member = member;
+//	}
 
 	public LocalDate getExpirationDate() {
 		return expirationDate;

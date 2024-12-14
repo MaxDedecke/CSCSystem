@@ -15,6 +15,7 @@ import com.css.one.data.WaitingPerson;
 import com.css.one.data.enums.AssociationRole;
 import com.css.one.data.enums.EmailType;
 import com.css.one.data.enums.ExpirationTime;
+import com.css.one.data.enums.OnboardingStatus;
 import com.css.one.services.AssociationSettingsService;
 import com.css.one.services.EmailService;
 import com.css.one.services.MemberDataService;
@@ -467,11 +468,11 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		
 		createGrid();
 
-		mainLayout.add(createFirstComponent(), grid);
+		mainLayout.add(createButtonAndInfoComponent(), grid);
 		wrapper.add(mainLayout);
 	}
 
-	private Component createFirstComponent() {
+	private Component createButtonAndInfoComponent() {
 		HorizontalLayout wrapper = new HorizontalLayout();
 		wrapper.setWidthFull();
 		wrapper.addClassNames("header-bar-custom");
@@ -485,25 +486,47 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			personInfoDialog.open();
 		});
 		
+		Button buttonStartPersonOnboarding = new Button("Quick Oboarding");
+		buttonStartPersonOnboarding.setIcon(LineAwesomeIcon.HANDSHAKE_SOLID.create());
+		buttonStartPersonOnboarding.addClassName("button-neutral");
+		
+		buttonStartPersonOnboarding.addClickListener(e -> {
+			personInfoDialog.open();
+		});
+		
+		FlexLayout flexWrapper = new FlexLayout();
+		flexWrapper.addClassNames(LumoUtility.AlignItems.END);
+		flexWrapper.setWidthFull();
+		
 		VerticalLayout secondWrapper = new VerticalLayout();
+		secondWrapper.addClassNames(LumoUtility.JustifyContent.END, LumoUtility.AlignContent.END);
+		secondWrapper.setSpacing(false);
+		secondWrapper.setPadding(false);
+		
+		VerticalLayout innerWrapper = new VerticalLayout();
+		innerWrapper.addClassNames(LumoUtility.Border.LEFT, LumoUtility.BorderRadius.NONE, "padding-extra-top");
+		innerWrapper.setSpacing(false);
+		innerWrapper.setPadding(false);
 		
 		HorizontalLayout bottomLayout = new HorizontalLayout();
-		bottomLayout.setWidth("100%");
-		bottomLayout.addClassNames(LumoUtility.Padding.NONE,
-				LumoUtility.Padding.Left.MEDIUM, LumoUtility.JustifyContent.START, LumoUtility.Margin.NONE);
+		bottomLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Left.MEDIUM, LumoUtility.Margin.NONE);
 		memberCount = new H3("Statistik");
-		memberCount.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE, "header-statistics");
+		memberCount.addClassNames("header-statistics", "no-extra-space");
 		bottomLayout.add(memberCount);	
 		
 		HorizontalLayout statisticsLayout = new HorizontalLayout();
-		statisticsLayout.setWidth("100%");
 		statisticsLayout.addClassNames(LumoUtility.Padding.NONE,	
-				LumoUtility.Padding.Left.MEDIUM, LumoUtility.JustifyContent.START, LumoUtility.Margin.NONE, "header-statistics-item");
+				LumoUtility.Padding.Left.MEDIUM, LumoUtility.Margin.NONE, "header-statistics-item");
 		H3 second = new H3("Wartendene Personen: " + waitingPersonService.count());
+		second.addClassName("no-extra-space");
 		statisticsLayout.add(second);
 		
-		secondWrapper.add(bottomLayout, statisticsLayout);
-		wrapper.add(buttonAddPerson, secondWrapper);
+		innerWrapper.add(bottomLayout, statisticsLayout);
+		flexWrapper.add(secondWrapper, innerWrapper);
+
+		wrapper.add(buttonAddPerson, buttonStartPersonOnboarding, flexWrapper);
+		flexWrapper.setFlexGrow(3, secondWrapper);
+		flexWrapper.setFlexGrow(2, innerWrapper);
 		return wrapper;
 	}
 
@@ -518,20 +541,35 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		grid.addComponentColumn(status -> {
 			VerticalLayout wrapper = new VerticalLayout();
 
-			if (status.isOnboaring()) {
+			if (status.getOnboardingStatus() != null) {
 				ProgressBar bar = new ProgressBar();
-				bar.setValue(0.3);
 
-				NativeLabel progressBarLabelText = new NativeLabel("Onboarding gestartet..");
-				progressBarLabelText.setId("pblabel");
-				bar.getElement().setAttribute("aria-labelledby", "pblabel");
-
-//				Span progressBarLabelValue = new Span("50%");
-				HorizontalLayout progressBarLabel = new HorizontalLayout(progressBarLabelText
-//						, progressBarLabelValue
-						);
+				NativeLabel progressBarLabelText;
+				
+				if(status.getOnboardingStatus() == OnboardingStatus.STARTED) {
+					bar.addClassNames("onboarding-started");
+					bar.setValue(0.3);
+					progressBarLabelText = new NativeLabel("Onboarding gestartet..");
+					progressBarLabelText.setId("pblabel");
+					bar.getElement().setAttribute("aria-labelledby", "pblabel");
+				} else if(status.getOnboardingStatus() == OnboardingStatus.DATA_PROVIDED) {
+					bar.addClassNames("onboarding-data-exists");
+					bar.setValue(0.6);
+					progressBarLabelText = new NativeLabel("Selbstauskunft abgeschlossen");
+					progressBarLabelText.setId("pblabel");
+					bar.getElement().setAttribute("aria-labelledby", "pblabel");
+				} else {
+					//Status finished
+					bar.addClassNames("onboarding-finished");
+					bar.setValue(1.0);
+					progressBarLabelText = new NativeLabel("Kann zum Mitglied werden");
+					progressBarLabelText.setId("pblabel");
+					bar.getElement().setAttribute("aria-labelledby", "pblabel");
+				}
+				
+				HorizontalLayout progressBarLabel = new HorizontalLayout(progressBarLabelText);
 				progressBarLabel.setJustifyContentMode(JustifyContentMode.BETWEEN);
-
+				
 				wrapper.add(progressBarLabel, bar);
 				return wrapper;
 			} else {
@@ -556,8 +594,17 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 			menuBar.addItem("Person löschen", event -> {
 				Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
-				optToken.ifPresent(e -> onboardingTokenService.delete(e.getId()));
+				optToken.ifPresent(e -> {
+					
+					//delete Onboarding data if exists
+					Optional<OnboardingData> dataByToken = onboardingDataService.findByToken(e.getId());
+					dataByToken.ifPresent(data -> onboardingDataService.delete(data.getId()));
+					
+					//delete onboarding token if exists
+					onboardingTokenService.delete(e.getId());
+				});
 				
+				//delete person on waitinglist after all other objects referencing are deleted
 				waitingPersonService.delete(person.getId());
 				Notification notification = Notification.show("Person von der Warteliste gelöscht");
 				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
@@ -572,11 +619,11 @@ private void createSingleSubscriptionForNewMember(Person member) {
 				newMemberDialog.open();
 			});
 
-			if (!person.isOnboaring()) {
+			if (person.getOnboardingStatus() == null) {
+				
 				menuBar.addItem("Onboarding starten", event -> {
 					if (person.getEmail() != null) {
-						sendOnboardingEmail(person);
-						
+						sendOnboardingEmail(person);						
 					}
 				});
 			} else {
@@ -665,6 +712,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
             Notification notification = Notification.show("E-Mail erfolgreich gesendet");
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             person.setOnboaring(true);
+            person.setOnboardingStatus(OnboardingStatus.STARTED);
             waitingPersonService.update(person);
             refreshGrid();
         } catch (Exception e) {

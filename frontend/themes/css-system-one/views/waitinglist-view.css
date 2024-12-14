@@ -23,6 +23,21 @@
   padding: var(--lumo-space-l);
 }
 
+.onboarding-started {
+	--lumo-primary-color: rgba(69,37,18,1);
+ 	background-color: #efefef;
+}
+
+.onboarding-data-exists {
+--lumo-primary-color: rgb(0, 128, 64);
+ 	background-color: #efefef;
+}
+
+.onboarding-finished {
+  --lumo-primary-color: #8ABD3E;
+ 	background-color: #efefef;
+}
+
 .waitinglist-view vaadin-vertical-layout {
   box-sizing: border-box;
   height: 100%;
@@ -31,6 +46,16 @@
   padding-right: var(--lumo-space-s);
   padding-top: var(--lumo-space-s);
   
+}
+
+.waitinglist-view .no-extra-space {
+  padding: none;
+  margin: none;
+}
+
+.waitinglist-view .padding-extra-top {
+  margin-top: none;
+  margin-bottom: none;
 }
 
 .waitinglist-view .cancel-button {

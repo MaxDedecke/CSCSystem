@@ -2,6 +2,8 @@ package com.css.one.data;
 
 import java.time.LocalDate;
 
+import com.css.one.data.enums.OnboardingStatus;
+
 import jakarta.annotation.Nullable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -29,6 +31,9 @@ public class WaitingPerson {
 	private LocalDate dateOfRegistration;
 	
 	private boolean isOnboaring;
+	
+	@Nullable
+	private OnboardingStatus onboardingStatus;
 	
 	@Nullable
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -118,5 +123,11 @@ public class WaitingPerson {
 	}
 	public void setOnboaring(boolean isOnboaring) {
 		this.isOnboaring = isOnboaring;
+	}
+	public OnboardingStatus getOnboardingStatus() {
+		return onboardingStatus;
+	}
+	public void setOnboardingStatus(OnboardingStatus onboardingStatus) {
+		this.onboardingStatus = onboardingStatus;
 	}
 }

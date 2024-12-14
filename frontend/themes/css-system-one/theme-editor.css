@@ -66,8 +66,8 @@ h3.diary-view-h3-1 { font-weight:bold; }
 
 header-statistics-item {
 	font-size: large;
-	margin-bottom: 4px;
-	padding-bottom: 8px;
+	margin-bottom: 24px;
+	padding-bottom: 24px;
 }
 
 vaadin-app-layout { background-color:rgb(0, 128, 64); }
@@ -199,7 +199,7 @@ vaadin-combo-box.diary-view-combo-box-1::part(label) { color:#8ABD3E; }
 vaadin-combo-box::part(label) { color:#8ABD3E; }
 
 vaadin-date-picker::part(input-field) {
-	background: #ffffff;
+	background: #f9f9f9;
 }
 
 vaadin-date-picker-overlay {

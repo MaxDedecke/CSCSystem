@@ -21,7 +21,7 @@ public class OnboardingData {
     private Long id;
 
 	@Nullable
-	private int memberNumber;
+	private Long memberNumber;
 	
 	@Nullable
 	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
@@ -54,11 +54,11 @@ public class OnboardingData {
 		this.answers = answers;
 	}
 
-	public int getMemberNumber() {
+	public Long getMemberNumber() {
 		return memberNumber;
 	}
 
-	public void setMemberNumber(int memberNumber) {
+	public void setMemberNumber(Long memberNumber) {
 		this.memberNumber = memberNumber;
 	}
 

@@ -15,6 +15,7 @@ import com.css.one.data.OnboardingQuestion;
 import com.css.one.data.OnboardingToken;
 import com.css.one.data.SubscriptionModel;
 import com.css.one.data.WaitingPerson;
+import com.css.one.data.enums.OnboardingStatus;
 import com.css.one.services.EmailService;
 import com.css.one.services.MemberDataService;
 import com.css.one.services.OnboardingAnswerService;
@@ -22,6 +23,7 @@ import com.css.one.services.OnboardingDataService;
 import com.css.one.services.OnboardingQuestionService;
 import com.css.one.services.OnboardingTokenService;
 import com.css.one.services.SubscriptionModelService;
+import com.css.one.services.WaitingPersonService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
@@ -103,6 +105,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 	private final OnboardingTokenService onboardingTokenService;
 	private final OnboardingQuestionService onboardingQuestionService;
 	private final MemberDataService memberDataService;
+	private final WaitingPersonService waitingPersonService;
 	
 	private List<VerticalLayout> cards = new ArrayList<>();
 	private List<OnboardingAnswer> tmpAnswers = new ArrayList<>();
@@ -114,7 +117,8 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 			SubscriptionModelService subscriptionModelService,
 			OnboardingTokenService onboardingTokenService,
 			OnboardingQuestionService onboardingQuestionService,
-			MemberDataService memberDataService) {
+			MemberDataService memberDataService,
+			WaitingPersonService waitingPersonService) {
 
 		addClassNames("onboarding-view", LumoUtility.Padding.NONE);
 		
@@ -123,6 +127,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		this.onboardingTokenService = onboardingTokenService;
 		this.onboardingQuestionService = onboardingQuestionService;
 		this.memberDataService = memberDataService;
+		this.waitingPersonService = waitingPersonService;
 		
 		setWidth("100%");
 		
@@ -718,6 +723,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		data.setFirstName(firstName.getValue());
 		data.setLastName(lastName.getValue());
 		data.setPhone(phone.getValue());
+		data.setMemberNumber(onboardingToken.getWaintingPerson().getId());
 		
 		MemberData memberData = new MemberData();
 		memberData.setCityName(city.getValue());
@@ -754,6 +760,15 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		
 		data.setAnswers(tmpAnswers);
 		
+		Optional<WaitingPerson> optWaitingPerson = waitingPersonService.get(onboardingToken.getWaintingPerson().getId());
+		optWaitingPerson.ifPresent(person -> {
+			person.setOnboardingStatus(OnboardingStatus.DATA_PROVIDED);
+			waitingPersonService.update(person);
+		});
+		
 		onboardingDataService.update(data);
+		onboardingTokenService.delete(onboardingToken.getId());
+		
+		
 	}
 }
