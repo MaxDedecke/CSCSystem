@@ -31,6 +31,20 @@ h3.diary-view-h3-1 { font-weight:bold; }
     animation: shadowPulse 2s infinite;
 }
 
+.margin-extra-top-css {
+	margin-top: 40px;
+}
+
+.width-inner-popup-component {
+	max-width: 500px;
+	min-width: 300px;
+}
+
+.box-shadow-green {
+	box-shadow: 2px 2px 2px 2px #8ABD3E;
+	border-radius: 8px;
+}
+
 .custom-scrollbar {
     scrollbar-width: thin; /* Width of the scrollbar */
     scrollbar-color: #88b149 #ffffff; /* Color of the scrollbar thumb and track */

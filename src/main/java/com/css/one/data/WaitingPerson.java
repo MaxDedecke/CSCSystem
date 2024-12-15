@@ -36,7 +36,7 @@ public class WaitingPerson {
 	private OnboardingStatus onboardingStatus;
 	
 	@Nullable
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private MemberData memberData;
 	
 	@Nullable

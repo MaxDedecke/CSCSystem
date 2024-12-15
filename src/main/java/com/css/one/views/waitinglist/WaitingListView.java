@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
+import com.css.one.components.CompareDataComponent;
 import com.css.one.data.AssociationSettings;
 import com.css.one.data.MemberData;
 import com.css.one.data.MemberSubscription;
@@ -90,6 +91,8 @@ public class WaitingListView extends FlexLayout {
 	private Dialog quickOnboardingDialog = new Dialog();
 	private Dialog compareDataDialog = new Dialog();
 	
+	private CompareDataComponent compareDataComponent;
+	
 	private WaitingPerson waitingPerson;
 	private PersonService personService;
     private MemberSubscriptionService subscriptionService;
@@ -160,9 +163,32 @@ private TabSheet createOnboardingTabs() {
 }
 
 private void createCompareDataDialog() {
-		// TODO Auto-generated method stub
+		//compare data given before the process with given by person		
+		compareDataComponent = new CompareDataComponent();
+		compareDataDialog.add(compareDataComponent);
 		
-	}
+		Button closeButton = new Button("zurück");
+		closeButton.addClassName("cancel-button");
+		closeButton.addClickListener(e -> {
+			//clearQuickOnboardingDialog();
+			compareDataDialog.close();
+		});
+		
+		Button saveButton = new Button("abschließen");
+		saveButton.addClassName("save-button");
+		saveButton.addClickListener(e -> {
+			if (compareDataComponent.isInputValid()) {
+				compareDataDialog.close();
+			}
+		});
+		
+		saveButton.setEnabled(false);
+		
+		
+		compareDataDialog.getFooter().add(closeButton, saveButton);
+		compareDataDialog.setMaxWidth("65%");
+		compareDataDialog.setMaxHeight("75%");
+}
 
 private void createAddPersonDialog() {
 		VerticalLayout mainWrapper = new VerticalLayout();
@@ -701,10 +727,18 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			if (person.getOnboardingStatus() == OnboardingStatus.DATA_PROVIDED) {
 				
 				menuBar.addItem("Angaben vergleichen", event -> {
-					//TODO open pop up 
-					this.waitingPerson = person;
-					
-					compareDataDialog.open();
+					//prepare data and open pop up
+					Optional<OnboardingData> dataByMemberId = onboardingDataService.findByMemberId(person.getId());
+
+					if (dataByMemberId.isPresent()) {
+						compareDataComponent.initDataLeftSide(person);
+						compareDataComponent.initDataRightSide(dataByMemberId.get());
+						compareDataDialog.open();
+					} else {
+						Notification notification = Notification
+								.show("Fehler beim Laden der Daten der Person. Kontaktiere bitte den Support !");
+						notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+					}
 				});
 			}
 			
