@@ -45,6 +45,7 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
+import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -80,13 +81,15 @@ public class WaitingListView extends FlexLayout {
 	private TextField city;
 
 	private Button save = new Button("speichern");	
-	private Dialog newMemberDialog = new Dialog();
-	private H3 memberCount;
 	
+	private H3 memberCount;
 	private H2 headerPersonInfo;
 	
+	private Dialog newMemberDialog = new Dialog();
 	private Dialog personInfoDialog = new Dialog();
-
+	private Dialog quickOnboardingDialog = new Dialog();
+	private Dialog compareDataDialog = new Dialog();
+	
 	private WaitingPerson waitingPerson;
 	private PersonService personService;
     private MemberSubscriptionService subscriptionService;
@@ -122,11 +125,45 @@ public class WaitingListView extends FlexLayout {
 		VerticalLayout mainWrapper = new VerticalLayout();
 		mainWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Margin.Bottom.MEDIUM, LumoUtility.Padding.NONE); 
 		createMainLayout(mainWrapper);
+		
 		createAddPersonDialog();
+		createNewMemberDialog();
+		createCompareDataDialog();
+		createQuickOnboardingDialog();
 		
 		add(mainWrapper);
 	}
 	
+private void createQuickOnboardingDialog() {
+	
+		VerticalLayout headerWrapper = new VerticalLayout();
+		headerWrapper.setWidthFull();
+		H3 headerQuickOnboarding = new H3("Quick Onboarding");
+		headerWrapper.add(headerQuickOnboarding);
+		
+		quickOnboardingDialog.add(headerWrapper, createOnboardingTabs());
+		
+		Button closeButton = new Button("Prozess abbrechen");
+		closeButton.addClassName("cancel-button");
+		closeButton.addClickListener(e -> {
+			//clearQuickOnboardingDialog();
+			quickOnboardingDialog.close();
+		});
+		
+		quickOnboardingDialog.getFooter().add(closeButton);
+	}
+
+private TabSheet createOnboardingTabs() {
+	//same tabs as in normal remote process
+	TabSheet sheet = new TabSheet();
+	return sheet;
+}
+
+private void createCompareDataDialog() {
+		// TODO Auto-generated method stub
+		
+	}
+
 private void createAddPersonDialog() {
 		VerticalLayout mainWrapper = new VerticalLayout();
 		
@@ -156,8 +193,8 @@ private void createAddPersonDialog() {
 		buttonCancel.addClassNames("cancel-button");
 		
 		buttonCancel.addClickListener(e -> {
-			personInfoDialog.close();
 			clearPersonInfoDialog();
+			personInfoDialog.close();
 		});
 		
 		personInfoDialog.addDialogCloseActionListener(e -> {
@@ -190,10 +227,17 @@ private Component createAdditionalDataContent() {
 
 private void savePersonData() {
 	
+	//input validation
 	if (checkPersonDataForWaitingList()) {
 
+		Optional<MemberData> memberDataOptional = Optional.empty();
+		
+		//new person
 		if (this.waitingPerson == null) {
 			this.waitingPerson = new WaitingPerson();
+		} else {
+			//if person already exists, look for its MemberData
+			memberDataOptional = memberDataService.findByMember(this.waitingPerson);
 		}
 
 		this.waitingPerson.setAssociationId(associationId);
@@ -206,33 +250,26 @@ private void savePersonData() {
 		this.waitingPerson.setOnboaring(false);
 		this.waitingPerson.setPhone(phone.getValue());
 		
-		if(this.waitingPerson.getMemberData() == null) {
-			MemberData memberData = new MemberData();
-			memberData.setCityName("");
-			memberData.setPostalCode(1);
-			memberData.setStreetName("");
-			memberData.setStreetNumber("");
-			memberData.setDateOfRegistration(LocalDate.now());
-			waitingPerson.setMemberData(memberData);
-		} else {
-			Optional<MemberData> memberDataOptional = memberDataService.findByMember(waitingPerson);			
-			MemberData memberData;
-			
-			if(memberDataOptional.isPresent()) {
-				memberData = memberDataOptional.get();
-			} else {
-				memberData = new MemberData();
-			}
-			
-			memberData.setStreetName(streetName.getValue());	
-			memberData.setCityName(city.getValue());
-			memberData.setPostalCode(Integer.parseInt(postalCode.getValue()));
-			memberData.setStreetNumber(streetNumber.getValue());			
-	
-			waitingPerson.setMemberData(memberData);
-		}
+		MemberData memberData;
 		
+		//if MemberData exists, use it
+		if (memberDataOptional.isPresent()) {
+			memberData = memberDataOptional.get();
+		} else {
+			memberData = new MemberData();
+		}
+
+		memberData.setStreetName(streetName.getValue());
+		memberData.setCityName(city.getValue());
+		memberData.setPostalCode(Integer.parseInt(postalCode.getValue()));
+		memberData.setStreetNumber(streetNumber.getValue());
+		
+		waitingPerson.setMemberData(memberData);
+
+		//persist person with its info and MemberData
 		waitingPersonService.update(this.waitingPerson);
+		
+		//clear and refresh
 		clearPersonInfoDialog();
 		refreshGrid();
 		personInfoDialog.close();
@@ -353,7 +390,6 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 		FormLayout formLayout = new FormLayout();
 		TextField nameOfPerson = new TextField("Name");
-		nameOfPerson.setValue(this.waitingPerson.getFirstName() + " " + this.waitingPerson.getLastName());
 		nameOfPerson.setEnabled(false);
 		
 		ComboBox<AssociationRole> comboBox = new ComboBox<AssociationRole>("Rolle");
@@ -483,15 +519,16 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		
 		buttonAddPerson.addClickListener(e -> {
 			headerPersonInfo.setText("Person hinzufügen");
+			this.waitingPerson = null;
 			personInfoDialog.open();
 		});
 		
-		Button buttonStartPersonOnboarding = new Button("Quick Oboarding");
-		buttonStartPersonOnboarding.setIcon(LineAwesomeIcon.HANDSHAKE_SOLID.create());
+		Button buttonStartPersonOnboarding = new Button("Quick Onboarding");
+		buttonStartPersonOnboarding.setIcon(LineAwesomeIcon.CLONE_SOLID.create());
 		buttonStartPersonOnboarding.addClassName("button-neutral");
 		
 		buttonStartPersonOnboarding.addClickListener(e -> {
-			personInfoDialog.open();
+			quickOnboardingDialog.open();
 		});
 		
 		FlexLayout flexWrapper = new FlexLayout();
@@ -579,74 +616,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		}).setWidth("75px").setAutoWidth(false);
 
 		grid.addComponentColumn(person -> {
-
-			MenuBar menuBar = new MenuBar();
-			menuBar.setOverlayClassName("warenlager-view-menu-bar-1");
-			menuBar.addClassNames("warenlager-view-menu-bar-1", "customheader");
-
-			menuBar.addItem("bearbeiten", event -> {
-				this.waitingPerson = person;
-				isNewPerson = false;
-				headerPersonInfo.setText("Infos zur Person");
-				initPersonInfoDialog();
-				personInfoDialog.open();
-			});
-
-			menuBar.addItem("Person löschen", event -> {
-				Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
-				optToken.ifPresent(e -> {
-					
-					//delete Onboarding data if exists
-					Optional<OnboardingData> dataByToken = onboardingDataService.findByToken(e.getId());
-					dataByToken.ifPresent(data -> onboardingDataService.delete(data.getId()));
-					
-					//delete onboarding token if exists
-					onboardingTokenService.delete(e.getId());
-				});
-				
-				//delete person on waitinglist after all other objects referencing are deleted
-				waitingPersonService.delete(person.getId());
-				Notification notification = Notification.show("Person von der Warteliste gelöscht");
-				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-				
-				refreshGrid();
-			});
-
-			menuBar.addItem("Zum Mitglied machen", event -> {
-				this.waitingPerson = person;
-				newMemberDialog = new Dialog();
-				createNewMemberDialog();
-				newMemberDialog.open();
-			});
-
-			if (person.getOnboardingStatus() == null) {
-				
-				menuBar.addItem("Onboarding starten", event -> {
-					if (person.getEmail() != null) {
-						sendOnboardingEmail(person);						
-					}
-				});
-			} else {
-				menuBar.addItem("Einladung erneut senden", event -> {
-					if (person.getEmail() != null) {
-						Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
-						
-						if(optToken.isPresent()) {
-							
-							Optional<OnboardingData> dataByToken = onboardingDataService.findByToken(optToken.get().getId());
-							dataByToken.ifPresent(e -> onboardingDataService.delete(e.getId()));
-							
-							onboardingTokenService.delete(optToken.get().getId());
-							sendOnboardingEmail(person);
-						} else {
-							Notification notification = Notification.show("Fehler: Problem mit Onboarding Token!");
-							notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-						}					
-					}
-				});
-			}
-
-			return menuBar;
+			return createMenuForPerson(person);
 		}).setWidth("100px").setFlexGrow(0);
 
 		grid.setItems(waitingPersonService.findAllByAssociation(associationId));
@@ -661,6 +631,93 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			}
 		});
 
+	}
+
+	private Component createMenuForPerson(WaitingPerson person) {
+		MenuBar menuBar = new MenuBar();
+		menuBar.setOverlayClassName("warenlager-view-menu-bar-1");
+		menuBar.addClassNames("warenlager-view-menu-bar-1", "customheader");
+
+		menuBar.addItem("bearbeiten", event -> {
+			this.waitingPerson = person;
+			isNewPerson = false;
+			headerPersonInfo.setText("Infos zur Person");
+			initPersonInfoDialog();
+			personInfoDialog.open();
+		});
+
+		menuBar.addItem("Person löschen", event -> {
+			Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
+			optToken.ifPresent(e -> {
+				
+				//delete OnboardingData if exists
+				Optional<OnboardingData> dataByToken = onboardingDataService.findByToken(e.getId());
+				dataByToken.ifPresent(data -> onboardingDataService.delete(data.getId()));
+				
+				//delete OnboardingToken if exists
+				onboardingTokenService.delete(e.getId());
+			});
+			
+			//delete person on waiting list after all other objects referencing are deleted
+			waitingPersonService.delete(person.getId());
+			Notification notification = Notification.show("Person von der Warteliste gelöscht");
+			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			
+			refreshGrid();
+		});
+
+		if (person.getOnboardingStatus() == null) {
+			
+			menuBar.addItem("Onboarding starten", event -> {
+				if (person.getEmail() != null) {
+					sendOnboardingEmail(person);						
+				}
+			});
+		} else {
+			
+			menuBar.addItem("Einladung erneut senden", event -> {
+				if (person.getEmail() != null) {
+					Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
+					
+					if(optToken.isPresent()) {
+						
+						//delete old OnboardingData if already existing
+						Optional<OnboardingData> dataByToken = onboardingDataService.findByToken(optToken.get().getId());
+						dataByToken.ifPresent(e -> onboardingDataService.delete(e.getId()));
+						
+						//then delete old token
+						onboardingTokenService.delete(optToken.get().getId());
+						
+						//send new email and generate new token
+						sendOnboardingEmail(person);
+					} else {
+						Notification notification = Notification.show("Fehler: Problem mit Onboarding Token!");
+						notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+					}					
+				}
+			});
+			
+			//if person has already provided his information
+			if (person.getOnboardingStatus() == OnboardingStatus.DATA_PROVIDED) {
+				
+				menuBar.addItem("Angaben vergleichen", event -> {
+					//TODO open pop up 
+					this.waitingPerson = person;
+					
+					compareDataDialog.open();
+				});
+			}
+			
+			if(person.getOnboardingStatus() == OnboardingStatus.CAN_BE_MEMBER) {
+				
+				menuBar.addItem("Zum Mitglied machen", event -> {
+					this.waitingPerson = person;
+					newMemberDialog.open();
+				});
+			}
+		}
+		
+		return menuBar;
 	}
 
 	private void initPersonInfoDialog() {

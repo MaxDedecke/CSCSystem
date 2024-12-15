@@ -633,31 +633,31 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 				onboardingToken = null;
 				Notification show = Notification.show("Onboarding Link abgelaufen. Kontaktiere deinen Verein");
 				show.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			} else {
+
+				createBegin();
+				createStepOneLayout();
+				createStepTwoLayout();
+				createStepThreeLayout();
+				createStepFourLayout();
+				createQuestionsTab();
+				createEnd();
+
+				tabStepOne = wizzard.add("Schritt 1", stepOneWrapper);
+				tabStepOne.setEnabled(false);
+
+				tabStepTwo = wizzard.add("Schritt 2", stepTwoWrapper);
+				tabStepTwo.setEnabled(false);
+
+				tabStepThree = wizzard.add("Schritt 3", stepThreeWrapper);
+				tabStepThree.setEnabled(false);
+
+				tabStepFour = wizzard.add("Schritt 4", stepFourWrapper);
+				tabStepFour.setEnabled(false);
+
+				tabQuestions = wizzard.add("Fragen des Vereins", questionsWrapper);
+				tabQuestions.setEnabled(false);
 			}
-			
-			createBegin();
-			createStepOneLayout();
-			createStepTwoLayout();
-			createStepThreeLayout();
-			createStepFourLayout();
-			createQuestionsTab();
-			createEnd();
-			
-			tabStepOne = wizzard.add("Schritt 1", stepOneWrapper);
-			tabStepOne.setEnabled(false);
-
-			tabStepTwo = wizzard.add("Schritt 2", stepTwoWrapper);
-			tabStepTwo.setEnabled(false);
-			
-			tabStepThree = wizzard.add("Schritt 3", stepThreeWrapper);
-			tabStepThree.setEnabled(false);
-			
-			tabStepFour = wizzard.add("Schritt 4", stepFourWrapper);
-			tabStepFour.setEnabled(false);
-			
-			tabQuestions = wizzard.add("Fragen des Vereins", questionsWrapper);
-			tabQuestions.setEnabled(false);
-
 		} else {			
 			UI.getCurrent().navigate("login");
 			Notification show = Notification.show("Onboarding Link abgelaufen. Kontaktiere deinen Verein");
@@ -716,6 +716,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 
 	private void finishOnboardingDataInputProcess(Map<OnboardingQuestion, TextArea> inputs) {
 		
+		//Initialize OnboardingData
 		OnboardingData data = new OnboardingData();
 		data.setAssociationId(onboardingToken.getAssociationId());
 		data.setDateOfBirth(dateOfBirth.getValue());
@@ -725,6 +726,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		data.setPhone(phone.getValue());
 		data.setMemberNumber(onboardingToken.getWaintingPerson().getId());
 		
+		//Initialize MemberData
 		MemberData memberData = new MemberData();
 		memberData.setCityName(city.getValue());
 		memberData.setDateOfRegistration(LocalDate.now());
@@ -732,9 +734,11 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		memberData.setStreetName(streetName.getValue());
 		memberData.setStreetNumber(streetNumber.getValue());
 		
+		//persist MemberData
 		memberData = memberDataService.update(memberData);
 		Optional<MemberData> optMemberData = memberDataService.findById(memberData.getId());
 		
+		//add MemberData to OnboardingData
 		optMemberData.ifPresentOrElse(e -> {
 			data.setMemberData(e);			
 		}, () -> {
@@ -742,14 +746,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);	
 		});
 		
-		Optional<OnboardingToken> optToken = onboardingTokenService.findByToken(onboardingToken.getToken());
-		optToken.ifPresentOrElse(e -> {
-			data.setToken(e);
-		}, () -> {
-			Notification notification = Notification.show("Fehler beim Senden der E-Mail - kontaktiere am Besten den Support!");
-            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-		});
-		
+		//Add answers to OnboardingData
 		inputs.keySet().forEach(question -> {
 			OnboardingAnswer answer = new OnboardingAnswer();
 			answer.setAssociationId(onboardingToken.getAssociationId());
@@ -760,15 +757,17 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		
 		data.setAnswers(tmpAnswers);
 		
+		//update OnboardingStatus of WaitingPerson
 		Optional<WaitingPerson> optWaitingPerson = waitingPersonService.get(onboardingToken.getWaintingPerson().getId());
 		optWaitingPerson.ifPresent(person -> {
 			person.setOnboardingStatus(OnboardingStatus.DATA_PROVIDED);
 			waitingPersonService.update(person);
 		});
 		
+		//persist OnboardingData
 		onboardingDataService.update(data);
+		
+		//delete OnboardingToken since it has no use anymore
 		onboardingTokenService.delete(onboardingToken.getId());
-		
-		
 	}
 }
