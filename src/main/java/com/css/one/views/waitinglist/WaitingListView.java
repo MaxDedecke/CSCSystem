@@ -269,11 +269,9 @@ private void savePersonData() {
 		this.waitingPerson.setAssociationId(associationId);
 		this.waitingPerson.setDateOfBirth(dateOfBirth.getValue());
 		this.waitingPerson.setDateOfRegistration(LocalDate.now());
-		this.waitingPerson.setOnboaring(false);
 		this.waitingPerson.setEmail(email.getValue());
 		this.waitingPerson.setFirstName(firstName.getValue());
 		this.waitingPerson.setLastName(lastName.getValue());
-		this.waitingPerson.setOnboaring(false);
 		this.waitingPerson.setPhone(phone.getValue());
 		
 		MemberData memberData;
@@ -700,26 +698,44 @@ private void createSingleSubscriptionForNewMember(Person member) {
 				}
 			});
 		} else {
-			
+
 			menuBar.addItem("Einladung erneut senden", event -> {
-				if (person.getEmail() != null) {
-					Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
-					
-					if(optToken.isPresent()) {
+
+				if (person.getOnboardingStatus() == OnboardingStatus.CAN_BE_MEMBER) {
+					if (person.getEmail() != null) {
+						Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
+
+						if (optToken.isPresent()) {
+
+							// delete old OnboardingData if already existing
+							Optional<OnboardingData> dataByToken = onboardingDataService
+									.findByToken(optToken.get().getId());
+							dataByToken.ifPresent(e -> onboardingDataService.delete(e.getId()));
+
+							// then delete old token
+							onboardingTokenService.delete(optToken.get().getId());
+
+							// send new email and generate new token
+							sendOnboardingEmail(person);
+						}
+					} else if (person.getOnboardingStatus() == OnboardingStatus.DATA_PROVIDED
+							|| person.getOnboardingStatus() == OnboardingStatus.CAN_BE_MEMBER) {
 						
-						//delete old OnboardingData if already existing
-						Optional<OnboardingData> dataByToken = onboardingDataService.findByToken(optToken.get().getId());
-						dataByToken.ifPresent(e -> onboardingDataService.delete(e.getId()));
+						// delete OnboardingData and send new email
+						Optional<OnboardingData> dataOfPerson = onboardingDataService.findByMemberId(person.getId());
+						dataOfPerson.ifPresentOrElse(data -> {
+							onboardingDataService.delete(data.getId());
+							
+							sendOnboardingEmail(person);
+						}, () -> {
+							Notification notification = Notification.show("Fehler: Erneutes Onboarding nicht möglich!");
+							notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+						});
 						
-						//then delete old token
-						onboardingTokenService.delete(optToken.get().getId());
-						
-						//send new email and generate new token
-						sendOnboardingEmail(person);
 					} else {
 						Notification notification = Notification.show("Fehler: Problem mit Onboarding Token!");
 						notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-					}					
+					}
 				}
 			});
 			
@@ -802,7 +818,6 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			
             Notification notification = Notification.show("E-Mail erfolgreich gesendet");
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-            person.setOnboaring(true);
             person.setOnboardingStatus(OnboardingStatus.STARTED);
             waitingPersonService.update(person);
             refreshGrid();

@@ -381,18 +381,18 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		FormLayout dataLayout = new FormLayout();
 		
 		firstName = new TextField("Vorname");
-		firstName.setPlaceholder("\"Max\"");
+		firstName.setPlaceholder("Max");
 		lastName = new TextField("Nachname");
-		lastName.setPlaceholder("\"Mustermann\"");
+		lastName.setPlaceholder("Mustermann");
 		email = new TextField("Email");
-		email.setPlaceholder("\"max.mustermann@beispiel.de\"");
+		email.setPlaceholder("max.mustermann@beispiel.de");
 		phone = new TextField("Telefonnummer");
         phone.setAllowedCharPattern("[0-9/]");
-        phone.setPlaceholder("\"0941420420\"");
+        phone.setPlaceholder("0941420420");
 		dateOfBirth = new DatePicker("Geburtstag");
 		dateOfBirth.setOverlayClassName("waiting-list-view-date-picker-1");
 		dateOfBirth.addClassName("waiting-list-view-date-picker-1");
-		dateOfBirth.setPlaceholder("\"01.01.2000\"");		
+		dateOfBirth.setPlaceholder("01.01.2000");		
 		dateOfBirth.setLocale(Locale.GERMANY);
 		
 		confirmAgeBox = new Checkbox();
@@ -565,13 +565,13 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		FormLayout dataLayout = new FormLayout();
 		
 		streetName = new TextField("Straße");
-		streetName.setPlaceholder("\"Musterstraße\"");
+		streetName.setPlaceholder("Musterstraße");
 		streetNumber = new TextField("Hausnummer");
-		streetNumber.setPlaceholder("\"1\"");
+		streetNumber.setPlaceholder("1");
 		postalCode = new TextField("PLZ");
-		postalCode.setPlaceholder("\"93049\"");
+		postalCode.setPlaceholder("93049");
 		city = new TextField("Ort");
-		city.setPlaceholder("\"Musterstadt\"");
+		city.setPlaceholder("Musterstadt");
 		
 		Hr hr = new Hr();
 		
@@ -612,7 +612,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
         if (token.isBlank()) {
             // No Token
             event.forwardTo("login");
-            Notification.show("NO TOKEN");
+            Notification.show("Kein gültiger Onboarding Link!");
         } else {
         	//refresh URL
             getElement().executeJs("window.history.replaceState({}, '', window.location.pathname);");
@@ -631,7 +631,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 				UI.getCurrent().navigate("login");
 				onboardingDataService.delete(onboardingToken.getId());
 				onboardingToken = null;
-				Notification show = Notification.show("Onboarding Link abgelaufen. Kontaktiere deinen Verein");
+				Notification show = Notification.show("Onboarding Link abgelaufen. Kontaktiere den Support oder deinen Verein!");
 				show.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			} else {
 
@@ -660,7 +660,7 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 			}
 		} else {			
 			UI.getCurrent().navigate("login");
-			Notification show = Notification.show("Onboarding Link abgelaufen. Kontaktiere deinen Verein");
+			Notification show = Notification.show("Onboarding Link funktioniert nicht. Kontaktiere den Support oder deinen Verein!");
 			show.addThemeVariants(NotificationVariant.LUMO_ERROR);
 		}
 	}
