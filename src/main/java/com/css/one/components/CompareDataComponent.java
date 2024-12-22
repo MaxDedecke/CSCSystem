@@ -6,6 +6,7 @@ import java.util.Map;
 import com.css.one.data.MemberData;
 import com.css.one.data.OnboardingData;
 import com.css.one.data.WaitingPerson;
+import com.css.one.data.enums.OnboardingStatus;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -25,8 +26,6 @@ public class CompareDataComponent extends VerticalLayout {
 	private static final long serialVersionUID = 2666409461606964998L;
 	
 	private WaitingPerson person;
-	private OnboardingData data;
-	
 	private HorizontalLayout mainLayout = new HorizontalLayout();
 	private H2 headerCompare = new H2("Angaben vergleichen");
 	
@@ -41,7 +40,6 @@ public class CompareDataComponent extends VerticalLayout {
 	private H3 headerPersonData;
 	
 	private HorizontalLayout firstNameSystemWrapper = new HorizontalLayout();
-	private Checkbox firstNameSystemBox = new Checkbox();
 	private TextField firstNameInSystem = new TextField("Vorname");
 	
 	private HorizontalLayout firstNameUserInputWrapper = new HorizontalLayout();
@@ -49,7 +47,6 @@ public class CompareDataComponent extends VerticalLayout {
 	private TextField firstNameOfUserInput = new TextField("Vorname");
 	
 	private HorizontalLayout lastNameSystemWrapper = new HorizontalLayout();
-	private Checkbox lastNameSystemBox = new Checkbox();
 	private TextField lastNameInSystem = new TextField("Nachname");
 	
 	private HorizontalLayout lastNameUserInputWrapper = new HorizontalLayout();
@@ -57,7 +54,6 @@ public class CompareDataComponent extends VerticalLayout {
 	private TextField lastNameOfUserInput = new TextField("Nachname");
 	
 	private HorizontalLayout phoneSystemWrapper = new HorizontalLayout();
-	private Checkbox phoneSystemBox = new Checkbox();
 	private TextField phoneInSystem = new TextField("Telefonnummber");
 	
 	private HorizontalLayout phoneUserInputWrapper = new HorizontalLayout();
@@ -65,7 +61,6 @@ public class CompareDataComponent extends VerticalLayout {
 	private TextField phoneOfUserInput = new TextField("Telefonnummer");
 	
 	private HorizontalLayout emailSystemWrapper = new HorizontalLayout();
-	private Checkbox emailSystemBox = new Checkbox();
 	private TextField emailInSystem = new TextField("Email");
 	
 	private HorizontalLayout emailUserInputWrapper = new HorizontalLayout();
@@ -73,7 +68,6 @@ public class CompareDataComponent extends VerticalLayout {
 	private TextField emailOfUserInput = new TextField("Email");
 	
 	private HorizontalLayout birthDateSystemWrapper = new HorizontalLayout();
-	private Checkbox birthDateSystemBox = new Checkbox();
 	private DatePicker birthDateInSystem = new DatePicker("Geburtsdatum");
 	
 	private HorizontalLayout birthDateUserInputWrapper = new HorizontalLayout();
@@ -81,7 +75,6 @@ public class CompareDataComponent extends VerticalLayout {
 	private DatePicker birthDateOfUserInput = new DatePicker("Geburtsdatum");
 	
 	private HorizontalLayout streetNameSystemWrapper = new HorizontalLayout();
-	private Checkbox streetNameSystemBox = new Checkbox();
 	private TextField streetNameInSystem = new TextField("Straße");
 	
 	private HorizontalLayout streetNameUserInputWrapper = new HorizontalLayout();
@@ -89,7 +82,6 @@ public class CompareDataComponent extends VerticalLayout {
 	private TextField streetNameOfUserInput = new TextField("Straße");
 	
 	private HorizontalLayout streetNumberSystemWrapper = new HorizontalLayout();
-	private Checkbox streetNumberSystemBox = new Checkbox();
 	private TextField streetNumberInSystem = new TextField("Hausnummer");
 	
 	private HorizontalLayout streetNumberUserInputWrapper = new HorizontalLayout();
@@ -97,7 +89,6 @@ public class CompareDataComponent extends VerticalLayout {
 	private TextField streetNumberOfUserInput = new TextField("Hausnummer");
 	
 	private HorizontalLayout postalCodeSystemWrapper = new HorizontalLayout();
-	private Checkbox postalCodeSystemBox = new Checkbox();
 	private TextField postalCodeInSystem = new TextField("PLZ");
 	
 	private HorizontalLayout postalCodeUserInputWrapper = new HorizontalLayout();
@@ -105,7 +96,6 @@ public class CompareDataComponent extends VerticalLayout {
 	private TextField postalCodeOfUserInput = new TextField("PLZ");
 	
 	private HorizontalLayout citySystemWrapper = new HorizontalLayout();
-	private Checkbox citySystemBox = new Checkbox();
 	private TextField cityInSystem = new TextField("Ort");
 	
 	private HorizontalLayout cityUserInputWrapper = new HorizontalLayout();
@@ -286,59 +276,43 @@ public class CompareDataComponent extends VerticalLayout {
 
 	private void createPrevDataLayout() {
 		
-		firstNameSystemBox.addClassName("margin-extra-top-css");
+		//TODO add changes from user input method
+		
 		firstNameInSystem.addClassName("width-inner-popup-component");
-		firstNameSystemWrapper.add(firstNameSystemBox, firstNameInSystem);
+		firstNameSystemWrapper.add(firstNameInSystem);
 		firstNameInSystem.setReadOnly(true);
-		mappings.put(firstNameSystemBox, firstNameInSystem);
 
-		lastNameSystemBox.addClassName("margin-extra-top-css");
 		lastNameInSystem.addClassName("width-inner-popup-component");
-		lastNameSystemWrapper.add(lastNameSystemBox, lastNameInSystem);
+		lastNameSystemWrapper.add(lastNameInSystem);
 		lastNameInSystem.setReadOnly(true);
-		mappings.put(lastNameSystemBox, lastNameInSystem);
 
-		birthDateSystemBox.addClassName("margin-extra-top-css");
 		birthDateInSystem.addClassName("width-inner-popup-component");
-		birthDateSystemWrapper.add(birthDateSystemBox, birthDateInSystem);
+		birthDateSystemWrapper.add(birthDateInSystem);
 		birthDateInSystem.setReadOnly(true);
-		mappings.put(birthDateSystemBox, birthDateInSystem);
 
-		phoneSystemBox.addClassName("margin-extra-top-css");
 		phoneInSystem.addClassName("width-inner-popup-component");
-		phoneSystemWrapper.add(phoneSystemBox, phoneInSystem);
+		phoneSystemWrapper.add(phoneInSystem);
 		phoneInSystem.setReadOnly(true);
-		mappings.put(phoneSystemBox, phoneInSystem);
 
-		emailSystemBox.addClassName("margin-extra-top-css");
 		emailInSystem.addClassName("width-inner-popup-component");
-		emailSystemWrapper.add(emailSystemBox, emailInSystem);
+		emailSystemWrapper.add(emailInSystem);
 		emailInSystem.setReadOnly(true);
-		mappings.put(emailSystemBox, emailInSystem);
 
-		streetNameSystemBox.addClassName("margin-extra-top-css");
 		streetNameInSystem.addClassName("width-inner-popup-component");
-		streetNameSystemWrapper.add(streetNameSystemBox, streetNameInSystem);
+		streetNameSystemWrapper.add(streetNameInSystem);
 		streetNameInSystem.setReadOnly(true);
-		mappings.put(streetNameSystemBox, streetNameInSystem);
 
-		streetNumberSystemBox.addClassName("margin-extra-top-css");
 		streetNumberInSystem.addClassName("width-inner-popup-component");
-		streetNumberSystemWrapper.add(streetNumberSystemBox, streetNumberInSystem);
+		streetNumberSystemWrapper.add(streetNumberInSystem);
 		streetNumberInSystem.setReadOnly(true);
-		mappings.put(streetNumberSystemBox, streetNumberInSystem);
 
-		postalCodeSystemBox.addClassName("margin-extra-top-css");
 		postalCodeInSystem.addClassName("width-inner-popup-component");
-		postalCodeSystemWrapper.add(postalCodeSystemBox, postalCodeInSystem);
+		postalCodeSystemWrapper.add(postalCodeInSystem);
 		postalCodeInSystem.setReadOnly(true);
-		mappings.put(postalCodeSystemBox, postalCodeInSystem);
 
-		citySystemBox.addClassName("margin-extra-top-css");
 		cityInSystem.addClassName("width-inner-popup-component");
-		citySystemWrapper.add(citySystemBox, cityInSystem);
+		citySystemWrapper.add(cityInSystem);
 		cityInSystem.setReadOnly(true);
-		mappings.put(citySystemBox, cityInSystem);
 		
 		prevDataLayout.add(
 				firstNameSystemWrapper,
@@ -373,8 +347,6 @@ public class CompareDataComponent extends VerticalLayout {
 	}
 	
 	public void initDataRightSide(OnboardingData data) {
-		this.data = data;
-		
 		firstNameOfUserInput.setValue(data.getFirstName());
 		lastNameOfUserInput.setValue(data.getLastName());
 		birthDateOfUserInput.setValue(data.getDateOfBirth());
@@ -387,14 +359,7 @@ public class CompareDataComponent extends VerticalLayout {
 		postalCodeOfUserInput.setValue(String.valueOf(memberData.getPostalCode()));
 		cityOfUserInput.setValue(memberData.getCityName());
 		
-	}
-	
-	public boolean isInputValid() {
-		
-		
-		return false;
-	}
-	
+	}	
 	
 	//return person with ticked info to persist outside of the component
 	public WaitingPerson returnPersonWithFinalInfo() {
@@ -417,5 +382,6 @@ public class CompareDataComponent extends VerticalLayout {
 		memberData.setCityName(cityUserInputBox.getValue() ? cityOfUserInput.getValue() : cityInSystem.getValue());
 		
 		this.person.setMemberData(memberData);
+		this.person.setOnboardingStatus(OnboardingStatus.CAN_BE_MEMBER);
 	}
 }

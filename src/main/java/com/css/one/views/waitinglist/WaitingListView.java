@@ -177,13 +177,12 @@ private void createCompareDataDialog() {
 		Button saveButton = new Button("abschließen");
 		saveButton.addClassName("save-button");
 		saveButton.addClickListener(e -> {
-			if (compareDataComponent.isInputValid()) {
+				
+				WaitingPerson returnedPersonInfo = compareDataComponent.returnPersonWithFinalInfo();
+				waitingPersonService.update(returnedPersonInfo);
+				
 				compareDataDialog.close();
-			}
-		});
-		
-		saveButton.setEnabled(false);
-		
+		});		
 		
 		compareDataDialog.getFooter().add(closeButton, saveButton);
 		compareDataDialog.setMaxWidth("65%");
@@ -610,20 +609,20 @@ private void createSingleSubscriptionForNewMember(Person member) {
 				if(status.getOnboardingStatus() == OnboardingStatus.STARTED) {
 					bar.addClassNames("onboarding-started");
 					bar.setValue(0.3);
-					progressBarLabelText = new NativeLabel("Onboarding gestartet..");
+					progressBarLabelText = new NativeLabel("Onboarding gestartet");
 					progressBarLabelText.setId("pblabel");
 					bar.getElement().setAttribute("aria-labelledby", "pblabel");
 				} else if(status.getOnboardingStatus() == OnboardingStatus.DATA_PROVIDED) {
 					bar.addClassNames("onboarding-data-exists");
 					bar.setValue(0.6);
-					progressBarLabelText = new NativeLabel("Selbstauskunft abgeschlossen");
+					progressBarLabelText = new NativeLabel("Selbstauskunft ausgefüllt");
 					progressBarLabelText.setId("pblabel");
 					bar.getElement().setAttribute("aria-labelledby", "pblabel");
 				} else {
 					//Status finished
 					bar.addClassNames("onboarding-finished");
 					bar.setValue(1.0);
-					progressBarLabelText = new NativeLabel("Kann zum Mitglied werden");
+					progressBarLabelText = new NativeLabel("Onboarding abgeschlossen");
 					progressBarLabelText.setId("pblabel");
 					bar.getElement().setAttribute("aria-labelledby", "pblabel");
 				}
