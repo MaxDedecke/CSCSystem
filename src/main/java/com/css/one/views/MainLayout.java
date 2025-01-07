@@ -199,8 +199,17 @@ public class MainLayout extends AppLayout {
             associationId = user.getAssociationId();
                         
             Avatar avatar = new Avatar(user.getName());
-            StreamResource resource = new StreamResource("profile-pic",
-                    () -> new ByteArrayInputStream(user.getProfilePicture()));
+    
+            StreamResource resource;
+            
+            if(user.getProfilePicture() == null) {
+            	 resource = new StreamResource("logoCodeGreen.png",
+                         () -> getClass().getResourceAsStream("/logoCodeGreen.png"));
+            } else {
+            	  resource = new StreamResource("profile-pic",
+                        () -> new ByteArrayInputStream(user.getProfilePicture()));
+            }
+             
             avatar.setImageResource(resource);
             avatar.setThemeName("xsmall");
             avatar.getElement().setAttribute("tabindex", "-1");
