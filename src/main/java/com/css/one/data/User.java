@@ -2,6 +2,8 @@ package com.css.one.data;
 
 import com.css.one.data.enums.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -32,6 +34,7 @@ public class User {
     private Set<Role> roles;
     @Lob
     @Column(length = 1000000)
+    @Nullable
     private byte[] profilePicture;
     
     private int associationId;
