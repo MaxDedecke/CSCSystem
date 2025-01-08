@@ -7,6 +7,10 @@
   margin-right:12px;
 }
 
+color-grey-custom-primary {
+	color: #545454;
+}
+
 body { font-family:'Afacad Flux',sans-serif; }
 
 h3.diary-view-h3-1 { font-weight:bold; }

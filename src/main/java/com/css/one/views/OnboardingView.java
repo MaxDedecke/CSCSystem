@@ -18,7 +18,6 @@ import com.css.one.data.WaitingPerson;
 import com.css.one.data.enums.OnboardingStatus;
 import com.css.one.services.EmailService;
 import com.css.one.services.MemberDataService;
-import com.css.one.services.OnboardingAnswerService;
 import com.css.one.services.OnboardingDataService;
 import com.css.one.services.OnboardingQuestionService;
 import com.css.one.services.OnboardingTokenService;
@@ -312,10 +311,10 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		Button buttonConfirmStepThree = new Button("bestätigen & weiter");
 		buttonConfirmStepThree.setEnabled(true);
 		buttonConfirmStepThree.addClickListener(e -> {
-//			if(validateInputStepThree()) {				
+			if(validateInputStepThree()) {				
 				tabStepFour.setEnabled(true);
 				wizzard.setSelectedTab(tabStepFour);
-//			}
+			}
 		});
 		buttonConfirmStepThree.addClassName("save-button");
 		VerticalLayout buttonWrapper = new VerticalLayout();
@@ -426,10 +425,10 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		buttonConfirmStepOne.setEnabled(true);
 		
 		buttonConfirmStepOne.addClickListener(e -> {
-//			if(validateInputGeneralData()) {
+			if(validateInputGeneralData()) {
 				tabStepTwo.setEnabled(true);
 				wizzard.setSelectedTab(tabStepTwo);
-//			}
+			}
 		});
 		
 		VerticalLayout buttonWrapper = new VerticalLayout();		
@@ -590,10 +589,10 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 		buttonConfirmStepTwo.addClassName("save-button");
 		buttonConfirmStepTwo.setEnabled(true);
 		buttonConfirmStepTwo.addClickListener(e -> {
-//			if(validateInputAddressData()) {
+			if(validateInputAddressData()) {
 				tabStepThree.setEnabled(true);	
 				wizzard.setSelectedTab(tabStepThree);
-//			}
+			}
 		});
 		
 		VerticalLayout buttonWrapper = new VerticalLayout();
