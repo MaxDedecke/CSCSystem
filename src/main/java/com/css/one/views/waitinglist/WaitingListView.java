@@ -577,7 +577,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		HorizontalLayout statisticsLayout = new HorizontalLayout();
 		statisticsLayout.addClassNames(LumoUtility.Padding.NONE,	
 				LumoUtility.Padding.Left.MEDIUM, LumoUtility.Margin.NONE, "header-statistics-item");
-		H3 second = new H3("Wartendene Personen: " + waitingPersonService.count());
+		H3 second = new H3("Wartendene Personen: " + waitingPersonService.findAllByAssociation(associationId).size());
 		second.addClassName("no-extra-space");
 		statisticsLayout.add(second);
 		
@@ -700,7 +700,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 			menuBar.addItem("Einladung erneut senden", event -> {
 
-				if (person.getOnboardingStatus() == OnboardingStatus.CAN_BE_MEMBER) {
+				if (person.getOnboardingStatus() == OnboardingStatus.STARTED) {
 					if (person.getEmail() != null) {
 						Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
 

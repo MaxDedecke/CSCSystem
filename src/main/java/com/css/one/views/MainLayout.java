@@ -144,8 +144,8 @@ public class MainLayout extends AppLayout {
 		if (accessChecker.hasAccess(ArbeitsplanungView.class)) {
 			nav.addItem(new SideNavItem("Zeiterfassung", ArbeitsplanungView.class,
 					LineAwesomeIcon.BUSINESS_TIME_SOLID.create()));
-
 		}
+		
         if (accessChecker.hasAccess(RechtlichesView.class)) {
             nav.addItem(new SideNavItem("Rechtliches", RechtlichesView.class,
                     LineAwesomeIcon.BALANCE_SCALE_SOLID.create()));

@@ -36,11 +36,13 @@ public class OnboardingDataService {
     }
     
     public Optional<OnboardingData> findByToken(Long tokenId) {
-    	return repository.findAll().stream().filter(e -> e.getToken().getId().equals(tokenId)).findAny();
+    	return repository.findAll().stream().filter(e -> e.getToken() != null).toList().stream()
+    			.filter(e -> e.getToken().getId().equals(tokenId)).findAny();
     }
     
     public Optional<OnboardingData> findByMemberId(Long memberId) {
-    	return repository.findAll().stream().filter(e -> e.getMemberNumber().equals(memberId)).findAny();
+    	return repository.findAll().stream().filter(e -> e.getMemberNumber() != null).toList().stream()
+    			.filter(e -> e.getMemberNumber().equals(memberId)).findAny();
     }
 
     public Page<OnboardingData> list(Pageable pageable) {
