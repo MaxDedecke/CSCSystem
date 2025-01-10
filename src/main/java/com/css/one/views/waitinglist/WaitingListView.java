@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.components.CompareDataComponent;
+import com.css.one.components.OnboardingWizzard;
 import com.css.one.data.AssociationSettings;
 import com.css.one.data.MemberData;
 import com.css.one.data.MemberSubscription;
@@ -22,8 +23,10 @@ import com.css.one.services.EmailService;
 import com.css.one.services.MemberDataService;
 import com.css.one.services.MemberSubscriptionService;
 import com.css.one.services.OnboardingDataService;
+import com.css.one.services.OnboardingQuestionService;
 import com.css.one.services.OnboardingTokenService;
 import com.css.one.services.PersonService;
+import com.css.one.services.SubscriptionModelService;
 import com.css.one.services.WaitingPersonService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
@@ -46,7 +49,6 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
-import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -67,7 +69,6 @@ public class WaitingListView extends FlexLayout {
 	*/
 	private static final long serialVersionUID = -5000521119703456571L;
 
-	private WaitingPersonService waitingPersonService;
 	private final Grid<WaitingPerson> grid = new Grid<>(WaitingPerson.class, false);
 
 	private TextField firstName;
@@ -75,43 +76,47 @@ public class WaitingListView extends FlexLayout {
 	private TextField email;
 	private TextField phone;
 	private DatePicker dateOfBirth;
-	
+
 	private TextField streetName;
 	private TextField streetNumber;
 	private TextField postalCode;
 	private TextField city;
 
-	private Button save = new Button("speichern");	
-	
+	private OnboardingWizzard wizzard;
+
+	private Button save = new Button("speichern");
+
 	private H3 memberCount;
 	private H2 headerPersonInfo;
-	
+
 	private Dialog newMemberDialog = new Dialog();
 	private Dialog personInfoDialog = new Dialog();
 	private Dialog quickOnboardingDialog = new Dialog();
 	private Dialog compareDataDialog = new Dialog();
-	
+
 	private CompareDataComponent compareDataComponent;
-	
+
 	private WaitingPerson waitingPerson;
 	private PersonService personService;
-    private MemberSubscriptionService subscriptionService;
-    private MemberDataService memberDataService;
-    private OnboardingTokenService onboardingTokenService;
-    private AssociationSettingsService associationSettingsService;
-    private OnboardingDataService onboardingDataService;
-    
+	private MemberSubscriptionService subscriptionService;
+	private MemberDataService memberDataService;
+	private OnboardingTokenService onboardingTokenService;
+	private AssociationSettingsService associationSettingsService;
+	private OnboardingDataService onboardingDataService;
+
+	private SubscriptionModelService subscriptionModelService;
+	private OnboardingQuestionService onboardingQuestionService;
+	private WaitingPersonService waitingPersonService;
+
 	private int associationId;
 	private boolean isNewPerson = true;
 
-	public WaitingListView(WaitingPersonService waitingPersonService, 
-			PersonService personService,
-			MemberSubscriptionService subscriptionService,
-			MemberDataService memberDataService,
-			OnboardingTokenService onboardingTokenService,
-			AssociationSettingsService associationSettingsService,
-			OnboardingDataService onboardingDataService) {
-		
+	public WaitingListView(WaitingPersonService waitingPersonService, PersonService personService,
+			MemberSubscriptionService subscriptionService, MemberDataService memberDataService,
+			OnboardingTokenService onboardingTokenService, AssociationSettingsService associationSettingsService,
+			SubscriptionModelService subscriptionModelService, OnboardingDataService onboardingDataService,
+			OnboardingQuestionService onboardingQuestionService) {
+
 		this.waitingPersonService = waitingPersonService;
 		this.personService = personService;
 		this.subscriptionService = subscriptionService;
@@ -119,82 +124,86 @@ public class WaitingListView extends FlexLayout {
 		this.onboardingTokenService = onboardingTokenService;
 		this.associationSettingsService = associationSettingsService;
 		this.onboardingDataService = onboardingDataService;
-		
+		this.subscriptionModelService = subscriptionModelService;
+		this.onboardingQuestionService = onboardingQuestionService;
+
 		addClassNames("waitinglist-view");
 
 		// Create UI
 		associationId = MainLayout.getAssociationId();
 
 		VerticalLayout mainWrapper = new VerticalLayout();
-		mainWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Margin.Bottom.MEDIUM, LumoUtility.Padding.NONE); 
+		mainWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Margin.Bottom.MEDIUM, LumoUtility.Padding.NONE);
 		createMainLayout(mainWrapper);
-		
+
 		createAddPersonDialog();
 		createNewMemberDialog();
 		createCompareDataDialog();
 		createQuickOnboardingDialog();
-		
+
 		add(mainWrapper);
 	}
-	
-private void createQuickOnboardingDialog() {
-	
+
+	private void createQuickOnboardingDialog() {
+
 		VerticalLayout headerWrapper = new VerticalLayout();
 		headerWrapper.setWidthFull();
 		H3 headerQuickOnboarding = new H3("Quick Onboarding");
 		headerWrapper.add(headerQuickOnboarding);
-		
-		quickOnboardingDialog.add(headerWrapper, createOnboardingTabs());
-		
+
+		VerticalLayout wizzardWrapper = new VerticalLayout();
+
+		wizzard = new OnboardingWizzard(onboardingDataService, subscriptionModelService, onboardingTokenService,
+				onboardingQuestionService, memberDataService, waitingPersonService, Optional.empty());
+
+		wizzardWrapper.add(wizzard);
+		quickOnboardingDialog.add(headerWrapper, wizzardWrapper);
+
 		Button closeButton = new Button("Prozess abbrechen");
 		closeButton.addClassName("cancel-button");
 		closeButton.addClickListener(e -> {
-			//clearQuickOnboardingDialog();
+			wizzard.resetWizzard();
 			quickOnboardingDialog.close();
 		});
-		
+
+		quickOnboardingDialog.setWidth("80%");
+		quickOnboardingDialog.setHeight("90%");
 		quickOnboardingDialog.getFooter().add(closeButton);
 	}
 
-private TabSheet createOnboardingTabs() {
-	//same tabs as in normal remote process
-	TabSheet sheet = new TabSheet();
-	return sheet;
-}
-
-private void createCompareDataDialog() {
-		//compare data given before the process with given by person		
+	private void createCompareDataDialog() {
+		// compare data given before the process with given by person
 		compareDataComponent = new CompareDataComponent();
 		compareDataDialog.add(compareDataComponent);
-		
+
 		Button closeButton = new Button("zurück");
 		closeButton.addClassName("cancel-button");
 		closeButton.addClickListener(e -> {
-			//clearQuickOnboardingDialog();
+			// clearQuickOnboardingDialog();
 			compareDataDialog.close();
 		});
-		
+
 		Button saveButton = new Button("abschließen");
 		saveButton.addClassName("save-button");
 		saveButton.addClickListener(e -> {
-				
-				WaitingPerson returnedPersonInfo = compareDataComponent.returnPersonWithFinalInfo();
-				waitingPersonService.update(returnedPersonInfo);
-				
-				compareDataDialog.close();
-		});		
-		
+
+			WaitingPerson returnedPersonInfo = compareDataComponent.returnPersonWithFinalInfo();
+			waitingPersonService.update(returnedPersonInfo);
+
+			compareDataDialog.close();
+		});
+
 		compareDataDialog.getFooter().add(closeButton, saveButton);
 		compareDataDialog.setMaxWidth("65%");
 		compareDataDialog.setMaxHeight("75%");
-}
+	}
 
-private void createAddPersonDialog() {
+	private void createAddPersonDialog() {
 		VerticalLayout mainWrapper = new VerticalLayout();
-		
+
 		headerPersonInfo = new H2("Person hinzufügen");
 		headerPersonInfo.addClassName("customheader");
-		
+
 		mainWrapper.add(headerPersonInfo, createAddPersonContent(), new Hr(), createAdditionalDataContent());
 
 		save = new Button("hinzufügen");
@@ -202,7 +211,7 @@ private void createAddPersonDialog() {
 
 		save.addClickListener(e -> {
 			savePersonData();
-			
+
 			if (isNewPerson) {
 				Notification notification = Notification.show("Person wurde auf die Warteliste gesetzt.");
 				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
@@ -210,104 +219,104 @@ private void createAddPersonDialog() {
 				Notification notification = Notification.show("Infos aktualisiert");
 				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 			}
-			
+
 			isNewPerson = true;
 		});
-		
+
 		Button buttonCancel = new Button("abbrechen");
 		buttonCancel.addClassNames("cancel-button");
-		
+
 		buttonCancel.addClickListener(e -> {
 			clearPersonInfoDialog();
 			personInfoDialog.close();
 		});
-		
+
 		personInfoDialog.addDialogCloseActionListener(e -> {
 			clearPersonInfoDialog();
 			personInfoDialog.close();
 		});
-		
+
 		personInfoDialog.getFooter().add(buttonCancel, save);
 		personInfoDialog.add(mainWrapper);
 	}
 
-private Component createAdditionalDataContent() {
-	
-	VerticalLayout wrapper = new VerticalLayout();
-	H3 h3 = new H3("Addressdaten");
-	h3.addClassName("customheader");
-	
-	FormLayout additionalFormLayout = new FormLayout();
-	streetName = new TextField("Straße");	
-	streetNumber = new TextField("Hausnummer");
-	postalCode = new TextField("PLZ");
-	city = new TextField("Ort");
-		
-	additionalFormLayout.add(streetName, streetNumber, postalCode, city);
-	
-	wrapper.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
-	wrapper.add(h3, additionalFormLayout);
-	return wrapper;
-}
+	private Component createAdditionalDataContent() {
 
-private void savePersonData() {
-	
-	//input validation
-	if (checkPersonDataForWaitingList()) {
+		VerticalLayout wrapper = new VerticalLayout();
+		H3 h3 = new H3("Addressdaten");
+		h3.addClassName("customheader");
 
-		Optional<MemberData> memberDataOptional = Optional.empty();
-		
-		//new person
-		if (this.waitingPerson == null) {
-			this.waitingPerson = new WaitingPerson();
-		} else {
-			//if person already exists, look for its MemberData
-			memberDataOptional = memberDataService.findByMember(this.waitingPerson);
-		}
+		FormLayout additionalFormLayout = new FormLayout();
+		streetName = new TextField("Straße");
+		streetNumber = new TextField("Hausnummer");
+		postalCode = new TextField("PLZ");
+		city = new TextField("Ort");
 
-		this.waitingPerson.setAssociationId(associationId);
-		this.waitingPerson.setDateOfBirth(dateOfBirth.getValue());
-		this.waitingPerson.setDateOfRegistration(LocalDate.now());
-		this.waitingPerson.setEmail(email.getValue());
-		this.waitingPerson.setFirstName(firstName.getValue());
-		this.waitingPerson.setLastName(lastName.getValue());
-		this.waitingPerson.setPhone(phone.getValue());
-		
-		MemberData memberData;
-		
-		//if MemberData exists, use it
-		if (memberDataOptional.isPresent()) {
-			memberData = memberDataOptional.get();
-		} else {
-			memberData = new MemberData();
-		}
+		additionalFormLayout.add(streetName, streetNumber, postalCode, city);
 
-		memberData.setStreetName(streetName.getValue());
-		memberData.setCityName(city.getValue());
-		memberData.setPostalCode(Integer.parseInt(postalCode.getValue()));
-		memberData.setStreetNumber(streetNumber.getValue());
-		
-		waitingPerson.setMemberData(memberData);
-
-		//persist person with its info and MemberData
-		waitingPersonService.update(this.waitingPerson);
-		
-		//clear and refresh
-		clearPersonInfoDialog();
-		refreshGrid();
-		personInfoDialog.close();
-		this.waitingPerson = null;
-		
-	} else {
-		Notification notification = Notification.show("Das war leider nicht erfolgreich...");
-		notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		wrapper.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
+		wrapper.add(h3, additionalFormLayout);
+		return wrapper;
 	}
-}
 
-private void createSingleSubscriptionForNewMember(Person member) {
-		
-    	LocalDate now = LocalDate.now();
-    	MemberSubscription subscription = new MemberSubscription();
+	private void savePersonData() {
+
+		// input validation
+		if (checkPersonDataForWaitingList()) {
+
+			Optional<MemberData> memberDataOptional = Optional.empty();
+
+			// new person
+			if (this.waitingPerson == null) {
+				this.waitingPerson = new WaitingPerson();
+			} else {
+				// if person already exists, look for its MemberData
+				memberDataOptional = memberDataService.findByMember(this.waitingPerson);
+			}
+
+			this.waitingPerson.setAssociationId(associationId);
+			this.waitingPerson.setDateOfBirth(dateOfBirth.getValue());
+			this.waitingPerson.setDateOfRegistration(LocalDate.now());
+			this.waitingPerson.setEmail(email.getValue());
+			this.waitingPerson.setFirstName(firstName.getValue());
+			this.waitingPerson.setLastName(lastName.getValue());
+			this.waitingPerson.setPhone(phone.getValue());
+
+			MemberData memberData;
+
+			// if MemberData exists, use it
+			if (memberDataOptional.isPresent()) {
+				memberData = memberDataOptional.get();
+			} else {
+				memberData = new MemberData();
+			}
+
+			memberData.setStreetName(streetName.getValue());
+			memberData.setCityName(city.getValue());
+			memberData.setPostalCode(Integer.parseInt(postalCode.getValue()));
+			memberData.setStreetNumber(streetNumber.getValue());
+
+			waitingPerson.setMemberData(memberData);
+
+			// persist person with its info and MemberData
+			waitingPersonService.update(this.waitingPerson);
+
+			// clear and refresh
+			clearPersonInfoDialog();
+			refreshGrid();
+			personInfoDialog.close();
+			this.waitingPerson = null;
+
+		} else {
+			Notification notification = Notification.show("Das war leider nicht erfolgreich...");
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		}
+	}
+
+	private void createSingleSubscriptionForNewMember(Person member) {
+
+		LocalDate now = LocalDate.now();
+		MemberSubscription subscription = new MemberSubscription();
 		subscription.setAssociationId(associationId);
 		subscription.setMonth(now.getMonthValue());
 		subscription.setYear(now.getYear());
@@ -316,48 +325,48 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 		subscriptionService.update(subscription);
 	}
-	
+
 	private boolean checkPersonDataForWaitingList() {
 		boolean isDataOk = true;
 
-		if(firstName.getValue().equals("")) {
+		if (firstName.getValue().equals("")) {
 			isDataOk = false;
 			Notification notification = Notification.show("Die Person braucht einen Vornamen");
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return isDataOk;
 		}
-		
-		if(lastName.getValue().equals("")) {
+
+		if (lastName.getValue().equals("")) {
 			isDataOk = false;
 			Notification notification = Notification.show("Die Person braucht einen Nachnamen");
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return isDataOk;
 		}
-		
-		if(email.getValue().equals("")) {
+
+		if (email.getValue().equals("")) {
 			isDataOk = false;
 			Notification notification = Notification.show("Die Person braucht eine Email");
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return isDataOk;
 		}
-		
-		if(phone.getValue().equals("")) {
+
+		if (phone.getValue().equals("")) {
 			isDataOk = false;
 			Notification notification = Notification.show("Die Person braucht eine Telefonnummer");
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return isDataOk;
 		}
-		
-		if(dateOfBirth.getValue() == null) {
+
+		if (dateOfBirth.getValue() == null) {
 			isDataOk = false;
 			Notification notification = Notification.show("Die Person braucht ein Geburtsdatum");
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return isDataOk;
 		}
-		
+
 		LocalDate date = dateOfBirth.getValue();
 		LocalDate now = LocalDate.now();
-		
+
 		if (!(now.getYear() - date.getYear() > 20)) {
 			isDataOk = false;
 			Notification notification = Notification.show("Die Person ist noch nicht volljährig!");
@@ -384,7 +393,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		}
 		return isDataOk;
 	}
-	
+
 	private String renderDate(LocalDate date) {
 		String day = "";
 		String month = "";
@@ -405,7 +414,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 	}
 
 	private void createNewMemberDialog() {
-		
+
 		VerticalLayout dialogLayout = new VerticalLayout();
 		H2 h2 = new H2("Zu Mitgliedern hinzufügen");
 		h2.addClassNames("customheader");
@@ -414,14 +423,14 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		FormLayout formLayout = new FormLayout();
 		TextField nameOfPerson = new TextField("Name");
 		nameOfPerson.setEnabled(false);
-		
+
 		ComboBox<AssociationRole> comboBox = new ComboBox<AssociationRole>("Rolle");
 		comboBox.setItems(AssociationRole.values());
 		comboBox.setItemLabelGenerator(e -> e.getLabel());
-		
+
 		formLayout.add(nameOfPerson, comboBox);
 		dialogLayout.add(formLayout);
-		
+
 		newMemberDialog.add(dialogLayout);
 		Button saveButton = new Button("Hinzufügen", e -> {
 
@@ -437,19 +446,19 @@ private void createSingleSubscriptionForNewMember(Person member) {
 				person.setLastName(waitingPerson.getLastName());
 				person.setMemberNumber(personService.getFreeMemberNumber(associationId));
 				person = personService.update(person);
-				
+
 				Optional<MemberData> optMemberData = memberDataService.findByMember(waitingPerson);
-				if(optMemberData.isPresent()) {					
+				if (optMemberData.isPresent()) {
 					person.setMemberData(optMemberData.get());
 				}
-				
-				if(waitingPerson.getId() != null) {				
+
+				if (waitingPerson.getId() != null) {
 					waitingPersonService.delete(waitingPerson.getId());
 				}
 				this.waitingPerson = null;
-				
+
 				createSingleSubscriptionForNewMember(person);
-				
+
 				newMemberDialog.close();
 				refreshGrid();
 
@@ -458,7 +467,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 			}
 		});
 		saveButton.addClassNames("save-button");
-		
+
 		Button cancelButton = new Button("Zurück", e -> newMemberDialog.close());
 		cancelButton.addClassNames("cancel-button");
 
@@ -468,26 +477,26 @@ private void createSingleSubscriptionForNewMember(Person member) {
 
 	private boolean checkBeforeSave(ComboBox<AssociationRole> comboBox, TextField nameOfPerson) {
 		boolean returnValue = true;
-		
-		if(comboBox.getValue() == null) {
+
+		if (comboBox.getValue() == null) {
 			returnValue = false;
 			Notification notification = Notification.show("Einer Person muss eine Rolle zugewiesen werden");
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return returnValue;
 		}
-		if(personService.count() >= 500) {
+		if (personService.count() >= 500) {
 			returnValue = false;
 			Notification notification = Notification.show("Die maximale Anzahl an Mitgliedern ist bereits erreicht !");
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return returnValue;
 		}
-		if(nameOfPerson.getValue().equals("")) {
+		if (nameOfPerson.getValue().equals("")) {
 			returnValue = false;
 			Notification notification = Notification.show("Die Person braucht noch einen Namen !");
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return returnValue;
 		}
-		
+
 		return returnValue;
 	}
 
@@ -495,9 +504,9 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		grid.select(null);
 		grid.setItems(waitingPersonService.findAllByAssociation(associationId));
 	}
-	
+
 	private Component createAddPersonContent() {
-		
+
 		VerticalLayout wrapper = new VerticalLayout();
 		H3 h3 = new H3("Allgemeine Angaben");
 		h3.addClassName("customheader");
@@ -507,24 +516,24 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		lastName = new TextField("Nachname");
 		email = new TextField("Email");
 		phone = new TextField("Telefonnummer");
-        phone.setAllowedCharPattern("[0-9/]");
+		phone.setAllowedCharPattern("[0-9/]");
 		dateOfBirth = new DatePicker("Geburtstag");
 		dateOfBirth.setOverlayClassName("waiting-list-view-date-picker-1");
 		dateOfBirth.addClassName("waiting-list-view-date-picker-1");
 
 		formLayout.add(firstName, lastName, phone, dateOfBirth, email);
 		formLayout.setColspan(email, 2);
-		
+
 		wrapper.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
 		wrapper.add(h3, formLayout);
 		return wrapper;
 	}
 
 	private void createMainLayout(VerticalLayout wrapper) {
-		
+
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.NONE);
-		
+
 		createGrid();
 
 		mainLayout.add(createButtonAndInfoComponent(), grid);
@@ -535,52 +544,52 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		HorizontalLayout wrapper = new HorizontalLayout();
 		wrapper.setWidthFull();
 		wrapper.addClassNames("header-bar-custom");
-		
+
 		Button buttonAddPerson = new Button("Person hinzufügen");
 		buttonAddPerson.setIcon(LineAwesomeIcon.USER_PLUS_SOLID.create());
 		buttonAddPerson.addClassName("button-neutral");
-		
+
 		buttonAddPerson.addClickListener(e -> {
 			headerPersonInfo.setText("Person hinzufügen");
 			this.waitingPerson = null;
 			personInfoDialog.open();
 		});
-		
+
 		Button buttonStartPersonOnboarding = new Button("Quick Onboarding");
 		buttonStartPersonOnboarding.setIcon(LineAwesomeIcon.CLONE_SOLID.create());
 		buttonStartPersonOnboarding.addClassName("button-neutral");
-		
+
 		buttonStartPersonOnboarding.addClickListener(e -> {
 			quickOnboardingDialog.open();
 		});
-		
+
 		FlexLayout flexWrapper = new FlexLayout();
 		flexWrapper.addClassNames(LumoUtility.AlignItems.END);
 		flexWrapper.setWidthFull();
-		
+
 		VerticalLayout secondWrapper = new VerticalLayout();
 		secondWrapper.addClassNames(LumoUtility.JustifyContent.END, LumoUtility.AlignContent.END);
 		secondWrapper.setSpacing(false);
 		secondWrapper.setPadding(false);
-		
+
 		VerticalLayout innerWrapper = new VerticalLayout();
 		innerWrapper.addClassNames(LumoUtility.Border.LEFT, LumoUtility.BorderRadius.NONE, "padding-extra-top");
 		innerWrapper.setSpacing(false);
 		innerWrapper.setPadding(false);
-		
+
 		HorizontalLayout bottomLayout = new HorizontalLayout();
 		bottomLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Left.MEDIUM, LumoUtility.Margin.NONE);
 		memberCount = new H3("Statistik");
 		memberCount.addClassNames("header-statistics", "no-extra-space");
-		bottomLayout.add(memberCount);	
-		
+		bottomLayout.add(memberCount);
+
 		HorizontalLayout statisticsLayout = new HorizontalLayout();
-		statisticsLayout.addClassNames(LumoUtility.Padding.NONE,	
-				LumoUtility.Padding.Left.MEDIUM, LumoUtility.Margin.NONE, "header-statistics-item");
+		statisticsLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Left.MEDIUM,
+				LumoUtility.Margin.NONE, "header-statistics-item");
 		H3 second = new H3("Wartendene Personen: " + waitingPersonService.findAllByAssociation(associationId).size());
 		second.addClassName("no-extra-space");
 		statisticsLayout.add(second);
-		
+
 		innerWrapper.add(bottomLayout, statisticsLayout);
 		flexWrapper.add(secondWrapper, innerWrapper);
 
@@ -597,7 +606,7 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		grid.addColumn(p -> p.getPhone()).setAutoWidth(true).setHeader("Telefonnummer");
 		grid.addColumn(p -> renderDate(p.getDateOfRegistration())).setAutoWidth(true).setHeader("Auf Warteliste seit")
 				.setSortable(true);
-		
+
 		grid.addComponentColumn(status -> {
 			VerticalLayout wrapper = new VerticalLayout();
 
@@ -605,31 +614,31 @@ private void createSingleSubscriptionForNewMember(Person member) {
 				ProgressBar bar = new ProgressBar();
 
 				NativeLabel progressBarLabelText;
-				
-				if(status.getOnboardingStatus() == OnboardingStatus.STARTED) {
+
+				if (status.getOnboardingStatus() == OnboardingStatus.STARTED) {
 					bar.addClassNames("onboarding-started");
 					bar.setValue(0.3);
 					progressBarLabelText = new NativeLabel("Onboarding gestartet");
 					progressBarLabelText.setId("pblabel");
 					bar.getElement().setAttribute("aria-labelledby", "pblabel");
-				} else if(status.getOnboardingStatus() == OnboardingStatus.DATA_PROVIDED) {
+				} else if (status.getOnboardingStatus() == OnboardingStatus.DATA_PROVIDED) {
 					bar.addClassNames("onboarding-data-exists");
 					bar.setValue(0.6);
 					progressBarLabelText = new NativeLabel("Selbstauskunft ausgefüllt");
 					progressBarLabelText.setId("pblabel");
 					bar.getElement().setAttribute("aria-labelledby", "pblabel");
 				} else {
-					//Status finished
+					// Status finished
 					bar.addClassNames("onboarding-finished");
 					bar.setValue(1.0);
 					progressBarLabelText = new NativeLabel("Onboarding abgeschlossen");
 					progressBarLabelText.setId("pblabel");
 					bar.getElement().setAttribute("aria-labelledby", "pblabel");
 				}
-				
+
 				HorizontalLayout progressBarLabel = new HorizontalLayout(progressBarLabelText);
 				progressBarLabel.setJustifyContentMode(JustifyContentMode.BETWEEN);
-				
+
 				wrapper.add(progressBarLabel, bar);
 				return wrapper;
 			} else {
@@ -672,28 +681,28 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		menuBar.addItem("Person löschen", event -> {
 			Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
 			optToken.ifPresent(e -> {
-				
-				//delete OnboardingData if exists
+
+				// delete OnboardingData if exists
 				Optional<OnboardingData> dataByToken = onboardingDataService.findByToken(e.getId());
 				dataByToken.ifPresent(data -> onboardingDataService.delete(data.getId()));
-				
-				//delete OnboardingToken if exists
+
+				// delete OnboardingToken if exists
 				onboardingTokenService.delete(e.getId());
 			});
-			
-			//delete person on waiting list after all other objects referencing are deleted
+
+			// delete person on waiting list after all other objects referencing are deleted
 			waitingPersonService.delete(person.getId());
 			Notification notification = Notification.show("Person von der Warteliste gelöscht");
 			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-			
+
 			refreshGrid();
 		});
 
 		if (person.getOnboardingStatus() == null) {
-			
+
 			menuBar.addItem("Onboarding starten", event -> {
 				if (person.getEmail() != null) {
-					sendOnboardingEmail(person);						
+					sendOnboardingEmail(person);
 				}
 			});
 		} else {
@@ -719,30 +728,30 @@ private void createSingleSubscriptionForNewMember(Person member) {
 						}
 					} else if (person.getOnboardingStatus() == OnboardingStatus.DATA_PROVIDED
 							|| person.getOnboardingStatus() == OnboardingStatus.CAN_BE_MEMBER) {
-						
+
 						// delete OnboardingData and send new email
 						Optional<OnboardingData> dataOfPerson = onboardingDataService.findByMemberId(person.getId());
 						dataOfPerson.ifPresentOrElse(data -> {
 							onboardingDataService.delete(data.getId());
-							
+
 							sendOnboardingEmail(person);
 						}, () -> {
 							Notification notification = Notification.show("Fehler: Erneutes Onboarding nicht möglich!");
 							notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 						});
-						
+
 					} else {
 						Notification notification = Notification.show("Fehler: Problem mit Onboarding Token!");
 						notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 					}
 				}
 			});
-			
-			//if person has already provided his information
+
+			// if person has already provided his information
 			if (person.getOnboardingStatus() == OnboardingStatus.DATA_PROVIDED) {
-				
+
 				menuBar.addItem("Angaben vergleichen", event -> {
-					//prepare data and open pop up
+					// prepare data and open pop up
 					Optional<OnboardingData> dataByMemberId = onboardingDataService.findByMemberId(person.getId());
 
 					if (dataByMemberId.isPresent()) {
@@ -756,16 +765,16 @@ private void createSingleSubscriptionForNewMember(Person member) {
 					}
 				});
 			}
-			
-			if(person.getOnboardingStatus() == OnboardingStatus.CAN_BE_MEMBER) {
-				
+
+			if (person.getOnboardingStatus() == OnboardingStatus.CAN_BE_MEMBER) {
+
 				menuBar.addItem("Zum Mitglied machen", event -> {
 					this.waitingPerson = person;
 					newMemberDialog.open();
 				});
 			}
 		}
-		
+
 		return menuBar;
 	}
 
@@ -776,22 +785,22 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		this.email.setValue(waitingPerson.getEmail());
 		this.phone.setValue(waitingPerson.getPhone());
 		this.dateOfBirth.setValue(waitingPerson.getDateOfBirth());
-		
-		if(waitingPerson.getMemberData() != null) {
+
+		if (waitingPerson.getMemberData() != null) {
 			memberDataService.findByMember(waitingPerson).ifPresent(memberData -> {
-				
+
 				this.city.setValue(memberData.getCityName());
 				this.streetName.setValue(memberData.getStreetName());
 				this.streetNumber.setValue(memberData.getStreetNumber());
 				this.postalCode.setValue(String.valueOf(memberData.getPostalCode()));
-			});			
+			});
 		}
-		
+
 		this.save.setText("aktualisieren");
 	}
-	
+
 	private void clearPersonInfoDialog() {
-		
+
 		this.firstName.setValue("");
 		this.lastName.setValue("");
 		this.email.setValue("");
@@ -801,47 +810,50 @@ private void createSingleSubscriptionForNewMember(Person member) {
 		this.streetNumber.setValue("");
 		this.postalCode.setValue("");
 		this.dateOfBirth.setValue(dateOfBirth.getEmptyValue());
-		
+
 		this.save.setText("hinzufügen");
 	}
 
 	private void sendOnboardingEmail(WaitingPerson person) {
-		
+
 		EmailService emailService = new EmailService();
 		String to = person.getEmail();
-		String subject = "Onboarding gestartet - " + " Herzlich willkommen " + person.getFirstName() + " " + person.getLastName() + "!";
-		
+		String subject = "Onboarding gestartet - " + " Herzlich willkommen " + person.getFirstName() + " "
+				+ person.getLastName() + "!";
+
 		try {
-			String token = emailService.sendOnboardingEmail(to, subject, person.getFirstName(), EmailType.ONBOARING, onboardingTokenService.generateToken());			
+			String token = emailService.sendOnboardingEmail(to, subject, person.getFirstName(), EmailType.ONBOARING,
+					onboardingTokenService.generateToken());
 			saveToken(token, person);
-			
-            Notification notification = Notification.show("E-Mail erfolgreich gesendet");
-            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-            person.setOnboardingStatus(OnboardingStatus.STARTED);
-            waitingPersonService.update(person);
-            refreshGrid();
-        } catch (Exception e) {
-        	Notification notification = Notification.show("Fehler beim Senden der E-Mail: " + e.getMessage());
-            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        }
+
+			Notification notification = Notification.show("E-Mail erfolgreich gesendet");
+			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			person.setOnboardingStatus(OnboardingStatus.STARTED);
+			waitingPersonService.update(person);
+			refreshGrid();
+		} catch (Exception e) {
+			Notification notification = Notification.show("Fehler beim Senden der E-Mail: " + e.getMessage());
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		}
 	}
 
 	private void saveToken(String token, WaitingPerson person) {
 		OnboardingToken onboardingToken = new OnboardingToken();
 		onboardingToken.setToken(token);
 		onboardingToken.setWaintingPerson(person);
-		onboardingToken.setExpirationDate(createExpirationDate());		
+		onboardingToken.setExpirationDate(createExpirationDate());
 		onboardingToken.setAssociationId(associationId);
 		onboardingTokenService.update(onboardingToken);
 	}
 
 	private LocalDate createExpirationDate() {
-		Optional<AssociationSettings> optOnboardingSettings = associationSettingsService.findAllByAssociation(associationId);
-		
+		Optional<AssociationSettings> optOnboardingSettings = associationSettingsService
+				.findAllByAssociation(associationId);
+
 		if (optOnboardingSettings.isPresent()) {
-			if(optOnboardingSettings.get().getOnboardingTokenExpirationTime() != null) {
-				return calculateExpirationDate(optOnboardingSettings.get().getOnboardingTokenExpirationTime());													
-			} else {				
+			if (optOnboardingSettings.get().getOnboardingTokenExpirationTime() != null) {
+				return calculateExpirationDate(optOnboardingSettings.get().getOnboardingTokenExpirationTime());
+			} else {
 				return optOnboardingSettings.get().getOnboardingTokenExpirationDate();
 			}
 		} else {
