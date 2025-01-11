@@ -1,11 +1,16 @@
 package com.css.one.views;
 
 import java.io.ByteArrayInputStream;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
+import com.css.one.data.SystemVersion;
 import com.css.one.data.User;
+import com.css.one.migrations.DB;
 import com.css.one.security.AuthenticatedUser;
 import com.css.one.services.PropertyService;
 import com.css.one.views.arbeitsplanung.ArbeitsplanungView;
@@ -31,7 +36,6 @@ import com.vaadin.flow.component.html.Footer;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
@@ -40,6 +44,8 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
@@ -48,7 +54,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 /**
  * The main view is a top-level placeholder for other views.
  */
-public class MainLayout extends AppLayout {
+public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     private static final long serialVersionUID = 6836033218825579037L;
 
@@ -58,8 +64,12 @@ public class MainLayout extends AppLayout {
     private AccessAnnotationChecker accessChecker;
         
     static int associationId; 
+        
+    private SideNav nav = new SideNav();
     
-    Span appName;
+    //onboarding navigation item
+    private SideNavItem sideNavItemOnboarding = new SideNavItem("Onboarding", OnboardingView.class, LineAwesomeIcon.HANDS_HELPING_SOLID.create());
+
 
     public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
@@ -105,7 +115,9 @@ public class MainLayout extends AppLayout {
         HorizontalLayout versionLayout = new HorizontalLayout();
         versionLayout.setWidth("100%");
         versionLayout.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Padding.NONE, "main");
-        versionLayout.add(new Text("v.0.6"));
+        
+        setCurrentVersion(versionLayout);
+        
         layout.add(versionLayout);
         
         Hr hr2 = new Hr();
@@ -114,21 +126,57 @@ public class MainLayout extends AppLayout {
         addToDrawer(header, scroller, createFooter(), versionLayout);
     }
 
-    private SideNav createNavigation() {
-        SideNavItem sideNavItemOnboarding = new SideNavItem("Onboarding", OnboardingView.class, LineAwesomeIcon.HANDS_HELPING_SOLID.create());
+	private void setCurrentVersion(HorizontalLayout versionLayout) {
+		// Load current version from database and set string
 
-        SideNav nav = new SideNav();
+		String version = "";
+
+		// Create a connection to database
+		try (var connection = DB.connect()) {
+			System.out.println("Load current version");
+			
+			var sql = "SELECT * FROM system_version WHERE is_active = true";
+			
+			try {
+				var statement = connection.createStatement();
+				ResultSet rs = statement.executeQuery(sql);
+
+				SystemVersion sysVersion = new SystemVersion();
+				while (rs.next()) {
+					sysVersion.setId(rs.getLong("id"));
+					sysVersion.setVersionNumber(rs.getString("version_number"));
+					sysVersion.setVersionInteger(rs.getInt("version_integer"));
+					sysVersion.setReleaseDate(rs.getObject("release_date", LocalDate.class));
+					sysVersion.setCreatedAt(rs.getObject("created_at", LocalDate.class));
+					sysVersion.setUpdatedAt(rs.getObject("updated_at", LocalDate.class));
+					sysVersion.setDescription(rs.getString("description"));
+					sysVersion.setActive(rs.getBoolean("is_active"));
+					sysVersion.setMigrated(rs.getBoolean("is_migrated"));
+				}
+				
+				version = sysVersion.getVersionNumber();
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+
+		versionLayout.add(new Text(version));
+	}
+
+	private SideNav createNavigation() {
+
         nav.addClassNames("vaadin-app-layout");
         nav.setWidth("100%");
         
         if (accessChecker.hasAccess(ÜbersichtView.class)) {
             nav.addItem(new SideNavItem("Übersicht", ÜbersichtView.class, LineAwesomeIcon.GLOBE_SOLID.create()));
             
-            clearNavigation(nav, sideNavItemOnboarding);            
-        } else {
-        	if (accessChecker.hasAccess(OnboardingView.class)) {
-                nav.addItem(sideNavItemOnboarding);
-            }
+            clearNavigationFromItem(nav, sideNavItemOnboarding);            
         }
         
         if (accessChecker.hasAccess(FinanzenView.class)) {
@@ -183,10 +231,15 @@ public class MainLayout extends AppLayout {
         return nav;
     }
 
-    private void clearNavigation(SideNav nav, SideNavItem sideNavItemOnboarding) {
-        if(nav.getItems().contains(sideNavItemOnboarding)) {        	
-        	nav.remove(sideNavItemOnboarding);
+    private void clearNavigationFromItem(SideNav nav, SideNavItem sideNavItem) {
+        if(nav.getItems().contains(sideNavItem)) {        	
+        	nav.remove(sideNavItem);
         }
+	}
+    
+    private void clearAllOtherNavigationItems(SideNav nav, SideNavItem sideNavItem) {        
+        nav.removeAll();
+        nav.addItem(sideNavItem);
 	}
 
 	private Footer createFooter() {
@@ -257,4 +310,20 @@ public class MainLayout extends AppLayout {
     public static int getAssociationId() {
     	return associationId;
     }
+    
+    @Override
+	public void beforeEnter(BeforeEnterEvent event) {
+		//check if url must result in different menu	
+    	
+        if (event.getLocation().getSegments().contains("onboarding")) {
+            //url contaings onboarding means we only need onboarding side nav
+        	
+            //add it to navigation menu
+            if (accessChecker.hasAccess(OnboardingView.class)) {
+            	
+            	clearAllOtherNavigationItems(nav, sideNavItemOnboarding);
+                
+            }
+        }
+	}
 }

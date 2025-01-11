@@ -105,7 +105,8 @@ public class OnboardingView extends VerticalLayout implements BeforeEnterObserve
 						onboardingQuestionService,
 						memberDataService,
 						waitingPersonService,
-						Optional.of(onboardingToken));
+						Optional.of(onboardingToken),
+						Optional.empty());
 
 				add(wizzard);
 			}

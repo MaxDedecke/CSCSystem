@@ -1,6 +1,7 @@
 package com.css.one.views.waitinglist;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
@@ -87,6 +88,7 @@ public class WaitingListView extends FlexLayout {
 	private Button save = new Button("speichern");
 
 	private H3 memberCount;
+	private H3 memberCountNumber;
 	private H2 headerPersonInfo;
 
 	private Dialog newMemberDialog = new Dialog();
@@ -154,9 +156,10 @@ public class WaitingListView extends FlexLayout {
 		VerticalLayout wizzardWrapper = new VerticalLayout();
 
 		wizzard = new OnboardingWizzard(onboardingDataService, subscriptionModelService, onboardingTokenService,
-				onboardingQuestionService, memberDataService, waitingPersonService, Optional.empty());
+				onboardingQuestionService, memberDataService, waitingPersonService, Optional.empty(), Optional.of(associationId));
 
 		wizzardWrapper.add(wizzard);
+		
 		quickOnboardingDialog.add(headerWrapper, wizzardWrapper);
 
 		Button closeButton = new Button("Prozess abbrechen");
@@ -164,6 +167,7 @@ public class WaitingListView extends FlexLayout {
 		closeButton.addClickListener(e -> {
 			wizzard.resetWizzard();
 			quickOnboardingDialog.close();
+			refreshLayout();
 		});
 
 		quickOnboardingDialog.setWidth("80%");
@@ -179,7 +183,7 @@ public class WaitingListView extends FlexLayout {
 		Button closeButton = new Button("zurück");
 		closeButton.addClassName("cancel-button");
 		closeButton.addClickListener(e -> {
-			// clearQuickOnboardingDialog();
+			compareDataComponent.clearComponent();
 			compareDataDialog.close();
 		});
 
@@ -191,6 +195,12 @@ public class WaitingListView extends FlexLayout {
 			waitingPersonService.update(returnedPersonInfo);
 
 			compareDataDialog.close();
+			compareDataComponent.clearComponent();
+			
+			refreshLayout();
+			
+			Notification notification = Notification.show("Daten wurden aktualisiert.");
+			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 		});
 
 		compareDataDialog.getFooter().add(closeButton, saveButton);
@@ -303,7 +313,7 @@ public class WaitingListView extends FlexLayout {
 
 			// clear and refresh
 			clearPersonInfoDialog();
-			refreshGrid();
+			refreshLayout();
 			personInfoDialog.close();
 			this.waitingPerson = null;
 
@@ -460,7 +470,7 @@ public class WaitingListView extends FlexLayout {
 				createSingleSubscriptionForNewMember(person);
 
 				newMemberDialog.close();
-				refreshGrid();
+				refreshLayout();
 
 				Notification notification = Notification.show("Neues Mitglied hinzugefügt.");
 				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
@@ -500,9 +510,14 @@ public class WaitingListView extends FlexLayout {
 		return returnValue;
 	}
 
-	private void refreshGrid() {
+	private void refreshLayout() {
 		grid.select(null);
-		grid.setItems(waitingPersonService.findAllByAssociation(associationId));
+		List<WaitingPerson> allWaitingPeople = waitingPersonService.findAllByAssociation(associationId);
+		grid.setItems(allWaitingPeople);
+		
+		//refresh counter
+		memberCountNumber.setText("Wartendene Personen: " + String.valueOf(allWaitingPeople.size()));
+		
 	}
 
 	private Component createAddPersonContent() {
@@ -586,9 +601,9 @@ public class WaitingListView extends FlexLayout {
 		HorizontalLayout statisticsLayout = new HorizontalLayout();
 		statisticsLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Left.MEDIUM,
 				LumoUtility.Margin.NONE, "header-statistics-item");
-		H3 second = new H3("Wartendene Personen: " + waitingPersonService.findAllByAssociation(associationId).size());
-		second.addClassName("no-extra-space");
-		statisticsLayout.add(second);
+		memberCountNumber = new H3("Wartendene Personen: " + waitingPersonService.findAllByAssociation(associationId).size());
+		memberCountNumber.addClassName("no-extra-space");
+		statisticsLayout.add(memberCountNumber);
 
 		innerWrapper.add(bottomLayout, statisticsLayout);
 		flexWrapper.add(secondWrapper, innerWrapper);
@@ -695,7 +710,7 @@ public class WaitingListView extends FlexLayout {
 			Notification notification = Notification.show("Person von der Warteliste gelöscht");
 			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
-			refreshGrid();
+			refreshLayout();
 		});
 
 		if (person.getOnboardingStatus() == null) {
@@ -830,7 +845,7 @@ public class WaitingListView extends FlexLayout {
 			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 			person.setOnboardingStatus(OnboardingStatus.STARTED);
 			waitingPersonService.update(person);
-			refreshGrid();
+			refreshLayout();
 		} catch (Exception e) {
 			Notification notification = Notification.show("Fehler beim Senden der E-Mail: " + e.getMessage());
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);

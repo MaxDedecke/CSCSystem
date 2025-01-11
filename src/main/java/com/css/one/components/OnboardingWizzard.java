@@ -101,6 +101,7 @@ public class OnboardingWizzard extends TabSheet {
 	private final Optional<OnboardingToken> onboardingToken;
 	
 	private WaitingPerson personOnTheFly;
+	private MemberData personData;
 	
 	public OnboardingWizzard(OnboardingDataService onboardingDataService,
 			SubscriptionModelService subscriptionModelService,
@@ -108,7 +109,8 @@ public class OnboardingWizzard extends TabSheet {
 			OnboardingQuestionService onboardingQuestionService,
 			MemberDataService memberDataService,
 			WaitingPersonService waitingPersonService,
-			Optional<OnboardingToken> onboardingToken) {
+			Optional<OnboardingToken> onboardingToken,
+			Optional<Integer> associationId) {
 		
 		addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE, LumoUtility.AlignItems.CENTER);
 		setWidthFull();
@@ -122,11 +124,17 @@ public class OnboardingWizzard extends TabSheet {
 		this.waitingPersonService = waitingPersonService;
 		this.onboardingToken = onboardingToken;
 		
+		associationId.ifPresent(id -> this.associationId = id);
+		
+		if(onboardingToken.isEmpty()) {
+			personOnTheFly = new WaitingPerson();
+			personOnTheFly.setDateOfRegistration(LocalDate.now());
+			
+			personData = new MemberData();
+			personData.setDateOfRegistration(LocalDate.now());
+		}
+		
 		createWizzard();
-	}
-	
-	public void setAssociationId(int associationId) {
-		this.associationId = associationId;
 	}
 	
 	private void createWizzard() {
@@ -571,6 +579,17 @@ public class OnboardingWizzard extends TabSheet {
 			lastName.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-contrast-10pct");
 		}
 
+		if (dateOfBirth.getValue().equals(dateOfBirth.getEmptyValue())) {
+			dateOfBirth.setInvalid(true);
+			dateOfBirth.setHelperText("Dein Geburtsdatum muss ebenso angegeben sein");
+			dateOfBirth.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-error-color-10pct");
+			return false;
+		} else {
+			dateOfBirth.setInvalid(false);
+			dateOfBirth.setHelperText("");
+			dateOfBirth.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-contrast-10pct");
+		}
+		
 		if (phone.getValue().equals(phone.getEmptyValue())) {
 			phone.setInvalid(true);
 			phone.setHelperText("Deine Telefonnummer muss angegeben sein");
@@ -582,16 +601,6 @@ public class OnboardingWizzard extends TabSheet {
 			phone.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-contrast-10pct");
 		}
 
-		if (dateOfBirth.getValue().equals(dateOfBirth.getEmptyValue())) {
-			dateOfBirth.setInvalid(true);
-			dateOfBirth.setHelperText("Dein Geburtsdatum muss ebenso angegeben sein");
-			dateOfBirth.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-error-color-10pct");
-			return false;
-		} else {
-			dateOfBirth.setInvalid(false);
-			dateOfBirth.setHelperText("");
-			dateOfBirth.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-contrast-10pct");
-		}
 
 		if (email.getValue().equals(email.getEmptyValue())) {
 			email.setInvalid(true);
@@ -664,67 +673,104 @@ public class OnboardingWizzard extends TabSheet {
 	}
 
 	private void finishOnboardingDataInputProcess(Map<OnboardingQuestion, TextArea> inputs) {
-
-		// Initialize OnboardingData
-		OnboardingData data = new OnboardingData();
-		data.setAssociationId(onboardingToken.isPresent() ? onboardingToken.get().getAssociationId() : associationId);
-		data.setDateOfBirth(dateOfBirth.getValue());
-		data.setEmail(email.getValue());
-		data.setFirstName(firstName.getValue());
-		data.setLastName(lastName.getValue());
-		data.setPhone(phone.getValue());
-		data.setMemberNumber(onboardingToken.isPresent() ? onboardingToken.get().getWaintingPerson().getId() : personOnTheFly.getId());
-
-		// Initialize MemberData
-		MemberData memberData = new MemberData();
-		memberData.setCityName(city.getValue());
-		memberData.setDateOfRegistration(LocalDate.now());
-		memberData.setPostalCode(Integer.valueOf(postalCode.getValue()));
-		memberData.setStreetName(streetName.getValue());
-		memberData.setStreetNumber(streetNumber.getValue());
-
-		// persist MemberData
-		memberData = memberDataService.update(memberData);
-		Optional<MemberData> optMemberData = memberDataService.findById(memberData.getId());
-
-		// add MemberData to OnboardingData
-		optMemberData.ifPresentOrElse(e -> {
-			data.setMemberData(e);
-		}, () -> {
-			Notification notification = Notification
-					.show("Fehler beim Senden der E-Mail - kontaktiere am Besten den Support!");
-			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-		});
-
-		// Add answers to OnboardingData
-		inputs.keySet().forEach(question -> {
-			OnboardingAnswer answer = new OnboardingAnswer();
-			answer.setAssociationId(onboardingToken.isPresent() ? onboardingToken.get().getAssociationId() : this.associationId);
-			answer.setQuestion(question);
-			answer.setAnswer(inputs.get(question).getValue());
-			tmpAnswers.add(answer);
-		});
-
-		data.setAnswers(tmpAnswers);
-
-		// update OnboardingStatus of WaitingPerson
-		Optional<WaitingPerson> optWaitingPerson = waitingPersonService
-				.get(onboardingToken.isPresent() ? onboardingToken.get().getWaintingPerson().getId() : personOnTheFly.getId());
-		optWaitingPerson.ifPresent(person -> {
-			person.setOnboardingStatus(OnboardingStatus.DATA_PROVIDED);
-			waitingPersonService.update(person);
-		});
-
-		// persist OnboardingData
-		onboardingDataService.update(data);
-
-		// delete OnboardingToken since it has no use anymore
-		if (onboardingToken.isPresent()) {
-			onboardingTokenService.delete(onboardingToken.get().getId());
-		}
 		
+		OnboardingData data = new OnboardingData();
+		
+		// If we do quick onboarding, we create a new waiting person directly
+		if(personOnTheFly != null) {
+			
+			//create waiting person + member data and persist
+			setValuesOfPersonAndPersist();			
+			
+		} else {
+
+			// Initialize OnboardingData
+			data.setAssociationId(onboardingToken.get().getAssociationId());
+			data.setDateOfBirth(dateOfBirth.getValue());
+			data.setEmail(email.getValue());
+			data.setFirstName(firstName.getValue());
+			data.setLastName(lastName.getValue());
+			data.setPhone(phone.getValue());
+
+			// If onboarding token exists, a waiting person must already exist
+			data.setMemberNumber(onboardingToken.get().getWaintingPerson().getId());
+
+			// Initialize MemberData
+			MemberData memberData = new MemberData();
+			memberData.setCityName(city.getValue());
+			memberData.setDateOfRegistration(LocalDate.now());
+			memberData.setPostalCode(Integer.valueOf(postalCode.getValue()));
+			memberData.setStreetName(streetName.getValue());
+			memberData.setStreetNumber(streetNumber.getValue());
+
+			// persist MemberData
+			memberData = memberDataService.update(memberData);
+			Optional<MemberData> optMemberData = memberDataService.findById(memberData.getId());
+
+			// add MemberData to OnboardingData
+			optMemberData.ifPresentOrElse(e -> {
+				data.setMemberData(e);
+			}, () -> {
+				Notification notification = Notification
+						.show("Fehler beim Senden der E-Mail - kontaktiere am Besten den Support!");
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			});
+			
+			// Add answers to OnboardingData
+			inputs.keySet().forEach(question -> {
+				OnboardingAnswer answer = new OnboardingAnswer();
+				answer.setAssociationId(onboardingToken.get().getAssociationId());
+				answer.setQuestion(question);
+				answer.setAnswer(inputs.get(question).getValue());
+				tmpAnswers.add(answer);
+			});
+			
+			data.setAnswers(tmpAnswers);
+			
+			// persist OnboardingData
+			onboardingDataService.update(data);
+			
+			// delete OnboardingToken since it has no use anymore
+			if (onboardingToken.isPresent()) {
+				onboardingTokenService.delete(onboardingToken.get().getId());
+			}
+			
+			// update OnboardingStatus of WaitingPerson
+			Optional<WaitingPerson> optWaitingPerson = waitingPersonService
+					.get(onboardingToken.get().getWaintingPerson().getId());
+			optWaitingPerson.ifPresent(person -> {
+				person.setOnboardingStatus(OnboardingStatus.DATA_PROVIDED);
+				waitingPersonService.update(person);
+			});
+		}
+
 	}
 	
+	private void setValuesOfPersonAndPersist() {
+		
+		//fill object with data from wizard
+		personOnTheFly.setDateOfBirth(this.dateOfBirth.getValue());
+		personOnTheFly.setEmail(this.email.getValue());
+		personOnTheFly.setFirstName(this.firstName.getValue());
+		personOnTheFly.setLastName(this.lastName.getValue());
+		personOnTheFly.setPhone(this.phone.getValue());
+		
+		//before waiting person can be saved, a MemberData object must exist
+		personData.setCityName(this.city.getValue());
+		personData.setPostalCode(Integer.valueOf(this.postalCode.getValue()));
+		personData.setStreetName(this.streetName.getValue());
+		personData.setStreetNumber(this.streetNumber.getValue());
+		
+		//set MemberData
+		personOnTheFly.setMemberData(personData);
+		personOnTheFly.setAssociationId(associationId);
+		personOnTheFly.setOnboardingStatus(OnboardingStatus.CAN_BE_MEMBER);
+		
+		//persist waiting person
+		personOnTheFly = waitingPersonService.update(personOnTheFly);
+		
+	}
+
 	private void sendNextStepsEmailToWaitingPerson() {
 
 		WaitingPerson waintingPerson = onboardingToken.isPresent() ? onboardingToken.get().getWaintingPerson() : personOnTheFly;

@@ -21,6 +21,8 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 public class CompareDataComponent extends VerticalLayout {
 
 	/**
+	 * This component allows the user to compare the data of a waiting person entity and its onboarding data
+	 * Goal is to decide which data is finally persisted in the database.
 	 * 
 	 */
 	private static final long serialVersionUID = 2666409461606964998L;
@@ -383,5 +385,33 @@ public class CompareDataComponent extends VerticalLayout {
 		
 		this.person.setMemberData(memberData);
 		this.person.setOnboardingStatus(OnboardingStatus.CAN_BE_MEMBER);
+	}
+	
+	public void clearComponent() {
+		
+		//clear left side
+		firstNameInSystem.setValue(firstNameInSystem.getEmptyValue());
+		lastNameInSystem.setValue(lastNameInSystem.getEmptyValue());
+		birthDateInSystem.setValue(birthDateInSystem.getEmptyValue());
+		phoneInSystem.setValue(phoneInSystem.getEmptyValue());
+		emailInSystem.setValue(emailInSystem.getEmptyValue());
+		
+		streetNameInSystem.setValue(streetNameInSystem.getEmptyValue());
+		streetNumberInSystem.setValue(streetNumberInSystem.getEmptyValue());
+		postalCodeInSystem.setValue(postalCodeInSystem.getEmptyValue());
+		cityInSystem.setValue(cityInSystem.getEmptyValue());
+		
+		//clear right side
+		firstNameOfUserInput.setValue(firstNameOfUserInput.getEmptyValue());
+		lastNameOfUserInput.setValue(lastNameOfUserInput.getEmptyValue());
+		birthDateOfUserInput.setValue(birthDateOfUserInput.getEmptyValue());
+		phoneOfUserInput.setValue(phoneOfUserInput.getEmptyValue());
+		emailOfUserInput.setValue(emailOfUserInput.getEmptyValue());
+		
+		streetNameOfUserInput.setValue(streetNameOfUserInput.getEmptyValue());
+		streetNumberOfUserInput.setValue(streetNumberOfUserInput.getEmptyValue());
+		postalCodeOfUserInput.setValue(postalCodeOfUserInput.getEmptyValue());
+		cityOfUserInput.setValue(cityOfUserInput.getEmptyValue());
+		
 	}
 }
