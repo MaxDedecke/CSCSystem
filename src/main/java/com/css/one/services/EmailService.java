@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.Properties;
 
@@ -122,6 +123,30 @@ public class EmailService {
 			show.addThemeVariants(NotificationVariant.LUMO_ERROR);			
 		}
 		
+    }
+    
+    public void sendOnboardingLinkOverdueEmail(String to, String subject, LocalDate overdueDate) throws MessagingException, IOException {
+    	// HTML-Vorlage laden
+    	resourceLoader =  new DefaultResourceLoader();
+        Resource resource = resourceLoader.getResource(EmailType.ONBOARDING_LINK_DATE_RESET.getHtml());
+        
+		if (resource.exists()) {
+			String htmlContent = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+		    htmlContent = htmlContent.replace("${overduedate}", overdueDate.format(DateTimeFormatter.ISO_LOCAL_DATE));
+		    
+		    try (InputStream imageStream = ImageUtil.class.getClassLoader().getResourceAsStream("logoCodeGreen.png")) {
+		    	if (imageStream == null) {
+		    		throw new IOException("Bild konnte nicht geladen werden: " + "logoCodeGreen");
+		    	}
+		    	byte[] imageBytes = imageStream.readAllBytes();
+		    	htmlContent = htmlContent.replace("logoCodeGreen.png","data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes));
+		    }
+			// E-Mail senden
+			sendHtmlMessage(to, subject, htmlContent);
+		} else {
+			Notification show = Notification.show("Resource could not be loaded");
+			show.addThemeVariants(NotificationVariant.LUMO_ERROR);			
+		}
     }
 
 	public void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {

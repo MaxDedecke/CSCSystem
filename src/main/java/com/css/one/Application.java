@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.sql.init.SqlDataSourceScriptDatabaseInitializer;
 import org.springframework.boot.autoconfigure.sql.init.SqlInitializationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * The entry point of the Spring Boot application.
@@ -20,6 +21,7 @@ import org.springframework.context.annotation.Bean;
  *  
  */
 @SpringBootApplication
+@EnableScheduling
 @Theme("css-system-one")
 public class Application implements AppShellConfigurator { 
 

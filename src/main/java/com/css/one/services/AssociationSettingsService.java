@@ -1,5 +1,6 @@
 package com.css.one.services;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -42,6 +43,14 @@ public class AssociationSettingsService {
     
     public Optional<AssociationSettings> findAllByAssociation(int associationId) { 
     	return repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).findAny();
+    }
+    
+    public List<AssociationSettings> findAll() { 
+    	return repository.findAll();
+    }
+    
+    public List<AssociationSettings> findWithSpecificOnboardingDuedate() { 
+    	return repository.findAll().stream().filter(e -> e.getOnboardingTokenExpirationDate() != null).toList();
     }
     
     public AssociationSettings createInitialSettings(int associationId) {
