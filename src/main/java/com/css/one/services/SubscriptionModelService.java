@@ -49,4 +49,8 @@ public class SubscriptionModelService {
     public int count() {
         return (int) repository.count();
     }
+    
+    public int countOfAssociation(int associationId) {
+    	return repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).toList().size();
+    }
 }

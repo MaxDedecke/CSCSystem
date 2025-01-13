@@ -39,4 +39,7 @@ public class OnboardingQuestionService {
     	return questions;
     }
     
+    public int countOfAssociation(int associationId) {
+    	return repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).toList().size();
+    }
 }

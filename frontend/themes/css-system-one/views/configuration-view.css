@@ -23,6 +23,10 @@
   padding: var(--lumo-space-l);
 }
 
+.configuration-view .counter {
+  align-content: center;
+}
+
 .configuration-view .editor vaadin-checkbox {
   padding-top: var(--lumo-space-m);
 }

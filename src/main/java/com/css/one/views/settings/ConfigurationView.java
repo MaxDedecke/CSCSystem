@@ -11,6 +11,8 @@ import com.css.one.data.AssociationSettings;
 import com.css.one.data.Blossom;
 import com.css.one.data.Cutting;
 import com.css.one.data.Location;
+import com.css.one.data.OnboardingAnswer;
+import com.css.one.data.OnboardingData;
 import com.css.one.data.OnboardingQuestion;
 import com.css.one.data.Seed;
 import com.css.one.data.SubscriptionModel;
@@ -21,6 +23,8 @@ import com.css.one.services.AssociationSettingsService;
 import com.css.one.services.BlossomService;
 import com.css.one.services.CuttingService;
 import com.css.one.services.LocationService;
+import com.css.one.services.OnboardingAnswerService;
+import com.css.one.services.OnboardingDataService;
 import com.css.one.services.OnboardingQuestionService;
 import com.css.one.services.SeedService;
 import com.css.one.services.SubscriptionModelService;
@@ -77,6 +81,8 @@ public class ConfigurationView extends VerticalLayout {
 	private WorkingUnitService workingUnitService;
 	private SubscriptionModelService subscriptionModelService;
 	private OnboardingQuestionService onboardingQuestionService;
+	private OnboardingAnswerService onboardingAnswerService;
+	private OnboardingDataService onboardingDataService;
 	private AssociationSettingsService associationSettingsService;
 	
 	private WorkingUnitCategoryService workingUnitCategoryService;
@@ -123,6 +129,7 @@ public class ConfigurationView extends VerticalLayout {
 	private Button saveCategoryButton = new Button("hinzufügen");
 	private Button addPricingModelButton = new Button();
 	private Button saveOnboardingSettingsButton;
+	private Button addQuestionButton;
 	
 	private AssociationSettings associationSettings;
 	private Location selectedLocation;
@@ -132,6 +139,9 @@ public class ConfigurationView extends VerticalLayout {
 	List<SubscriptionModel> pricingModels = new ArrayList<SubscriptionModel>();
 	List<OnboardingQuestion> onboardingQuestions = new ArrayList<OnboardingQuestion>();
 
+	H3 questionsHeader = new H3();
+	H3 counterSubscriptionModels = new H3("0/3");
+	
 	public enum ViewStatus {
 		LOCATION, WORKINGCATEGORY;
 	}
@@ -144,7 +154,9 @@ public class ConfigurationView extends VerticalLayout {
 			WorkingUnitService workingUnitService,
 			SubscriptionModelService subscriptionModelService,
 			OnboardingQuestionService onboardingQuestionService,
-			AssociationSettingsService associationSettingsService) {
+			AssociationSettingsService associationSettingsService,
+			OnboardingAnswerService onboardingAnswerService,
+			OnboardingDataService onboardingDataService) {
 		
 		this.locationService = locationService;
 		this.workingUnitCategoryService = workingUnitCategoryService;
@@ -155,6 +167,8 @@ public class ConfigurationView extends VerticalLayout {
 		this.subscriptionModelService = subscriptionModelService;
 		this.onboardingQuestionService = onboardingQuestionService;
 		this.associationSettingsService = associationSettingsService;
+		this.onboardingAnswerService = onboardingAnswerService;
+		this.onboardingDataService = onboardingDataService;
 		
 		addClassNames("configuration-view", LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		
@@ -165,7 +179,7 @@ public class ConfigurationView extends VerticalLayout {
 		tabSheet.setSizeFull();
 		tabSheet.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		tabSheet.add("Onboarding", createOnboardingTab());
-		tabSheet.add("Tarife", createMembershipTab());
+		tabSheet.add("Abomodelle", createMembershipTab());
 		tabSheet.add("Standorte", createLocationsTab());	
 		tabSheet.add("Arbeitsplanung", createWorkingEnvTab());
 		tabSheet.add("Finanzen", createFinancesTab());
@@ -253,8 +267,7 @@ public class ConfigurationView extends VerticalLayout {
 		cancelButton.addClickListener(e -> {
 			clearPricingModelDialog();
 			addPricingModelDialog.close();
-			Notification notification = Notification.show("Tarif erfolgreich hinzugefügt.");
-			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			
 		});
 		
 		Button saveButton = new Button("Speichern");
@@ -426,7 +439,7 @@ public class ConfigurationView extends VerticalLayout {
 
 	private Component createLeftSide() {
 		VerticalLayout wrapper = new VerticalLayout();
-		H2 h2 = new H2("Tarif erstellen");
+		H2 h2 = new H2("Abomodel erstellen");
 		h2.addClassName("customheader");
 		
 		FormLayout formLayout = new FormLayout();
@@ -481,11 +494,11 @@ public class ConfigurationView extends VerticalLayout {
 		pricingModels = subscriptionModelService.findAllByAssociation(associationId);
 		
 		if(pricingModels.isEmpty()) {
-			addPricingModelButton.setText("Erstelle deinen ersten Tarif");			
+			addPricingModelButton.setText("Erstelle dein erstes Abomodell");			
 
 			membershipTabLayout.add(addPricingModelButton);
 		} else {
-			addPricingModelButton.setText("Tarif hinzufügen");
+			addPricingModelButton.setText("Abomodell hinzufügen");
 			createMembershipTabContent(membershipTabLayout, pricingModels);
 		}
 		
@@ -503,12 +516,40 @@ public class ConfigurationView extends VerticalLayout {
 		refreshModelGrid();
 		
 		subscriptionModelGrid.select(models.iterator().next());
-		mainLayout.add(twoSidesMembershipLayout);
+		
+		VerticalLayout membershipLayoutWrapper = new VerticalLayout();
+		membershipLayoutWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		membershipLayoutWrapper.setWidthFull();
+		membershipLayoutWrapper.setHeightFull();
+		
+		membershipLayoutWrapper.add(twoSidesMembershipLayout, createLimitComponent());
+		mainLayout.add(membershipLayoutWrapper);	
+	}
+	
+	private Component createLimitComponent() {
+		VerticalLayout wrapper = new VerticalLayout();
+		counterSubscriptionModels.addClassNames("counter");
+		
+		wrapper.setWidthFull();
+		wrapper.addClassName(LumoUtility.JustifyContent.CENTER);
+		
+		counterSubscriptionModels.addClassName("customheader");
+		counterSubscriptionModels.setText(subscriptionModelService.findAllByAssociation(associationId).size() + "/3");
+		
+		wrapper.add(counterSubscriptionModels);
+		
+		return wrapper;
 	}
 
 	private void refreshModelGrid() {
 		pricingModels = subscriptionModelService.findAllByAssociation(associationId);
 		
+		counterSubscriptionModels.setText(pricingModels.size() + "/3");
+		
+		//disable button if already 3 existing
+		addPricingModelButton.setVisible(!(pricingModels.size() >= 3));
+		
+
 		if(!pricingModels.isEmpty()) {			
 			subscriptionModelGrid.setItems(pricingModels);
 		}
@@ -590,7 +631,7 @@ public class ConfigurationView extends VerticalLayout {
 
 		subscriptionModelGrid.addColumn(e -> e.getName()).setAutoWidth(true);
 		subscriptionModelGrid.addColumn(e -> e.isOnline() ? "aktiv" : "nicht aktiv").setAutoWidth(true)
-		.setTooltipGenerator(e -> e.isOnline() ? "Der Tarif wird im Onboarding angeboten" : "Der Tarif wird nicht angeboten");
+		.setTooltipGenerator(e -> e.isOnline() ? "Das Abo wird im Onboarding angeboten" : "Das Abo wird nicht angeboten");
 		
 		subscriptionModelGrid.addComponentColumn(item -> {
 			SvgIcon icon = LineAwesomeIcon.EDIT.create();
@@ -611,7 +652,7 @@ public class ConfigurationView extends VerticalLayout {
 			icon.addClickListener(click -> {
 				this.subscriptionModel = item;
 				removeSubscriptionModel();
-				Notification notification = Notification.show("Tarif erfolgreich gelöscht");
+				Notification notification = Notification.show("Abomodell erfolgreich gelöscht");
 				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 			});
 
@@ -699,7 +740,7 @@ public class ConfigurationView extends VerticalLayout {
 		mainLayout.setWidthFull();
 		mainLayout.addClassNames(LumoUtility.AlignItems.STRETCH);
 						
-		mainLayout.add(createTokenLengtWrapper(), createQuestionsWrapper());
+		mainLayout.add(createTokenDueDateWrapper(), createQuestionsWrapper());
 		refreshOnboardingQuestionGrid();
 		return mainLayout;
 	}
@@ -710,13 +751,10 @@ public class ConfigurationView extends VerticalLayout {
 		questionsMainWrapper.setMaxWidth(1200, Unit.PIXELS);
 		
 		HorizontalLayout headerWrapper = new HorizontalLayout();
-		headerWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
-		
-		H3 questionsHeader = new H3();
-		questionsHeader.setText("Onboarding Fragen");
+		headerWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);		
 		questionsHeader.addClassNames("customheader", "lower");
 		
-		Button addQuestionButton = new Button(LineAwesomeIcon.PLUS_SOLID.create());
+		addQuestionButton = new Button(LineAwesomeIcon.PLUS_SOLID.create());
 		addQuestionButton.addClassNames("add-cross");
 		addQuestionButton.addClickListener(e -> {
 			addOnboardingQuestionDialog.open();
@@ -747,15 +785,50 @@ public class ConfigurationView extends VerticalLayout {
 	}
 
 	private void removeOnboardingQuestion(OnboardingQuestion item) {
+		
+		List<OnboardingAnswer> answersOfQuestion = onboardingAnswerService.findByQuestion(item.getId());
+		List<OnboardingData> existingOnboardingData = onboardingDataService.findAllByAssociation(associationId);
+			
+		//first, remove all answers of question from existing onboarding data objects
+		existingOnboardingData.forEach(existingData -> {
+			List<OnboardingAnswer> answersOfExistingData = existingData.getAnswers();
+			
+			for(OnboardingAnswer answerOfExistingData : answersOfExistingData) {
+				
+				//if answer of onboarding data is under the ones about to be deleted
+				if(answersOfQuestion.stream().filter(answerOfQuestion -> answerOfQuestion.getId().equals(answerOfExistingData.getId())).findAny().isPresent()) {
+					
+					//create temporary list of answers of data
+					List<OnboardingAnswer> tmpAnswers = new ArrayList<>(answersOfExistingData);
+					
+					//remove the identified answer
+					tmpAnswers.remove(answerOfExistingData);
+					
+					//assign to onboarding data and update the object
+					existingData.setAnswers(tmpAnswers);
+					onboardingDataService.update(existingData);
+				}
+			}
+		});
+		
+		//second, delete all existing answers of the question
+		answersOfQuestion.forEach(e -> onboardingAnswerService.delete(e.getId()));
+		
+		//then delete question itself
 		onboardingQuestionService.delete(item.getId());
 	}
 	
 	private void refreshOnboardingQuestionGrid() {
 		onboardingQuestions = onboardingQuestionService.findAllByAssociation(associationId);
+		
+		questionsHeader.setText("Onboarding Fragen   " + onboardingQuestions.size() + "/3");
+		
+		addQuestionButton.setVisible(!(onboardingQuestions.size() >= 3));
+
 		this.questionGrid.setItems(onboardingQuestions);
 	}
 
-	private Component createTokenLengtWrapper() {
+	private Component createTokenDueDateWrapper() {
 		VerticalLayout tokenLengthWrapper = new VerticalLayout();
 		tokenLengthWrapper.addClassNames(LumoUtility.Margin.Top.XLARGE);
 		

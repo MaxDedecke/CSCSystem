@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
 import com.css.one.data.OnboardingAnswer;
 import com.css.one.data.repos.OnboardingAnswerRepository;
 
+@Service
 public class OnboardingAnswerService {
 	private final OnboardingAnswerRepository repository;
 
@@ -36,7 +39,7 @@ public class OnboardingAnswerService {
     	return questions;
     }
     
-    public Optional<OnboardingAnswer> findByQuestion(Long questionId) {
-    	return repository.findAll().stream().filter(e -> e.getQuestion().getId().equals(questionId)).findAny();
+    public List<OnboardingAnswer> findByQuestion(Long questionId) {
+    	return repository.findAll().stream().filter(e -> e.getQuestion().getId().equals(questionId)).toList();
     }
 }
