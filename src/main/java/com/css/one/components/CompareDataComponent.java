@@ -116,7 +116,7 @@ public class CompareDataComponent extends VerticalLayout {
 		headerWrapper.add(headerCompare);
 		
 		//left side
-		headerPrevData = new H3("Daten im System");
+		headerPrevData = new H3("Daten auf der Warteliste");
 		headerPrevData.addClassName("customheader");
 		prevDataWrapper.add(headerPrevData, prevDataLayout);
 		

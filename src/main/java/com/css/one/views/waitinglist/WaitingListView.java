@@ -169,6 +169,10 @@ public class WaitingListView extends FlexLayout {
 			quickOnboardingDialog.close();
 			refreshLayout();
 		});
+		
+		quickOnboardingDialog.addDialogCloseActionListener(e -> {
+			wizzard.resetWizzard();
+		});
 
 		quickOnboardingDialog.setWidth("80%");
 		quickOnboardingDialog.setHeight("90%");

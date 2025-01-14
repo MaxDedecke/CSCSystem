@@ -676,6 +676,34 @@ vaadin-vertical-layout.onboarding-model-box-grey {
   padding-top:8px;
 }
 
+.desc-membership-small {
+	font-family: 'Afacad Flux',sans-serif;
+	font-size: small;
+	color: rgba(69,37,18,1);
+	font-weight: bold;
+}
+
+.desc-membership-medium {
+	font-family: 'Afacad Flux',sans-serif;
+	font-size: large;
+	color: rgba(69,37,18,1);
+	font-weight: bold;
+}
+
+.desc-membership-big {
+	font-family: 'Afacad Flux',sans-serif;
+	font-size: xx-large;
+	color: rgba(69,37,18,1);
+	font-weight: bold;
+}
+
+.title-membership {
+	font-size: xx-large;
+	color: rgba(69,37,18,1);
+	font-weight: bold;
+	font-family:'Afacad Flux',sans-serif;
+}
+
 vaadin-vertical-layout.diary-view-button-1 { background-color:rgb(255,255,255); }
 
 vaadin-vertical-layout.diary-view-vertical-layout-1 {

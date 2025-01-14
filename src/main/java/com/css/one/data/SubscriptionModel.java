@@ -9,6 +9,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 
 @Entity
@@ -20,6 +21,8 @@ public class SubscriptionModel {
  	
     private double amount;
     private String name;
+    
+    @Lob
     private String description;
     
     private int associationId;

@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 
 @Entity
 public class OnboardingQuestion {
@@ -14,6 +15,7 @@ public class OnboardingQuestion {
 
 	private int associationId;
 	
+	@Lob
 	private String question;
 	
 	public Long getId() {

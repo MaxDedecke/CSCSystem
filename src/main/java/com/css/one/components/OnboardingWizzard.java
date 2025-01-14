@@ -170,7 +170,6 @@ public class OnboardingWizzard extends TabSheet {
 		innerLayout.add(header, outro);
 		endWrapper.add(innerLayout);
 
-		tabEnd = new Tab("Erfolgreich");
 	}
 
 	private void createBegin() {
@@ -205,10 +204,11 @@ public class OnboardingWizzard extends TabSheet {
 
 	private void createQuestionsTab() {
 
-		List<OnboardingQuestion> questions = onboardingQuestionService
-				.findAllByAssociation(onboardingToken.isPresent() ? onboardingToken.get().getAssociationId() : associationId);
+		List<OnboardingQuestion> questions = onboardingQuestionService.findAllByAssociation(
+				onboardingToken.isPresent() ? onboardingToken.get().getAssociationId() : associationId);
 		Map<OnboardingQuestion, TextArea> inputs = new HashMap<>();
 
+		//only show tab if questions exist
 		if (!questions.isEmpty()) {
 			FormLayout innerLayout = new FormLayout();
 			questions.forEach(question -> {
@@ -222,6 +222,8 @@ public class OnboardingWizzard extends TabSheet {
 			Button continueButton = new Button("Onboarding abschließen");
 			continueButton.addClassName("save-button");
 			continueButton.addClickListener(e -> {
+				tabEnd = new Tab("Erfolgreich");
+
 				add(tabEnd, endWrapper);
 				setSelectedTab(tabEnd);
 				remove(tabStepOne);
@@ -234,12 +236,11 @@ public class OnboardingWizzard extends TabSheet {
 				sendNextStepsEmailToWaitingPerson();
 			});
 			questionsWrapper.add(innerLayout, continueButton);
+
+			tabQuestions = new Tab("Fragen des Vereins");
+			tabQuestions.setEnabled(false);
+			add(tabQuestions, questionsWrapper);
 		}
-		
-		tabQuestions = new Tab("Fragen des Vereins");
-		tabQuestions.setEnabled(false);
-		add(tabQuestions, questionsWrapper);
-		
 	}
 
 	private void createStepFourLayout() {
@@ -262,7 +263,7 @@ public class OnboardingWizzard extends TabSheet {
 		
 		stepFourWrapper.add(createPricingModelsLayout(), buttonWrapper);
 		
-		tabStepFour = new Tab("Schritt 4");
+		tabStepFour = new Tab("Abomodelle");
 		tabStepFour.setEnabled(false);
 		add(tabStepFour, stepFourWrapper);
 	}
@@ -440,7 +441,11 @@ public class OnboardingWizzard extends TabSheet {
 		List<SubscriptionModel> models = subscriptionModelService.findAllByAssociation(onboardingToken.isPresent() ? onboardingToken.get().getAssociationId() : this.associationId);
 		
 		models.forEach(model -> {
-			modelsLayout.add(createModelCardComponent(model.getName(), model.getDescription(), String.valueOf(model.getAmount())));
+			//Show model only if active (e.g. online)
+			if (model.isOnline()) {
+				modelsLayout.add(createModelCardComponent(model.getName(), model.getDescription(),
+						String.valueOf(model.getAmount())));
+			}
 		});
 		
 		return modelsLayout;
@@ -451,16 +456,16 @@ public class OnboardingWizzard extends TabSheet {
 		VerticalLayout modelCardWrapper = new VerticalLayout();
 		Span amountPerMonth = new Span();
 		Span title = new Span();
-		Span description = new Span();
 
 		modelCardWrapper.setWidthFull();
 		modelCardWrapper.setHeightFull();
 		modelCardWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
 
 		VerticalLayout card = new VerticalLayout();
-		card.setMinHeight(500, Unit.PIXELS);
-		card.setMinWidth(500, Unit.PIXELS);
+		card.setMinHeight(400, Unit.PIXELS);
+		card.setMinWidth(400, Unit.PIXELS);
 		card.setMaxWidth(550, Unit.PIXELS);
+		
 		card.addClassNames("onboarding-model-box-grey");
 		cards.add(card);
 
@@ -482,10 +487,19 @@ public class OnboardingWizzard extends TabSheet {
 
 		VerticalLayout descWrapper = new VerticalLayout();
 		descWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
-		description.setText(descValue);
+		descWrapper.addClassNames(LumoUtility.Margin.Bottom.NONE, LumoUtility.Padding.Bottom.XSMALL);
+		Span descriptionOfModel = new Span();
+		descriptionOfModel.setText(descValue);
+				
+		if(descValue.length() > 100) {
+			descriptionOfModel.addClassName("desc-membership-small");
+		} else if(descValue.length() < 20) {
+			descriptionOfModel.addClassName("desc-membership-big");
+		} else {			
+			descriptionOfModel.addClassNames("desc-membership-medium");
+		}
 
-		description.addClassNames("desc-membership");
-		descWrapper.add(description);
+		descWrapper.add(descriptionOfModel);
 
 		VerticalLayout buttonWrapper = new VerticalLayout();
 		buttonWrapper.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignItems.CENTER);
@@ -801,10 +815,17 @@ public class OnboardingWizzard extends TabSheet {
 		confirmAddressBox.setValue(false);
 		confirmGeneralDataBox.setValue(false);
 		
-		add(tabBegin, beginWrapper);
-		setSelectedTab(tabBegin);
+		//if onboarding was finished, we need to add begin tab
+		if (tabEnd != null) {
+			add(tabBegin, beginWrapper);
+			setSelectedTab(tabBegin);
+			remove(0);
+		}
 		
-		if(!getSelectedTab().equals(tabBegin)) {
+		//if onboarding was not finished, remove tabs
+		if (!tabBegin.isSelected()) {
+			add(tabBegin, beginWrapper);
+			setSelectedTab(tabBegin);
 			
 			remove(tabStepOne);
 			remove(tabStepTwo);
@@ -812,7 +833,8 @@ public class OnboardingWizzard extends TabSheet {
 			remove(tabStepFour);
 			remove(tabQuestions);
 		}
-			
+		
+		//add tabs again to get them in the right order
 		add(tabStepOne, stepOneWrapper);
 		tabStepOne.setEnabled(false);
 
@@ -824,11 +846,15 @@ public class OnboardingWizzard extends TabSheet {
 
 		add(tabStepFour, stepFourWrapper);
 		tabStepFour.setEnabled(false);
-
-		add(tabQuestions, questionsWrapper);
-		tabQuestions.setEnabled(false);
 		
-		setSelectedTab(tabBegin);
+		//if questions exist
+		if (tabQuestions != null) {
+			add(tabQuestions, questionsWrapper);
+			tabQuestions.setEnabled(false);
+		}
+		
+		setSelectedIndex(-1);
+		setSelectedIndex(0);
 	}
 	
 }

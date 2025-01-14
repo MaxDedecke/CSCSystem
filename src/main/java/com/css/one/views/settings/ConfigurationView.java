@@ -679,6 +679,17 @@ public class ConfigurationView extends VerticalLayout {
 		this.amountPerMonthPreview.setText(value + "€");
 		
 		this.descriptionPreview.setText(model.getDescription());
+		
+		descriptionPreview.removeClassNames("desc-membership-small", "desc-membership-big", "desc-membership-medium");
+		
+		if(model.getDescription().length() > 100) {
+			descriptionPreview.addClassName("desc-membership-small");
+		} else if(model.getDescription().length() < 20) {
+			descriptionPreview.addClassName("desc-membership-big");
+		} else {			
+			descriptionPreview.addClassNames("desc-membership-medium");
+		}
+		
 		this.titlePreview.setText(model.getName());
 	}
 

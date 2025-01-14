@@ -271,20 +271,6 @@ vaadin-dialog-overlay .cancel-button {
   	font-family:'Afacad Flux',sans-serif;
 }
 
-.title-membership {
-	font-size: xx-large;
-	color: rgba(69,37,18,1);
-	font-weight: bold;
-	font-family:'Afacad Flux',sans-serif;
-}
-
-.desc-membership {
-	font-size: large;
-	color: rgba(69,37,18,1);
-	font-weight: bold;
-	font-family:'Afacad Flux',sans-serif;
-}
-
 vaadin-grid {
   border-color:#ffffff;
   border-radius:10px;
