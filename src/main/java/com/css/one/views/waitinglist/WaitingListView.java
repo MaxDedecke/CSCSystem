@@ -168,6 +168,7 @@ public class WaitingListView extends FlexLayout {
 			wizzard.resetWizzard();
 			quickOnboardingDialog.close();
 			refreshLayout();
+			closeButton.setText("Prozess abbrechen");
 		});
 		
 		wizzard.setActionToPerform(() -> {closeButton.setText("zurück");});
@@ -226,17 +227,20 @@ public class WaitingListView extends FlexLayout {
 		save.addClassNames("save-button");
 
 		save.addClickListener(e -> {
-			savePersonData();
+			
+			if(validateData()) {
+				savePersonData();
 
-			if (isNewPerson) {
-				Notification notification = Notification.show("Person wurde auf die Warteliste gesetzt.");
-				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-			} else {
-				Notification notification = Notification.show("Infos aktualisiert");
-				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+				if (isNewPerson) {
+					Notification notification = Notification.show("Person wurde auf die Warteliste gesetzt.");
+					notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+				} else {
+					Notification notification = Notification.show("Infos aktualisiert");
+					notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+				}
+
+				isNewPerson = true;
 			}
-
-			isNewPerson = true;
 		});
 
 		Button buttonCancel = new Button("abbrechen");
@@ -256,6 +260,47 @@ public class WaitingListView extends FlexLayout {
 		personInfoDialog.add(mainWrapper);
 	}
 
+	private boolean validateData() {
+		
+		if(dateOfBirth.getValue() == null) {
+			return false;
+		}
+		
+		if(email.getValue().equals(email.getEmptyValue())) {
+			return false;
+		}
+		
+		if(firstName.getValue().equals(firstName.getEmptyValue())) {
+			return false;
+		}
+		
+		if(lastName.getValue().equals(lastName.getEmptyValue())) {
+			return false;
+		}
+		
+		if(phone.getValue().equals(phone.getEmptyValue())) {
+			return false;
+		}
+		
+		if(streetName.getValue().equals(streetName.getEmptyValue())) {
+			return false;
+		}
+		
+		if(streetNumber.getValue().equals(streetNumber.getEmptyValue())) {
+			return false;
+		}
+		
+		if(city.getValue().equals(city.getEmptyValue())) {
+			return false;
+		}
+		
+		if(postalCode.getValue().equals(postalCode.getEmptyValue())) {
+			return false;
+		}
+		
+		return true;
+	}
+
 	private Component createAdditionalDataContent() {
 
 		VerticalLayout wrapper = new VerticalLayout();
@@ -263,10 +308,18 @@ public class WaitingListView extends FlexLayout {
 		h3.addClassName("customheader");
 
 		FormLayout additionalFormLayout = new FormLayout();
+		
 		streetName = new TextField("Straße");
+		streetName.setAllowedCharPattern("[a-zA-ZäöüÄÖÜß\\-\\s']");
+
 		streetNumber = new TextField("Hausnummer");
+		streetNumber.setAllowedCharPattern("[0-9a-zA-Z]");
+
 		postalCode = new TextField("PLZ");
+		postalCode.setAllowedCharPattern("\\d");
+
 		city = new TextField("Ort");
+		city.setAllowedCharPattern("[a-zA-ZäöüÄÖÜß\\-\\s']");
 
 		additionalFormLayout.add(streetName, streetNumber, postalCode, city);
 
@@ -534,13 +587,21 @@ public class WaitingListView extends FlexLayout {
 
 		FormLayout formLayout = new FormLayout();
 		firstName = new TextField("Vorname");
+		firstName.setAllowedCharPattern("[a-zA-ZäöüÄÖÜß\\-']");
+		
 		lastName = new TextField("Nachname");
+		lastName.setAllowedCharPattern("[a-zA-ZäöüÄÖÜß\\-']");
+
 		email = new TextField("Email");
+		email.setAllowedCharPattern("[a-zA-Z0-9._%+-@]");
+
 		phone = new TextField("Telefonnummer");
-		phone.setAllowedCharPattern("[0-9/]");
+		phone.setAllowedCharPattern("[+\\d]");
+		
 		dateOfBirth = new DatePicker("Geburtstag");
 		dateOfBirth.setOverlayClassName("waiting-list-view-date-picker-1");
 		dateOfBirth.addClassName("waiting-list-view-date-picker-1");
+		dateOfBirth.setAllowedCharPattern("[0-9.]");
 
 		formLayout.add(firstName, lastName, phone, dateOfBirth, email);
 		formLayout.setColspan(email, 2);

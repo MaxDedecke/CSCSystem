@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +20,10 @@ public class MigrationService {
 	
 	private final Logger logger = LoggerFactory.getLogger(MigrationService.class);
 
+	private final String versionString= "0.7.6";
+	private final int version = 76;
+	
+    List<SystemVersion> versions = new ArrayList<>();
 		
 	public MigrationService() {
 		
@@ -31,10 +37,59 @@ public class MigrationService {
 	}
 
 	public void startMigration(Connection connection) {
-
-		var sql = "SELECT * FROM system_version";
 		
-        List<SystemVersion> versions = new ArrayList<>();
+		//loads all versions and caches them in versions list
+		loadAndCacheVersionsFromDatabase(connection);	
+
+		if(!versions.isEmpty()) {
+			
+			Optional<SystemVersion> currentActiveVersion = versions.stream().filter(version -> version.isActive()).findAny();
+			
+			logger.info("Starting migration service");
+			
+			if (currentActiveVersion.isPresent()) {
+				//if final version has changed and is higher than active version in db
+				if (currentActiveVersion.get().getVersionInteger() < version) {
+					logger.error("------------- UPDATE INCOMING -------------");
+					logger.error("------------- " + versionString + "-------------");
+					
+					//create new version in db
+					createNewSystemVersion(connection);
+					
+					//set is_active = false of old active version
+					outdateOldVersion(connection, currentActiveVersion.get());
+					
+				}
+			} else {
+				//if no current version is available - fallback to initial version
+				logger.error("NO VERSION ACTIVE!");
+				logger.error("FALLBACK TO DEFAULT VERSION!");
+				versions.add(createInitialSystemVersion(connection));
+			}
+
+		} else {
+			
+			logger.error("NO VERSION ACTIVE!");
+			logger.error("FALLBACK TO DEFAULT VERSION!");
+			
+			//If no version is existing because of blank database create initial one
+			versions.add(createInitialSystemVersion(connection));
+		}
+		
+		loadAndCacheVersionsFromDatabase(connection);
+		
+		//Take versions and proceed
+		startMigrationsDependingOnVersion(versions, connection);
+		
+		logger.info("Migration process finished or skiped");
+	}
+
+	private void loadAndCacheVersionsFromDatabase(Connection connection) {
+		
+		//reset list
+		versions = new ArrayList<>();
+		
+		var sql = "SELECT * FROM system_version";
         
         //Get all versions from database
         
@@ -59,26 +114,25 @@ public class MigrationService {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+	}
 
-		if(!versions.isEmpty()) {
-			
-			logger.info("Starting migration process");
-			
-		} else {
-			logger.error("NO VERSION ACTIVE!");
-			logger.error("FALLBACK TO DEFAULT VERSION!");
-			
-			//If no version is existing because of blank database create initial one
-			versions.add(createInitialSystemVersion(connection));
-			
-			
+	private void outdateOldVersion(Connection connection, SystemVersion version) {
+
+		//
+		var sql = "UPDATE system_version SET is_active = false, updated_at = '" + LocalDate.now() + "'"
+				+ " WHERE version_integer = " + version.getVersionInteger();
+
+		try {
+			var statement = connection.createStatement();
+			statement.executeUpdate(sql);
+			logger.info("Updated migration status of version: " + version.getVersionNumber());
+		} catch (Exception e) {
+			logger.error("FAILED UPDATING IS ACTIVE OF VERSION: " + version.getVersionNumber());
+			logger.error(e.getMessage());
 		}
-		
-		//Take versions and proceed
-		startMigrationsDependingOnVersion(versions, connection);
-		
-		logger.info("Migration process finished or skiped");
+
+		logger.info("Finished updating is_active of version: " + version.getVersionNumber());
+
 	}
 
 	private SystemVersion createInitialSystemVersion(Connection connection) {
@@ -101,8 +155,9 @@ public class MigrationService {
 		
 		//save version
 		var sql = "INSERT INTO public.system_version(\r\n"
-				+ "	created_at, description, is_active, release_date, updated_at, version_number, is_migrated, version_integer)\r\n"
+				+ "id, created_at, description, is_active, release_date, updated_at, version_number, is_migrated, version_integer)\r\n"
 				+ "	VALUES ("
+				+ String.valueOf(versions.size() + 1) + ", " 
 				+ "'" +  LocalDate.now() + "'" + ", "
 				+ "'Default inserted initial version'" + ", "
 				+ "true" + ", " 
@@ -121,6 +176,43 @@ public class MigrationService {
 			logger.error(e.getMessage());
 		}
 		
+		return version;
+	}
+	
+	private SystemVersion createNewSystemVersion(Connection connection) {
+
+		// set version
+		String versionAsString = this.versionString;
+		int versionAsInteger = this.version;
+		String defaultDescription = "New version";
+
+		// create object
+		SystemVersion version = new SystemVersion();
+		version.setVersionNumber(versionAsString);
+		version.setVersionInteger(versionAsInteger);
+		version.setReleaseDate(LocalDate.now());
+		version.setCreatedAt(LocalDate.now());
+		version.setUpdatedAt(LocalDate.now());
+		version.setDescription(defaultDescription);
+		version.setActive(false);
+		version.setMigrated(false);
+
+		// save version
+		var sql = "INSERT INTO public.system_version(\r\n"
+				+ "id, created_at, description, is_active, release_date, updated_at, version_number, is_migrated, version_integer)\r\n"
+				+ "	VALUES (" + String.valueOf(versions.size() + 1) + ", " + "'" + LocalDate.now() + "'" + ", " + "'Default inserted initial version'" + ", "
+				+ "true" + ", " + "'" + LocalDate.now() + "'" + ", " + "null, " + "'" + versionAsString + "'" + ", "
+				+ "false" + ", " + versionAsInteger + ");";
+
+		try {
+			var statement = connection.createStatement();
+			statement.executeUpdate(sql);
+			logger.info("Updated migration status of version: " + versionAsString);
+		} catch (Exception e) {
+			logger.error("FAILED UPDATING MIGRATION STATUS OF VERSION: " + versionAsString);
+			logger.error(e.getMessage());
+		}
+
 		return version;
 	}
 
@@ -162,6 +254,20 @@ public class MigrationService {
 			
 			//if version is not active and also not migrated, another version must be active version
 			if(version.isActive() == true) {
+				return;
+			}
+		}
+		
+		if (version.getVersionInteger() == 76) {
+
+			// add migrations to version 0.7.5 here
+
+			// set is_migrated to true since all migrations where successful
+			updateVersion(version, connection);
+
+			// if version is not active and also not migrated, another version must be
+			// active version
+			if (version.isActive() == true) {
 				return;
 			}
 		}
