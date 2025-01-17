@@ -103,6 +103,8 @@ public class OnboardingWizzard extends TabSheet {
 	private WaitingPerson personOnTheFly;
 	private MemberData personData;
 	
+	private Runnable functionToExecute;
+	
 	public OnboardingWizzard(OnboardingDataService onboardingDataService,
 			SubscriptionModelService subscriptionModelService,
 			OnboardingTokenService onboardingTokenService,
@@ -234,6 +236,10 @@ public class OnboardingWizzard extends TabSheet {
 
 				finishOnboardingDataInputProcess(inputs);
 				sendNextStepsEmailToWaitingPerson();
+				
+				if(functionToExecute != null) {					
+					functionToExecute.run();
+				}
 			});
 			questionsWrapper.add(innerLayout, continueButton);
 
@@ -319,14 +325,19 @@ public class OnboardingWizzard extends TabSheet {
 		FormLayout dataLayout = new FormLayout();
 
 		streetName = new TextField("Straße");
+		streetName.setAllowedCharPattern("[a-zA-ZäöüÄÖÜß\\-\\s']");
 		streetName.setPlaceholder("Musterstraße");
 		streetNumber = new TextField("Hausnummer");
 		streetNumber.setPlaceholder("1");
+		streetNumber.setAllowedCharPattern("[0-9a-zA-Z]");
 		postalCode = new TextField("PLZ");
 		postalCode.setPlaceholder("93049");
+		postalCode.setAllowedCharPattern("\\d");
+		
 		city = new TextField("Ort");
 		city.setPlaceholder("Musterstadt");
-
+		city.setAllowedCharPattern("[a-zA-ZäöüÄÖÜß\\-\\s']");
+		
 		Hr hr = new Hr();
 
 		confirmAddressBox = new Checkbox();
@@ -342,7 +353,7 @@ public class OnboardingWizzard extends TabSheet {
 		dataLayout.setColspan(hr, 2);
 
 		buttonConfirmStepTwo.addClassName("save-button");
-		buttonConfirmStepTwo.setEnabled(true);
+		buttonConfirmStepTwo.setEnabled(false);
 		buttonConfirmStepTwo.addClickListener(e -> {
 			if (validateInputAddressData()) {
 				tabStepThree.setEnabled(true);
@@ -373,17 +384,21 @@ public class OnboardingWizzard extends TabSheet {
 		
 		firstName = new TextField("Vorname");
 		firstName.setPlaceholder("Max");
+		firstName.setAllowedCharPattern("[a-zA-ZäöüÄÖÜß\\-']");
 		lastName = new TextField("Nachname");
 		lastName.setPlaceholder("Mustermann");
+		lastName.setAllowedCharPattern("[a-zA-ZäöüÄÖÜß\\-']");
 		email = new TextField("Email");
 		email.setPlaceholder("max.mustermann@beispiel.de");
+		email.setAllowedCharPattern("[a-zA-Z0-9._%+-@]");
 		phone = new TextField("Telefonnummer");
-        phone.setAllowedCharPattern("[0-9/]");
+        phone.setAllowedCharPattern("[+\\d]");
         phone.setPlaceholder("0941420420");
 		dateOfBirth = new DatePicker("Geburtstag");
 		dateOfBirth.setOverlayClassName("waiting-list-view-date-picker-1");
 		dateOfBirth.addClassName("waiting-list-view-date-picker-1");
-		dateOfBirth.setPlaceholder("01.01.2000");		
+		dateOfBirth.setPlaceholder("01.01.2000");	
+		dateOfBirth.setAllowedCharPattern("[0-9.]");
 		dateOfBirth.setLocale(Locale.GERMANY);
 		
 		confirmAgeBox = new Checkbox();
@@ -414,7 +429,7 @@ public class OnboardingWizzard extends TabSheet {
 		city = new TextField("Ort");
 		
 		buttonConfirmStepOne.addClassName("save-button");
-		buttonConfirmStepOne.setEnabled(true);
+		buttonConfirmStepOne.setEnabled(false);
 		
 		buttonConfirmStepOne.addClickListener(e -> {
 			if(validateInputGeneralData()) {
@@ -593,7 +608,7 @@ public class OnboardingWizzard extends TabSheet {
 			lastName.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-contrast-10pct");
 		}
 
-		if (dateOfBirth.getValue().equals(dateOfBirth.getEmptyValue())) {
+		if (dateOfBirth.getValue() == null) {
 			dateOfBirth.setInvalid(true);
 			dateOfBirth.setHelperText("Dein Geburtsdatum muss ebenso angegeben sein");
 			dateOfBirth.getStyle().set("--vaadin-input-field-invalid-background", "--lumo-error-color-10pct");
@@ -855,6 +870,10 @@ public class OnboardingWizzard extends TabSheet {
 		
 		setSelectedIndex(-1);
 		setSelectedIndex(0);
+	}
+	
+	public void setActionToPerform(Runnable runnable) {
+		this.functionToExecute = runnable;
 	}
 	
 }

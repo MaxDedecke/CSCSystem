@@ -241,15 +241,9 @@ vaadin-date-picker-overlay vaadin-date-picker-year::part(year-number) { color:#8
 
 vaadin-date-picker-overlay vaadin-month-calendar::part(month-header) { color:#8ABD3E; }
 
-vaadin-date-picker-overlay vaadin-month-calendar::part(weekday) { color:#8ABD3E; }
+vaadin-date-picker-overlay vaadin-month-calendar::part(date) { color:#8ABD3E; }
 
-vaadin-date-picker-overlay.waiting-list-view-date-picker-1 vaadin-date-picker-year::part(year-number) { color:#8ABD3E; }
-
-vaadin-date-picker-overlay.waiting-list-view-date-picker-1 vaadin-month-calendar::part(date) { color:#8ABD3E; }
-
-vaadin-date-picker-overlay.waiting-list-view-date-picker-1 vaadin-month-calendar::part(month-header) { color:#8ABD3E; }
-
-vaadin-date-picker-overlay.waiting-list-view-date-picker-1 vaadin-month-calendar::part(weekday) {
+vaadin-date-picker-overlay vaadin-month-calendar::part(weekday) {
   color:#8ABD3E;
   font-family:'Afacad Flux',sans-serif;
   font-weight:bold;
@@ -262,8 +256,8 @@ vaadin-date-picker-overlay.waiting-list-view-date-picker-1::part(overlay) {
 }
 
 vaadin-date-picker.waiting-list-view-date-picker-1::part(helper-text) {
-  color:#8ABD3E;
-  font-family:'Afacad Flux',sans-serif;
+	font-family: 'Afacad Flux', sans-serif;
+	color: grey;
 }
 
 vaadin-date-picker.waiting-list-view-date-picker-1::part(label) {

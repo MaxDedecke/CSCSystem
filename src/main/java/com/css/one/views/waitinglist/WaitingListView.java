@@ -170,6 +170,8 @@ public class WaitingListView extends FlexLayout {
 			refreshLayout();
 		});
 		
+		wizzard.setActionToPerform(() -> {closeButton.setText("zurück");});
+		
 		quickOnboardingDialog.addDialogCloseActionListener(e -> {
 			wizzard.resetWizzard();
 		});
