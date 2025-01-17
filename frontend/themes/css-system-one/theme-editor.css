@@ -659,6 +659,11 @@ vaadin-vertical-layout.onboarding-model-box {
   font-weight: bold;
 }
 
+.textarea-border-invisible {
+	border-color: #efefef;
+	border: none;
+}
+
 vaadin-vertical-layout.onboarding-model-box-grey {
   background:rgba(191,191,191,0.08);
   border-color:#000000;

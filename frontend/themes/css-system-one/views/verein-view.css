@@ -3,7 +3,8 @@
   flex-direction: column;
   height: 100%;
   background-color: #ffffff;
-  font-size: large;
+  margin:none;
+  padding: none;
 }
 
 .verein-view vaadin-vertical-layout {

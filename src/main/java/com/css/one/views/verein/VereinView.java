@@ -17,9 +17,11 @@ import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.vaadin.lineawesome.LineAwesomeIcon;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import com.css.one.data.Association;
+import com.css.one.data.Location;
 import com.css.one.data.Person;
 import com.css.one.data.Transaction;
 import com.css.one.data.WorkingUnit;
@@ -38,6 +40,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -45,12 +48,16 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.virtuallist.VirtualList;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
@@ -86,15 +93,25 @@ public class VereinView extends Div {
 	final String outputInfo = "Ausgabeliste";
 	final String income = "Monatliche Einnahmen";
 	final String costs = "Monatliche Kosten";
+	
+	private TextField fieldAssociationName = new TextField("Name des Vereins");
+	private TextField fieldAssociationNumber = new TextField("Vereinsnummer");
+	private TextField fieldStreetName = new TextField("Straße");
+	private TextField fieldHouseNumber = new TextField("Hausnummer");
+	private TextField fieldPostalCode = new TextField("PLZ");
+	private TextField fieldCity = new TextField("Ort");
+	private TextField fieldEmail = new TextField("Email");
 
-	List<Person> importantPeople;
-	List<TextField> textFieldsNameOfDocument = new ArrayList<>();
-	List<ComboBox<String>> formatComboBoxes = new ArrayList<>();
-	List<String> formatTypes = Arrays.asList(".pdf", ".docx", ".txt");
+	private List<Person> importantPeople;
+	private List<TextField> textFieldsNameOfDocument = new ArrayList<>();
+	private List<ComboBox<String>> formatComboBoxes = new ArrayList<>();
+	private List<String> formatTypes = Arrays.asList(".pdf", ".docx", ".txt");
 
 	private Dialog downloadDialog;
 
 	private File exportFile;
+	private VirtualList<Location> virtualList = new VirtualList<>();
+
 
 	public VereinView(AssociationService associationService, PersonService samplePersonService,
 			WorkingUnitService workingUnitService, TransactionService transactionService, LocationService locationService) {
@@ -109,9 +126,8 @@ public class VereinView extends Div {
 		
 		tabSheet.setSizeFull();
 		tabSheet.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
-		tabSheet.add("Verantwortliche", createResponsiblesTab());
-		tabSheet.add("Downloads", createDownloadsTab());
 		tabSheet.add("Allgemeine Infos", createGeneralInfoTab());
+		tabSheet.add("Downloads", createDownloadsTab());
 		
 		addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
 		add(tabSheet);
@@ -119,160 +135,133 @@ public class VereinView extends Div {
 
 	private Component createGeneralInfoTab() {
 		
-		Div wrapper = new Div();
-		wrapper.addClassName("grid-wrapper");
-		wrapper.setHeight("100%");
+		//init layout
+		VerticalLayout mainWrapper = new VerticalLayout();
+		HorizontalLayout wrapper = new HorizontalLayout();
+		VerticalLayout dataWrapper = new VerticalLayout();
+
+		dataWrapper.addClassName("bestand-box");
+		dataWrapper.setWidthFull();
 		
-		H2 h2General = new H2("Hauptsitz");
+		wrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		
+		wrapper.setWidthFull();
+		wrapper.setHeightFull();
+		
+		mainWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Padding.NONE);
+		mainWrapper.setWidthFull();
+		mainWrapper.setHeightFull();
+		
+		H3 h2General = new H3("Daten des Vereins");
 		h2General.addClassNames(LumoUtility.Margin.Top.MEDIUM);
 		
 		FormLayout formLayout = new FormLayout();
 
-		TextField fieldAssociationName = new TextField("Name des Vereins");
-		TextField fieldAssociationNumber = new TextField("Vereinsnummer");
-		TextField fieldStreetName = new TextField("Straße");
-		TextField fieldHouseNumber = new TextField("Hausnummer");
-		TextField fieldPostalCode = new TextField("PLZ");
-		TextField fieldCity = new TextField("Ort");
-
-		fieldAssociationName.setEnabled(false);
-		fieldAssociationNumber.setEnabled(false);
-		fieldStreetName.setEnabled(false);
-		fieldHouseNumber.setEnabled(false);
-		fieldPostalCode.setEnabled(false);
-		fieldCity.setEnabled(false);
+		//set read only
+		fieldAssociationName.setReadOnly(true);
+		fieldAssociationNumber.setReadOnly(true);
+		fieldStreetName.setReadOnly(true);
+		fieldHouseNumber.setReadOnly(true);
+		fieldPostalCode.setReadOnly(true);
+		fieldCity.setReadOnly(true);
+		fieldEmail.setReadOnly(true);
 		
 		Optional<Association> optionalAssociation = associationService.get(Integer.toUnsignedLong(associationId));
-		
-		if (optionalAssociation.isPresent()) {
-			fieldAssociationName.setValue(optionalAssociation.get().getName());
-			fieldAssociationNumber.setValue(String.valueOf(optionalAssociation.get().getNumber()));
-			fieldStreetName.setValue(optionalAssociation.get().getStreet());
-			fieldHouseNumber.setValue(optionalAssociation.get().getStreetNumber());
-			fieldPostalCode.setValue(String.valueOf(optionalAssociation.get().getPostalCode()));
-			fieldCity.setValue(optionalAssociation.get().getCity());
-		} else {
-			fieldAssociationName.setValue("");
-			fieldAssociationNumber.setValue("");
-			fieldStreetName.setValue("");
-			fieldHouseNumber.setValue("");
-			fieldPostalCode.setValue("");
-		}
+
+		//assign values
+		fieldAssociationName.setValue(optionalAssociation.isPresent() ? optionalAssociation.get().getName() : "");
+		fieldAssociationNumber
+				.setValue(optionalAssociation.isPresent() ? String.valueOf(optionalAssociation.get().getNumber()) : "");
+		fieldStreetName.setValue(optionalAssociation.isPresent() ? optionalAssociation.get().getStreet() : "");
+		fieldHouseNumber.setValue(optionalAssociation.isPresent() ? optionalAssociation.get().getStreetNumber() : "");
+		fieldPostalCode.setValue(
+				optionalAssociation.isPresent() ? String.valueOf(optionalAssociation.get().getPostalCode()) : "");
+		fieldCity.setValue(optionalAssociation.isPresent() ? optionalAssociation.get().getCity() : "");
+		fieldEmail.setValue(optionalAssociation.get().getEmail() != null ? optionalAssociation.get().getEmail() : "");
 
 		formLayout.add(fieldAssociationName, fieldAssociationNumber, fieldStreetName, fieldHouseNumber,
-				fieldPostalCode, fieldCity);
+				fieldPostalCode, fieldCity, fieldEmail);
 		
-		formLayout.setColspan(fieldAssociationName, 2);
-		formLayout.setColspan(fieldAssociationNumber, 2);
 		formLayout.setColspan(fieldStreetName, 2);
 		formLayout.setColspan(fieldHouseNumber, 2);
 		formLayout.setColspan(fieldPostalCode, 2);
 		formLayout.setColspan(fieldCity, 2);
+		formLayout.setColspan(fieldEmail, 2);
 		
+		formLayout.setResponsiveSteps(
+		        // Use one column by default
+		        new ResponsiveStep("0", 1),
+		        // Use two columns, if layout's width exceeds 500px
+		        new ResponsiveStep("500px", 2));
+
+		dataWrapper.add(h2General, formLayout);
+		wrapper.add(dataWrapper, createInnerTabsForLocations());
+		mainWrapper.add(wrapper, createResponsiblesTab());
 		
-		wrapper.add(h2General, formLayout, new Hr(), createInnerTabsForLocations());
-		
-		return wrapper;
+		return mainWrapper;
 	}
 
-	private TabSheet createInnerTabsForLocations() {
-		TabSheet innerTabSheet = new TabSheet();
-		innerTabSheet.addClassNames("vaadin-tabsheet");
+	private Component createInnerTabsForLocations() {
+		VerticalLayout listWrapper = new VerticalLayout();
 		
-		locationService.findAllByAssociation(associationId).forEach(e -> {
-			FormLayout tmpLayout = new FormLayout();
-			
-			TextField nameField = new TextField("Name");
-			nameField.setValue(e.getName());
-			nameField.setEnabled(false);
-			TextField addressField = new TextField("Adresse");
-			addressField.setEnabled(false);
-			addressField.setValue(e.getStreet() + " " + e.getStreetNumber() + ", " + e.getPostalCode() + " " + e.getCity());
-			TextField noteField = new TextField("Notiz");
-			noteField.setEnabled(false);
-			noteField.setValue(e.getNote());
-			
-			tmpLayout.add(nameField, addressField, noteField);
-			tmpLayout.setSizeFull();
-			innerTabSheet.add(e.getName(), tmpLayout);
-		});
+		H3 h2 = new H3("Standorte");
+		h2.addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Top.MEDIUM);
 		
-		return innerTabSheet;
+		listWrapper.setWidthFull();
+
+		listWrapper.addClassNames(LumoUtility.Padding.SMALL, "bestand-box");
+		
+		virtualList.setRenderer(new ComponentRenderer<>(entry -> {
+        	EntryLayout entryLayout = new EntryLayout();
+        	entryLayout.addClassName("diary-view-horizontal-layout-1");
+        	entryLayout.setEntry(entry);
+            return entryLayout;
+        }));
+		
+		virtualList.addClassNames(LumoUtility.Padding.MEDIUM, LumoUtility.Margin.Top.NONE, "custom-scrollbar");
+		virtualList.setItems(locationService.findAllByAssociation(associationId));
+
+		listWrapper.add(h2, virtualList);
+		
+		return listWrapper;
 	}
 
 	private Component createDownloadsTab() {
-		Div wrapper = new Div();
-		wrapper.addClassName("grid-wrapper");
-
+		VerticalLayout wrapper = new VerticalLayout();
 		VerticalLayout mainLayout = new VerticalLayout();
-
-		mainLayout.add(new H3("Mitglieder"));
-		Hr hr1 = new Hr();
-		hr1.setWidth(420, Unit.PIXELS);
-		mainLayout.add(hr1);
-
+		
+		//Member area downloads
 		HorizontalLayout layerOne = new HorizontalLayout();
-		setFirstLayer(layerOne);
-		setSecondLayer(layerOne);
+		layerOne.setHeightFull();
+		layerOne.setWidthFull();
+		
+		layerOne.add(createMemberDownloads());
+		layerOne.add(createBestandDownloads());
+		
 		mainLayout.add(layerOne);
 
-		mainLayout.add(new H3("Waren"));
-		Hr hr2 = new Hr();
-		hr2.setWidth(420, Unit.PIXELS);
-		mainLayout.add(hr2);
-
 		HorizontalLayout layerThree = new HorizontalLayout();
-		setThirdLayer(layerThree);
+		layerThree.setHeightFull();
+		layerThree.setWidthFull();
+		
+		layerThree.add(createFinanceDownloads());
+		layerThree.add(createGeneralDownloads());
 		mainLayout.add(layerThree);
-
-		mainLayout.add(new H3("Finanzen"));
-		Hr hr3 = new Hr();
-		hr3.setWidth(420, Unit.PIXELS);
-		mainLayout.add(hr3);
-
-		HorizontalLayout layerFour = new HorizontalLayout();
-		createFourthLayer(layerFour);
-		mainLayout.add(layerFour);
-
-		mainLayout.add(new H3("Allgemein"));
-		Hr hr4 = new Hr();
-		hr4.setWidth(420, Unit.PIXELS);
-		mainLayout.add(hr4);
-
-		HorizontalLayout layerGeneral = new HorizontalLayout();
-		setGeneralLayer(layerGeneral);
-		mainLayout.add(layerGeneral);
 
 		wrapper.add(mainLayout);
 		return wrapper;
 	}
 
-	private Component createResponsiblesTab() {
-		VerticalLayout wrapper = new VerticalLayout();
-		wrapper.addClassNames(LumoUtility.Padding.NONE, LumoUtility.BorderColor.CONTRAST_90, LumoUtility.Margin.NONE);
+	private Component createGeneralDownloads() {
 		
-		importantPeople = samplePersonService.findAllByAssociation(associationId).stream()
-				.filter(e -> e.getAssociationRole() != AssociationRole.MEMBER).toList();
+		VerticalLayout generalDownloadsWrapper = new VerticalLayout();
+		generalDownloadsWrapper.addClassNames("bestand-box", LumoUtility.AlignItems.CENTER);
 		
-		Grid<Person> responsiblesGrid = new Grid<>(Person.class, false);
-		responsiblesGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-		responsiblesGrid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true).setHeader("Name");
-		responsiblesGrid.addColumn(p -> p.getAssociationRole().getLabel()).setAutoWidth(true).setHeader("Rolle");
-		responsiblesGrid.addColumn(p -> renderDate(p.getDateOfHigherRole())).setAutoWidth(true).setHeader("In der Funktion seit");
-		responsiblesGrid.setItems(importantPeople);
+		H3 h3 = new H3("Allgemein");
 		
-		wrapper.add(responsiblesGrid);
-		return wrapper;
-	}
-
-	private void setGeneralLayer(HorizontalLayout layerGeneral) {
-
-		VerticalLayout mainButtonLayoutOne = new VerticalLayout();
-		mainButtonLayoutOne.add(new Text(general)); 
-		mainButtonLayoutOne.setAlignItems(Alignment.CENTER);
-		Button buttonPrintGeneral = new Button(mainButtonLayoutOne);
-		buttonPrintGeneral.addClassNames("button-category");
-		buttonPrintGeneral.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		Button buttonPrintGeneral = new Button("Monatliche Übersicht");
+		buttonPrintGeneral.addClassNames("save-button");
+		buttonPrintGeneral.setWidth(200, Unit.PIXELS);
 		
 		Dialog printDialogGeneral = new Dialog();
 		initDialog(printDialogGeneral, general);
@@ -280,17 +269,91 @@ public class VereinView extends Div {
 			refreshDialogs();
 			printDialogGeneral.open();
 		});
-		layerGeneral.add(buttonPrintGeneral);
+		
+		
+		generalDownloadsWrapper.add(h3, buttonPrintGeneral);
+		return generalDownloadsWrapper;
 	}
 
-	private void setFirstLayer(HorizontalLayout layerOne) {
+	private Component createFinanceDownloads() {
+		
+		VerticalLayout financeDownloadsWrapper = new VerticalLayout();
+		financeDownloadsWrapper.addClassNames("bestand-box", LumoUtility.AlignItems.CENTER);
+		
+		H3 h3 = new H3("Finanzen");
 
-		VerticalLayout mainButtonLayoutOne = new VerticalLayout();
-		mainButtonLayoutOne.add(new Text(memberList));
-		mainButtonLayoutOne.setAlignItems(Alignment.CENTER);
-		Button buttonPrintMemberList = new Button(mainButtonLayoutOne);
-		buttonPrintMemberList.addClassNames("button-category");
-		buttonPrintMemberList.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		Button buttonPrintIncome = new Button("Einnahmen");
+		buttonPrintIncome.addClassNames("save-button");
+		buttonPrintIncome.setWidth(200, Unit.PIXELS);
+		
+		Dialog printDialogIncome = new Dialog();
+		initDialog(printDialogIncome, income);
+		buttonPrintIncome.addClickListener(e -> {
+			refreshDialogs();
+			printDialogIncome.open();
+		});
+		
+		Button buttonPrintCosts = new Button("Ausgaben");
+		buttonPrintCosts.addClassNames("save-button");
+		buttonPrintCosts.setWidth(200, Unit.PIXELS);
+		
+		Dialog printDialogCosts = new Dialog();
+		initDialog(printDialogCosts, costs);
+		buttonPrintCosts.addClickListener(e -> {
+			refreshDialogs();
+			printDialogCosts.open();
+		});
+		
+		financeDownloadsWrapper.add(h3, buttonPrintIncome, buttonPrintCosts);
+		
+		return financeDownloadsWrapper;
+	}
+
+	private Component createBestandDownloads() {
+		
+		VerticalLayout wrapperBestandDownloads = new VerticalLayout();
+		wrapperBestandDownloads.addClassNames("bestand-box", LumoUtility.AlignItems.CENTER);
+		
+		H3 h3 = new H3("Bestand und Abgabe");
+		h3.addClassName("customheader");
+
+		Button buttonPrintWareInfo = new Button("Produkte");
+		buttonPrintWareInfo.addClassNames("save-button");
+		buttonPrintWareInfo.setWidth(200, Unit.PIXELS);
+		
+		Dialog printDialogWareInfo = new Dialog();
+		initDialog(printDialogWareInfo, wareInfo);
+		buttonPrintWareInfo.addClickListener(e -> {
+			refreshDialogs();
+			printDialogWareInfo.open();
+		});
+
+		Button buttonPrintOutputInfo = new Button("Abgaben");
+		buttonPrintOutputInfo.addClassNames("save-button");
+		buttonPrintOutputInfo.setWidth(200, Unit.PIXELS);
+		
+		Dialog printDialogOutputInfo = new Dialog();
+		initDialog(printDialogOutputInfo, outputInfo);
+		buttonPrintOutputInfo.addClickListener(e -> {
+			refreshDialogs();
+			printDialogOutputInfo.open();
+		});
+
+		wrapperBestandDownloads.add(h3, buttonPrintWareInfo, buttonPrintOutputInfo);
+		return wrapperBestandDownloads;
+	}
+
+	private Component createMemberDownloads() {
+		
+		VerticalLayout memberLayout = new VerticalLayout();
+		memberLayout.addClassNames("bestand-box", LumoUtility.AlignItems.CENTER);
+		
+		H3 h3 = new H3("Mitglieder und Warteliste");
+		h3.addClassName("customheader");
+			
+		Button buttonPrintMemberList = new Button("Mitgliederliste");
+		buttonPrintMemberList.addClassNames("save-button");
+		buttonPrintMemberList.setWidth(200, Unit.PIXELS);
 		
 		Dialog printDialogMemberList = new Dialog();
 		initDialog(printDialogMemberList, memberList);
@@ -298,13 +361,10 @@ public class VereinView extends Div {
 			refreshDialogs();
 			printDialogMemberList.open();
 		});
-
-		VerticalLayout mainButtonLayoutTwo = new VerticalLayout();
-		mainButtonLayoutTwo.add(new Text(workload));
-		mainButtonLayoutTwo.setAlignItems(Alignment.CENTER);
-		Button buttonPrintWorkload = new Button(mainButtonLayoutTwo);
-		buttonPrintWorkload.addClassNames("button-category");
-		buttonPrintWorkload.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
+		
+		Button buttonPrintWorkload = new Button("Arbeitszeiten");
+		buttonPrintWorkload.addClassNames("save-button");
+		buttonPrintWorkload.setWidth(200, Unit.PIXELS);
 		
 		Dialog printDialogWorkload = new Dialog();
 		initDialog(printDialogWorkload, workload);
@@ -312,9 +372,63 @@ public class VereinView extends Div {
 			refreshDialogs();
 			printDialogWorkload.open();
 		});
+		
+		Button buttonImportantMembers = new Button("Verantwortliche");
+		buttonImportantMembers.addClassNames("save-button");
+		buttonImportantMembers.setWidth(200, Unit.PIXELS);
+		
+		Dialog printDialogImportantMembers = new Dialog();
+		initDialog(printDialogImportantMembers, "Liste von " + importantMembers + "n");
+		buttonImportantMembers.addClickListener(e -> {
+			refreshDialogs();
+			printDialogImportantMembers.open();
+		});
 
-		layerOne.add(buttonPrintMemberList);
-		layerOne.add(buttonPrintWorkload);
+		Button buttonPrintWaitingList = new Button("Warteliste");
+		buttonPrintWaitingList.addClassNames("save-button");
+		buttonPrintWaitingList.setWidth(200, Unit.PIXELS);
+		
+		Dialog printDialogWaitingList = new Dialog();
+		initDialog(printDialogWaitingList, waitingList);
+		buttonPrintWaitingList.addClickListener(e -> {
+			refreshDialogs();
+			printDialogWaitingList.open();
+		});
+		
+		memberLayout.add(h3, buttonPrintMemberList, buttonPrintWorkload, buttonImportantMembers, buttonPrintWaitingList);
+		
+		return memberLayout;
+	}
+
+	private Component createResponsiblesTab() {
+		HorizontalLayout mainWrapper = new HorizontalLayout();
+		mainWrapper.setWidthFull();
+		mainWrapper.setMinHeight(250, Unit.PIXELS);
+		mainWrapper.addClassNames(LumoUtility.Padding.Bottom.MEDIUM);
+		
+		VerticalLayout wrapper = new VerticalLayout();
+		wrapper.addClassNames(LumoUtility.Margin.Top.MEDIUM, "bestand-box");
+		
+		wrapper.setWidthFull();
+		
+		H3 responsibles = new H3("Verantwortliche");
+		responsibles.addClassNames(LumoUtility.Margin.Top.MEDIUM, LumoUtility.Margin.Left.SMALL);
+		
+		importantPeople = samplePersonService.findAllByAssociation(associationId).stream()
+				.filter(e -> e.getAssociationRole() != AssociationRole.MEMBER).toList();
+		
+		Grid<Person> responsiblesGrid = new Grid<>(Person.class, false);
+		responsiblesGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+		responsiblesGrid.addColumn(p -> p.getFirstName() + " " + p.getLastName()).setAutoWidth(true);
+		responsiblesGrid.addColumn(p -> p.getAssociationRole().getLabel()).setAutoWidth(true);
+		responsiblesGrid.addColumn(p -> "In der Funktion seit " + renderDate(p.getDateOfHigherRole()));
+		responsiblesGrid.setItems(importantPeople);
+
+		responsiblesGrid.addClassName("custom-scrollbar");
+		
+		wrapper.add(responsibles, responsiblesGrid);
+		mainWrapper.add(wrapper);
+		return mainWrapper;
 	}
 	
 	private String renderDate(LocalDate date) {
@@ -344,7 +458,10 @@ public class VereinView extends Div {
 
 		VerticalLayout dialogLayout = new VerticalLayout();
 
-		dialogLayout.add(new H2(title + " downloaden"));
+		H2 h2 = new H2(title + " downloaden");
+		h2.addClassName("customheader");
+		
+		dialogLayout.add(h2);
 		dialogLayout.add(new Hr());
 
 		FormLayout formLayout = new FormLayout();
@@ -390,9 +507,11 @@ public class VereinView extends Div {
 				Notification.show("Die Datei braucht noch einen Namen!");
 			}
 		});
+		saveButton.addClassName("save-button");
 
 		Button cancelButton = new Button("Abbrechen", e -> printDialog.close());
-
+		cancelButton.addClassName("cancel-button");
+		
 		printDialog.getFooter().add(cancelButton);
 		printDialog.getFooter().add(saveButton);
 	}
@@ -562,14 +681,18 @@ public class VereinView extends Div {
 		downloadDialog = new Dialog();
 
 		VerticalLayout dialogLayout = new VerticalLayout();
-
-		dialogLayout.add(new H2("Jetzt downloaden"));
+		
+		H2 h2 = new H2("Jetzt downloaden");
+		h2.addClassName("customheader");
+		
+		dialogLayout.add(h2);
 		dialogLayout.add(new Hr());
 
 		dialogLayout.add(new H1(name + format));
 		downloadDialog.add(dialogLayout);
 
 		Button saveButton = new Button("Download");
+		saveButton.addClassName("save-button");
 		Button cancelButton = new Button("Fertig", e -> {
 			downloadDialog.close();
 
@@ -579,6 +702,8 @@ public class VereinView extends Div {
 				}
 			}
 		});
+		
+		cancelButton.addClassName("cancel-button");
 
 		if (format.equals(".txt")) {
 
@@ -727,111 +852,60 @@ public class VereinView extends Div {
 		}
 	}
 
-	private void setSecondLayer(HorizontalLayout layerTwo) {
-
-		VerticalLayout mainButtonLayoutOne = new VerticalLayout();
-		mainButtonLayoutOne.add(new Text(importantMembers));
-		mainButtonLayoutOne.setAlignItems(Alignment.CENTER);
-		Button buttonImportantMembers = new Button(mainButtonLayoutOne);
-		buttonImportantMembers.addClassNames("button-category");
-		buttonImportantMembers.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
-		
-		Dialog printDialogImportantMembers = new Dialog();
-		initDialog(printDialogImportantMembers, "Liste von " + importantMembers + "n");
-		buttonImportantMembers.addClickListener(e -> {
-			refreshDialogs();
-			printDialogImportantMembers.open();
-		});
-
-		VerticalLayout mainButtonLayoutTwo = new VerticalLayout();
-		mainButtonLayoutTwo.add(new Text(waitingList));
-		mainButtonLayoutTwo.setAlignItems(Alignment.CENTER);
-		Button buttonPrintWaitingList = new Button(mainButtonLayoutTwo);
-		buttonPrintWaitingList.addClassNames("button-category");
-		buttonPrintWaitingList.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
-		
-		Dialog printDialogWaitingList = new Dialog();
-		initDialog(printDialogWaitingList, waitingList);
-		buttonPrintWaitingList.addClickListener(e -> {
-			refreshDialogs();
-			printDialogWaitingList.open();
-		});
-
-		layerTwo.add(buttonImportantMembers);
-		layerTwo.add(buttonPrintWaitingList);
-	}
-
-	private void setThirdLayer(HorizontalLayout layerThree) {
-
-		VerticalLayout mainButtonLayoutOne = new VerticalLayout();
-		mainButtonLayoutOne.add(new Text(wareInfo));
-		mainButtonLayoutOne.setAlignItems(Alignment.CENTER);
-		Button buttonPrintWareInfo = new Button(mainButtonLayoutOne);
-		buttonPrintWareInfo.addClassNames("button-category");
-		buttonPrintWareInfo.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
-		
-		Dialog printDialogWareInfo = new Dialog();
-		initDialog(printDialogWareInfo, wareInfo);
-		buttonPrintWareInfo.addClickListener(e -> {
-			refreshDialogs();
-			printDialogWareInfo.open();
-		});
-
-		VerticalLayout mainButtonLayoutTwo = new VerticalLayout();
-		mainButtonLayoutTwo.add(new Text(outputInfo));
-		mainButtonLayoutTwo.setAlignItems(Alignment.CENTER);
-		Button buttonPrintOutputInfo = new Button(mainButtonLayoutTwo);
-		buttonPrintOutputInfo.addClassNames("button-category");
-		buttonPrintOutputInfo.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
-		
-		Dialog printDialogOutputInfo = new Dialog();
-		initDialog(printDialogOutputInfo, outputInfo);
-		buttonPrintOutputInfo.addClickListener(e -> {
-			refreshDialogs();
-			printDialogOutputInfo.open();
-		});
-
-		layerThree.add(buttonPrintWareInfo);
-		layerThree.add(buttonPrintOutputInfo);
-	}
-
-	private void createFourthLayer(HorizontalLayout layerFour) {
-
-		VerticalLayout mainButtonLayoutOne = new VerticalLayout();
-		mainButtonLayoutOne.add(new Text(income));
-		mainButtonLayoutOne.setAlignItems(Alignment.CENTER);
-		Button buttonPrintIncome = new Button(mainButtonLayoutOne);
-		buttonPrintIncome.addClassNames("button-category");
-		buttonPrintIncome.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
-		
-		Dialog printDialogIncome = new Dialog();
-		initDialog(printDialogIncome, income);
-		buttonPrintIncome.addClickListener(e -> {
-			refreshDialogs();
-			printDialogIncome.open();
-		});
-
-		VerticalLayout mainButtonLayoutTwo = new VerticalLayout();
-		mainButtonLayoutTwo.add(new Text(costs));
-		mainButtonLayoutTwo.setAlignItems(Alignment.CENTER);
-		Button buttonPrintCosts = new Button(mainButtonLayoutTwo);
-		buttonPrintCosts.addClassNames("button-category");
-		buttonPrintCosts.addClassNames(LumoUtility.Border.ALL, LumoUtility.BorderColor.PRIMARY_50);
-		
-		Dialog printDialogCosts = new Dialog();
-		initDialog(printDialogCosts, costs);
-		buttonPrintCosts.addClickListener(e -> {
-			refreshDialogs();
-			printDialogCosts.open();
-		});
-
-		layerFour.add(buttonPrintIncome);
-		layerFour.add(buttonPrintCosts);
-	}
-
 	private void refreshDialogs() {
 		textFieldsNameOfDocument.forEach(e -> e.setValue(""));
 		formatComboBoxes.forEach(e -> e.setValue(formatTypes.iterator().next()));
+	}
+	
+	public class EntryLayout extends HorizontalLayout {
+
+		private static final long serialVersionUID = 8080325977391846535L;
+		private TextArea textField;
+	    private H3 nameField;
+	    private H3 streetNameAndNumber;
+	    private H3 postalCodeAndCity;
+
+	    private SvgIcon avatar;
+	    private VerticalLayout innerLayout;
+	    
+	    public EntryLayout() {
+			nameField = new H3("");
+
+			nameField.addClassNames("diary-view-h3-1");
+			textField = new TextArea();
+			textField.setWidthFull();
+			textField.setReadOnly(true);
+			textField.addClassNames("textarea-border-invisible");
+			streetNameAndNumber = new H3("");
+			postalCodeAndCity = new H3("");
+			
+			avatar = LineAwesomeIcon.HOME_SOLID.create();
+            avatar.getElement().setAttribute("tabindex", "-1");
+            avatar.addClassNames( LumoUtility.Margin.Right.LARGE);
+            
+            
+	        setWidthFull();
+	        addClassNames("diary-view-horizontal-layout-1", LumoUtility.Padding.MEDIUM);
+	        
+	        innerLayout = new VerticalLayout();
+	        innerLayout.setMinHeight(100, Unit.PIXELS);
+	        
+	        innerLayout.add(nameField, streetNameAndNumber, postalCodeAndCity, textField);
+	        
+	        VerticalLayout avatarLayout = new VerticalLayout();
+	        avatarLayout.addClassName("diary-view-vertical-layout-2");
+	        avatarLayout.add(avatar);
+	        
+	        
+	        add(avatarLayout, innerLayout);
+	    }
+
+	    public void setEntry(Location entry) {
+	    	//set values 
+	        textField.setValue(entry.getNote());
+	        nameField.setText(entry.getName());	        
+	        streetNameAndNumber.setText(entry.getStreet() + " " + entry.getStreetNumber());
+	        postalCodeAndCity.setText(String.valueOf(entry.getPostalCode()) + " " + entry.getCity());	    }
 	}
 
 }
