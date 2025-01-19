@@ -34,7 +34,6 @@ import com.css.one.services.TransactionService;
 import com.css.one.services.WorkingUnitService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -50,7 +49,7 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
@@ -111,7 +110,8 @@ public class VereinView extends Div {
 
 	private File exportFile;
 	private VirtualList<Location> virtualList = new VirtualList<>();
-
+	private SvgIcon iconEdit = LineAwesomeIcon.PEN_SOLID.create();
+	private boolean isOnEdit = false;
 
 	public VereinView(AssociationService associationService, PersonService samplePersonService,
 			WorkingUnitService workingUnitService, TransactionService transactionService, LocationService locationService) {
@@ -152,19 +152,47 @@ public class VereinView extends Div {
 		mainWrapper.setWidthFull();
 		mainWrapper.setHeightFull();
 		
+		HorizontalLayout vereinHeaderWrapper = new HorizontalLayout();
+		vereinHeaderWrapper.setWidthFull();
 		H3 h2General = new H3("Daten des Vereins");
 		h2General.addClassNames(LumoUtility.Margin.Top.MEDIUM);
+		h2General.setMinWidth(200, Unit.PIXELS);
+		
+		VerticalLayout innerIconEditWrapper = new VerticalLayout();
+		innerIconEditWrapper.setWidthFull();
+		iconEdit.addClassNames("icon-edit");
+		innerIconEditWrapper.add(iconEdit);
+		
+		iconEdit.addClickListener(e -> {
+			
+			if(isOnEdit) {
+				//click when edit is active -> save data
+				iconEdit.setSrc(LineAwesomeIcon.PEN_SOLID.create().getSrc());
+				
+				if(validateAssociationData()) {					
+					saveAssociationData();
+					isOnEdit = false;
+				} else {
+					Notification notification = Notification.show("Validierung der Daten des Vereins fehlgeschlagen!");
+					notification.addThemeVariants(NotificationVariant.LUMO_WARNING);
+				}
+				
+			} else {
+				//click when edit is not active -> edit data
+				iconEdit.setSrc(LineAwesomeIcon.SAVE_SOLID.create().getSrc());
+				isOnEdit = true;
+			}
+			
+			refreshDataFieldsReadOnly(!isOnEdit);
+			
+		});
+		
+		vereinHeaderWrapper.add(h2General, innerIconEditWrapper);
 		
 		FormLayout formLayout = new FormLayout();
 
 		//set read only
-		fieldAssociationName.setReadOnly(true);
-		fieldAssociationNumber.setReadOnly(true);
-		fieldStreetName.setReadOnly(true);
-		fieldHouseNumber.setReadOnly(true);
-		fieldPostalCode.setReadOnly(true);
-		fieldCity.setReadOnly(true);
-		fieldEmail.setReadOnly(true);
+		refreshDataFieldsReadOnly(true);
 		
 		Optional<Association> optionalAssociation = associationService.get(Integer.toUnsignedLong(associationId));
 
@@ -194,11 +222,71 @@ public class VereinView extends Div {
 		        // Use two columns, if layout's width exceeds 500px
 		        new ResponsiveStep("500px", 2));
 
-		dataWrapper.add(h2General, formLayout);
+		dataWrapper.add(vereinHeaderWrapper, formLayout);
 		wrapper.add(dataWrapper, createInnerTabsForLocations());
 		mainWrapper.add(wrapper, createResponsiblesTab());
 		
 		return mainWrapper;
+	}
+
+	private boolean validateAssociationData() {
+		
+		if(fieldAssociationName.getValue().equals("")) {
+			return false;
+		}
+		
+		if(fieldStreetName.getValue().equals("")) {
+			return false;
+		}
+		
+		if(fieldCity.getValue().equals("")) {
+			return false;
+		}
+		
+		if(fieldHouseNumber.getValue().equals("")) {
+			return false;
+		}
+		
+		if(fieldPostalCode.getValue().equals("")) {
+			return false;
+		}
+		
+		return true;
+	}
+
+	private void saveAssociationData() {
+				
+		//get association
+		Optional<Association> optAssociation = associationService.get(Integer.toUnsignedLong(this.associationId));
+		
+		//save if present
+		optAssociation.ifPresentOrElse(association -> {
+			
+			association.setName(fieldAssociationName.getValue());
+			association.setStreet(fieldStreetName.getValue());
+			association.setCity(fieldCity.getValue());
+			association.setEmail(fieldEmail.getValue());
+			association.setPostalCode(Integer.valueOf(fieldPostalCode.getValue()));
+			association.setStreetNumber(fieldHouseNumber.getValue());
+			
+			associationService.update(association);
+		}, () -> {			
+			Notification notification = Notification.show("Keinen Verein gefunden. Kontaktieren sie den Support!");
+			notification.addThemeVariants(NotificationVariant.LUMO_WARNING);
+		});
+		
+	}
+
+	private void refreshDataFieldsReadOnly(boolean readOnly) {
+		fieldAssociationName.setReadOnly(readOnly);
+		fieldStreetName.setReadOnly(readOnly);
+		fieldHouseNumber.setReadOnly(readOnly);
+		fieldPostalCode.setReadOnly(readOnly);
+		fieldCity.setReadOnly(readOnly);
+		fieldEmail.setReadOnly(readOnly);
+		
+		//alsways read only
+		fieldAssociationNumber.setReadOnly(true);
 	}
 
 	private Component createInnerTabsForLocations() {
