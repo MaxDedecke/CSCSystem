@@ -172,6 +172,10 @@ public class VereinView extends Div {
 				if(validateAssociationData()) {					
 					saveAssociationData();
 					isOnEdit = false;
+					
+					Notification notification = Notification.show("Daten des Vereins aktualisiert!");
+					notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+				
 				} else {
 					Notification notification = Notification.show("Validierung der Daten des Vereins fehlgeschlagen!");
 					notification.addThemeVariants(NotificationVariant.LUMO_WARNING);

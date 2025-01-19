@@ -10,6 +10,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.sql.init.SqlDataSourceScriptDatabaseInitializer;
 import org.springframework.boot.autoconfigure.sql.init.SqlInitializationProperties;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -27,8 +28,10 @@ public class Application implements AppShellConfigurator {
 
     private static final long serialVersionUID = 3173515292498804205L;
 
+    private static ConfigurableApplicationContext applicationContext;
+    
 	public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);            
+        applicationContext = SpringApplication.run(Application.class, args);            
     }
 	
 	@Override
@@ -45,15 +48,22 @@ public class Application implements AppShellConfigurator {
         return new SqlDataSourceScriptDatabaseInitializer(dataSource, properties) {
             @Override
             public boolean initializeDatabase() { 
+            	
                 if (repository.count() == 0L) {
                     return super.initializeDatabase();
-                }
+                }     
                 
-                checkMigrationStatus();
+                try {
+                	//if something goes wrong during fallback of migration process, the app shuts down to not have undefinded behavior
+					checkMigrationStatus();
+				} catch (Exception e) {
+					SpringApplication.exit(applicationContext, () -> 0);
+				}
+                
                 return false;
             }
 
-			private void checkMigrationStatus() {
+			private void checkMigrationStatus() throws Exception {
 				new MigrationService();
 			}
         };

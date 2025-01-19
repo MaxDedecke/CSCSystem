@@ -20,23 +20,26 @@ public class MigrationService {
 	
 	private final Logger logger = LoggerFactory.getLogger(MigrationService.class);
 
-	private final String versionString= "0.7.6";
-	private final int version = 76;
+	private final String versionActiveString= "0.7.6";
+	private final int versionActive = 76;
+	
+	private final String versionInitialString= "0.7.5";
+	private final int versionInitial = 75;
 	
     List<SystemVersion> versions = new ArrayList<>();
 		
-	public MigrationService() {
+	public MigrationService() throws Exception {
 		
 		//Create a connection to database
 		 try (var connection =  DB.connect()){
-	            System.out.println("Connected to the PostgreSQL database.");
+	            logger.info("Connected to the database.");
 	            startMigration(connection);
 	        } catch (SQLException e) { 
-	            System.err.println(e.getMessage());
+	            logger.error(e.getMessage());
 	        }
 	}
 
-	public void startMigration(Connection connection) {
+	public void startMigration(Connection connection) throws Exception {
 		
 		//loads all versions and caches them in versions list
 		loadAndCacheVersionsFromDatabase(connection);	
@@ -48,23 +51,23 @@ public class MigrationService {
 			logger.info("Starting migration service");
 			
 			if (currentActiveVersion.isPresent()) {
-				//if final version has changed and is higher than active version in db
-				if (currentActiveVersion.get().getVersionInteger() < version) {
+				
+				//if version has increased and is higher than active version in db
+				if (currentActiveVersion.get().getVersionInteger() < versionActive) {
 					logger.error("------------- UPDATE INCOMING -------------");
-					logger.error("------------- " + versionString + "-------------");
+					logger.error("------------- " + versionActiveString + "-------------");
 					
 					//create new version in db
 					createNewSystemVersion(connection);
 					
 					//set is_active = false of old active version
-					outdateOldVersion(connection, currentActiveVersion.get());
-					
+					outdateOldVersion(connection, currentActiveVersion.get());			
+				} else {
+					logger.info("------------- EVERYTHING UP-TO-DATE -------------");
 				}
 			} else {
 				//if no current version is available - fallback to initial version
-				logger.error("NO VERSION ACTIVE!");
-				logger.error("FALLBACK TO DEFAULT VERSION!");
-				versions.add(createInitialSystemVersion(connection));
+				fallbackToLatestVersion(connection);				
 			}
 
 		} else {
@@ -81,7 +84,39 @@ public class MigrationService {
 		//Take versions and proceed
 		startMigrationsDependingOnVersion(versions, connection);
 		
-		logger.info("Migration process finished or skiped");
+		logger.info("Migration process finished");
+	}
+
+	private void fallbackToLatestVersion(Connection connection) throws Exception {
+		
+		logger.error("VERSIONS EXIST BUT NO ACTIVE ONE PRESENT!");
+		logger.error("FALLBACK TO LATEST VERSION");
+		
+		//versions is sorted by version so last item should be latest
+		SystemVersion systemVersion = versions.get(versions.size());
+		
+		//if we got the latest version
+		if(versions.stream().filter(e -> e.getVersionInteger() > systemVersion.getVersionInteger()).findAny().isEmpty()) {
+			reactivateFallbackVersion(connection, systemVersion);
+		} else {
+			logger.error("------------- " + "FATAL ERROR DURING MIGRATION PROCESS" + " -------------");
+			logger.error("------------- " + "FALLBACK TO LATEST VERSION NOT POSSIBLE" + " -------------");
+			logger.error("------------- " + "!WARNING: UNEXPECTED BEHAVIOR!" + " -------------");
+			
+			throw new Exception("FALLBACK TO LATEST VERSION FAILED");
+		}
+	}
+
+	private void reactivateFallbackVersion(Connection connection, SystemVersion systemVersion) throws SQLException {
+		
+		var sql = "UPDATE system_version SET is_active = true, updated_at = '" + LocalDate.now() + "'"
+				+ " WHERE version_integer = " + systemVersion.getVersionInteger();
+        
+		// update entity in database
+		var statement = connection.createStatement();
+		statement.executeUpdate(sql);
+		logger.info("Updated active status of version: " + systemVersion.getVersionNumber());
+
 	}
 
 	private void loadAndCacheVersionsFromDatabase(Connection connection) {
@@ -111,6 +146,9 @@ public class MigrationService {
 				versions.add(version);
 			}
 
+			//Sort the versions so that the current version is the LAST element in list
+			Collections.sort(versions, Comparator.comparingInt(SystemVersion::getVersionInteger));
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -138,8 +176,8 @@ public class MigrationService {
 	private SystemVersion createInitialSystemVersion(Connection connection) {
 		
 		//set version
-		String versionAsString = "0.7.5";
-		int versionAsInteger = 75;
+		String versionAsString = versionInitialString;
+		int versionAsInteger = versionInitial;
 		String defaultDescription = "Default inserted initial version";
 		
 		//create object
@@ -182,8 +220,8 @@ public class MigrationService {
 	private SystemVersion createNewSystemVersion(Connection connection) {
 
 		// set version
-		String versionAsString = this.versionString;
-		int versionAsInteger = this.version;
+		String versionAsString = this.versionActiveString;
+		int versionAsInteger = this.versionActive;
 		String defaultDescription = "New version";
 
 		// create object
@@ -218,9 +256,6 @@ public class MigrationService {
 
 	private void startMigrationsDependingOnVersion(List<SystemVersion> versions, Connection connection) {
 		
-		//Sort the versions so that the current version is the LAST element in list
-		Collections.sort(versions, Comparator.comparingInt(SystemVersion::getVersionInteger));
-
 		//for each version
 		for(SystemVersion version : versions) {
 					
@@ -239,6 +274,7 @@ public class MigrationService {
 
 	private void startMigrationProcess(SystemVersion version, List<SystemVersion> versions, Connection connection) {
 		
+		//ONLY versions with is_migrated = true are passed in here
 		//
 		//Migrations of 0.X - Early stage
 		//
@@ -250,7 +286,7 @@ public class MigrationService {
 			
 			
 			//set is_migrated to true since all migrations where successful
-			updateVersion(version, connection);
+			updateVersionIsMigrated(version, connection);
 			
 			//if version is not active and also not migrated, another version must be active version
 			if(version.isActive() == true) {
@@ -263,7 +299,7 @@ public class MigrationService {
 			// add migrations to version 0.7.5 here
 
 			// set is_migrated to true since all migrations where successful
-			updateVersion(version, connection);
+			updateVersionIsMigrated(version, connection);
 
 			// if version is not active and also not migrated, another version must be
 			// active version
@@ -281,7 +317,7 @@ public class MigrationService {
 		}
 	}
 
-	private void updateVersion(SystemVersion version, Connection connection) {
+	private void updateVersionIsMigrated(SystemVersion version, Connection connection) {
 		
 		var sql = "UPDATE system_version SET is_migrated = true, updated_at = '" + LocalDate.now() + "'"
 						+ " WHERE version_integer = " + version.getVersionInteger();
