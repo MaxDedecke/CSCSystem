@@ -33,6 +33,18 @@ vaadin-vertical-layout {
   
 }
 
+.icon-edit {
+	width: 28px;
+	height: 28px;
+	padding: 2px;
+}
+
+.icon-edit:hover {
+	box-shadow: 2px 2px 2px 2px #8ABD3E;
+	border-radius: 12px;
+	margin-bottom: none;
+}
+
 .verein-view .editor {
   flex-grow: 1;
   padding: var(--lumo-space-l);

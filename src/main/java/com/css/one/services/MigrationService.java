@@ -116,22 +116,22 @@ public class MigrationService {
 		}
 	}
 
-	private void outdateOldVersion(Connection connection, SystemVersion version) {
+	private void outdateOldVersion(Connection connection, SystemVersion oldVersion) {
 
-		//
+		//set is_active to false for 
 		var sql = "UPDATE system_version SET is_active = false, updated_at = '" + LocalDate.now() + "'"
-				+ " WHERE version_integer = " + version.getVersionInteger();
+				+ " WHERE version_integer = " + oldVersion.getVersionInteger();
 
 		try {
 			var statement = connection.createStatement();
 			statement.executeUpdate(sql);
-			logger.info("Updated migration status of version: " + version.getVersionNumber());
+			logger.info("Updated migration status of version: " + oldVersion.getVersionNumber());
 		} catch (Exception e) {
-			logger.error("FAILED UPDATING IS ACTIVE OF VERSION: " + version.getVersionNumber());
+			logger.error("FAILED UPDATING IS ACTIVE OF VERSION: " + oldVersion.getVersionNumber());
 			logger.error(e.getMessage());
 		}
 
-		logger.info("Finished updating is_active of version: " + version.getVersionNumber());
+		logger.info("Finished updating is_active of version: " + oldVersion.getVersionNumber());
 
 	}
 
