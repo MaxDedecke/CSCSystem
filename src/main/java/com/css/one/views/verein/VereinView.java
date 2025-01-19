@@ -111,8 +111,12 @@ public class VereinView extends Div {
 	private File exportFile;
 	private VirtualList<Location> virtualList = new VirtualList<>();
 	private SvgIcon iconEdit = LineAwesomeIcon.PEN_SOLID.create();
+	
 	private boolean isOnEdit = false;
-
+	
+	private Optional<Association> optionalAssociation = Optional.empty();
+	private boolean hasChanged = false;
+	
 	public VereinView(AssociationService associationService, PersonService samplePersonService,
 			WorkingUnitService workingUnitService, TransactionService transactionService, LocationService locationService) {
 		this.associationService = associationService;
@@ -169,13 +173,16 @@ public class VereinView extends Div {
 				//click when edit is active -> save data
 				iconEdit.setSrc(LineAwesomeIcon.PEN_SOLID.create().getSrc());
 				
-				if(validateAssociationData()) {					
+				if(validateAssociationData()) {		
+					
 					saveAssociationData();
 					isOnEdit = false;
 					
-					Notification notification = Notification.show("Daten des Vereins aktualisiert!");
-					notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-				
+					if (hasChanged) {
+						Notification notification = Notification.show("Daten des Vereins aktualisiert!");
+						notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+					}
+					hasChanged = false;
 				} else {
 					Notification notification = Notification.show("Validierung der Daten des Vereins fehlgeschlagen!");
 					notification.addThemeVariants(NotificationVariant.LUMO_WARNING);
@@ -198,19 +205,32 @@ public class VereinView extends Div {
 		//set read only
 		refreshDataFieldsReadOnly(true);
 		
-		Optional<Association> optionalAssociation = associationService.get(Integer.toUnsignedLong(associationId));
+		optionalAssociation = associationService.get(Integer.toUnsignedLong(associationId));
 
 		//assign values
 		fieldAssociationName.setValue(optionalAssociation.isPresent() ? optionalAssociation.get().getName() : "");
+		fieldAssociationName.setAllowedCharPattern("[a-zA-Z0-9]");
+		
 		fieldAssociationNumber
 				.setValue(optionalAssociation.isPresent() ? String.valueOf(optionalAssociation.get().getNumber()) : "");
+		
 		fieldStreetName.setValue(optionalAssociation.isPresent() ? optionalAssociation.get().getStreet() : "");
+		fieldStreetName.setAllowedCharPattern("[a-zA-ZäöüÄÖÜß\\-\\s']");
+		
 		fieldHouseNumber.setValue(optionalAssociation.isPresent() ? optionalAssociation.get().getStreetNumber() : "");
+		fieldHouseNumber.setAllowedCharPattern("[0-9a-zA-Z]");
+		
 		fieldPostalCode.setValue(
 				optionalAssociation.isPresent() ? String.valueOf(optionalAssociation.get().getPostalCode()) : "");
+		fieldPostalCode.setAllowedCharPattern("\\d");
+		
 		fieldCity.setValue(optionalAssociation.isPresent() ? optionalAssociation.get().getCity() : "");
+		fieldCity.setAllowedCharPattern("[a-zA-ZäöüÄÖÜß\\-\\s']");
+		
 		fieldEmail.setValue(optionalAssociation.get().getEmail() != null ? optionalAssociation.get().getEmail() : "");
-
+		fieldEmail.setAllowedCharPattern("[a-zA-Z0-9._%+-@]");
+		
+		
 		formLayout.add(fieldAssociationName, fieldAssociationNumber, fieldStreetName, fieldHouseNumber,
 				fieldPostalCode, fieldCity, fieldEmail);
 		
@@ -235,36 +255,77 @@ public class VereinView extends Div {
 
 	private boolean validateAssociationData() {
 		
-		if(fieldAssociationName.getValue().equals("")) {
-			return false;
+		if (optionalAssociation.isPresent()) {
+
+			if (fieldAssociationName.getValue().equals("")) {
+
+				return false;
+			}
+
+			if (!fieldAssociationName.getValue().equals(optionalAssociation.get().getName())) {
+				hasChanged = true;
+			}
+			
+			if (fieldStreetName.getValue().equals("")) {
+				
+				return false;
+			}
+			
+			if (!fieldStreetName.getValue().equals(optionalAssociation.get().getStreet())) {
+				hasChanged = true;
+			}
+
+			if (fieldCity.getValue().equals("")) {
+				
+				return false;
+			}
+			
+			if (!fieldCity.getValue().equals(optionalAssociation.get().getCity())) {
+				hasChanged = true;
+			}
+
+			if (fieldHouseNumber.getValue().equals("")) {
+				
+				
+				return false;
+			}
+			
+			if (!fieldHouseNumber.getValue().equals(optionalAssociation.get().getStreetNumber())) {
+				hasChanged = true;
+			}
+
+			if (fieldPostalCode.getValue().equals("")) {
+
+				
+				return false;
+			}
+			
+			if (!fieldPostalCode.getValue().equals(String.valueOf(optionalAssociation.get().getPostalCode()))) {
+				hasChanged = true;
+			}
+			
+			if (optionalAssociation.get().getEmail() != null) {
+				if (!fieldEmail.getValue().equals(optionalAssociation.get().getEmail())) {
+					hasChanged = true;
+				}
+			} else {
+				if (!fieldEmail.getValue().equals("")) {
+					hasChanged = true;
+				}
+			}
+
 		}
-		
-		if(fieldStreetName.getValue().equals("")) {
-			return false;
-		}
-		
-		if(fieldCity.getValue().equals("")) {
-			return false;
-		}
-		
-		if(fieldHouseNumber.getValue().equals("")) {
-			return false;
-		}
-		
-		if(fieldPostalCode.getValue().equals("")) {
-			return false;
-		}
-		
+
 		return true;
 	}
 
 	private void saveAssociationData() {
 				
-		//get association
-		Optional<Association> optAssociation = associationService.get(Integer.toUnsignedLong(this.associationId));
+		//refresh association
+		 optionalAssociation = associationService.get(Integer.toUnsignedLong(this.associationId));
 		
 		//save if present
-		optAssociation.ifPresentOrElse(association -> {
+		 optionalAssociation.ifPresentOrElse(association -> {
 			
 			association.setName(fieldAssociationName.getValue());
 			association.setStreet(fieldStreetName.getValue());
