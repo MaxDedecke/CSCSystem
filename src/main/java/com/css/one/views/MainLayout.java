@@ -5,11 +5,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.Set;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.data.SystemVersion;
 import com.css.one.data.User;
+import com.css.one.data.enums.Role;
 import com.css.one.migrations.DB;
 import com.css.one.security.AuthenticatedUser;
 import com.css.one.services.PropertyService;
@@ -64,7 +66,8 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     private AccessAnnotationChecker accessChecker;
         
     static int associationId; 
-        
+    static Set<Role> currentUserRoles;
+    
     private SideNav nav = new SideNav();
     
     //onboarding navigation item
@@ -324,6 +327,20 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
             	clearAllOtherNavigationItems(nav, sideNavItemOnboarding);
                 
             }
+            
+            if (accessChecker.hasAccess(OnboardingView.class)) {
+            	
+            	Optional<User> maybeUser = authenticatedUser.get();
+            	
+                if (maybeUser.isPresent()) {
+                	currentUserRoles = maybeUser.get().getRoles();
+                	if (maybeUser.get().getRoles().contains(Role.MEMBER)) {               	
+                		clearAllOtherNavigationItems(nav, sideNavItemOnboarding);
+                    }
+                }         
+            }
+            
+            
         }
 	}
 }

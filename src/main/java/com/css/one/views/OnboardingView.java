@@ -27,7 +27,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 @Route(value = "onboarding/:token", layout = MainLayout.class)
 @RouteAlias("onboarding")
 @AnonymousAllowed
-public class OnboardingView extends VerticalLayout implements BeforeEnterObserver{
+public class OnboardingView extends VerticalLayout implements BeforeEnterObserver {
 
 	private static final long serialVersionUID = 1862806183284315642L;
 	
