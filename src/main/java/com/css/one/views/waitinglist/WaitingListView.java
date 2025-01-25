@@ -1,9 +1,11 @@
 package com.css.one.views.waitinglist;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import com.css.one.components.CompareDataComponent;
@@ -14,11 +16,13 @@ import com.css.one.data.MemberSubscription;
 import com.css.one.data.OnboardingData;
 import com.css.one.data.OnboardingToken;
 import com.css.one.data.Person;
+import com.css.one.data.User;
 import com.css.one.data.WaitingPerson;
 import com.css.one.data.enums.AssociationRole;
 import com.css.one.data.enums.EmailType;
 import com.css.one.data.enums.ExpirationTime;
 import com.css.one.data.enums.OnboardingStatus;
+import com.css.one.data.enums.Role;
 import com.css.one.services.AssociationSettingsService;
 import com.css.one.services.EmailService;
 import com.css.one.services.MemberDataService;
@@ -28,6 +32,7 @@ import com.css.one.services.OnboardingQuestionService;
 import com.css.one.services.OnboardingTokenService;
 import com.css.one.services.PersonService;
 import com.css.one.services.SubscriptionModelService;
+import com.css.one.services.UserService;
 import com.css.one.services.WaitingPersonService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
@@ -77,6 +82,7 @@ public class WaitingListView extends FlexLayout {
 	private TextField email;
 	private TextField phone;
 	private DatePicker dateOfBirth;
+	private TextField nameOfFutureMember = new TextField("Name der Person");
 
 	private TextField streetName;
 	private TextField streetNumber;
@@ -109,15 +115,18 @@ public class WaitingListView extends FlexLayout {
 	private SubscriptionModelService subscriptionModelService;
 	private OnboardingQuestionService onboardingQuestionService;
 	private WaitingPersonService waitingPersonService;
+	private UserService userService;
 
 	private int associationId;
 	private boolean isNewPerson = true;
+
+	private EmailService emailService;
 
 	public WaitingListView(WaitingPersonService waitingPersonService, PersonService personService,
 			MemberSubscriptionService subscriptionService, MemberDataService memberDataService,
 			OnboardingTokenService onboardingTokenService, AssociationSettingsService associationSettingsService,
 			SubscriptionModelService subscriptionModelService, OnboardingDataService onboardingDataService,
-			OnboardingQuestionService onboardingQuestionService) {
+			OnboardingQuestionService onboardingQuestionService, UserService userService) {
 
 		this.waitingPersonService = waitingPersonService;
 		this.personService = personService;
@@ -128,11 +137,14 @@ public class WaitingListView extends FlexLayout {
 		this.onboardingDataService = onboardingDataService;
 		this.subscriptionModelService = subscriptionModelService;
 		this.onboardingQuestionService = onboardingQuestionService;
+		this.userService = userService;
 
 		addClassNames("waitinglist-view");
 
 		// Create UI
 		associationId = MainLayout.getAssociationId();
+		
+		emailService = new EmailService();
 
 		VerticalLayout mainWrapper = new VerticalLayout();
 		mainWrapper.addClassNames(LumoUtility.Margin.NONE, LumoUtility.Margin.Bottom.MEDIUM, LumoUtility.Padding.NONE);
@@ -156,10 +168,11 @@ public class WaitingListView extends FlexLayout {
 		VerticalLayout wizzardWrapper = new VerticalLayout();
 
 		wizzard = new OnboardingWizzard(onboardingDataService, subscriptionModelService, onboardingTokenService,
-				onboardingQuestionService, memberDataService, waitingPersonService, Optional.empty(), Optional.of(associationId));
+				onboardingQuestionService, memberDataService, waitingPersonService, Optional.empty(),
+				Optional.of(associationId));
 
 		wizzardWrapper.add(wizzard);
-		
+
 		quickOnboardingDialog.add(headerWrapper, wizzardWrapper);
 
 		Button closeButton = new Button("Prozess abbrechen");
@@ -170,9 +183,11 @@ public class WaitingListView extends FlexLayout {
 			refreshLayout();
 			closeButton.setText("Prozess abbrechen");
 		});
-		
-		wizzard.setActionToPerform(() -> {closeButton.setText("zurück");});
-		
+
+		wizzard.setActionToPerform(() -> {
+			closeButton.setText("zurück");
+		});
+
 		quickOnboardingDialog.addDialogCloseActionListener(e -> {
 			wizzard.resetWizzard();
 		});
@@ -203,9 +218,9 @@ public class WaitingListView extends FlexLayout {
 
 			compareDataDialog.close();
 			compareDataComponent.clearComponent();
-			
+
 			refreshLayout();
-			
+
 			Notification notification = Notification.show("Daten wurden aktualisiert.");
 			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 		});
@@ -227,8 +242,8 @@ public class WaitingListView extends FlexLayout {
 		save.addClassNames("save-button");
 
 		save.addClickListener(e -> {
-			
-			if(validateData()) {
+
+			if (validateData()) {
 				savePersonData();
 
 				if (isNewPerson) {
@@ -261,43 +276,43 @@ public class WaitingListView extends FlexLayout {
 	}
 
 	private boolean validateData() {
-		
-		if(dateOfBirth.getValue() == null) {
+
+		if (dateOfBirth.getValue() == null) {
 			return false;
 		}
-		
-		if(email.getValue().equals(email.getEmptyValue())) {
+
+		if (email.getValue().equals(email.getEmptyValue())) {
 			return false;
 		}
-		
-		if(firstName.getValue().equals(firstName.getEmptyValue())) {
+
+		if (firstName.getValue().equals(firstName.getEmptyValue())) {
 			return false;
 		}
-		
-		if(lastName.getValue().equals(lastName.getEmptyValue())) {
+
+		if (lastName.getValue().equals(lastName.getEmptyValue())) {
 			return false;
 		}
-		
-		if(phone.getValue().equals(phone.getEmptyValue())) {
+
+		if (phone.getValue().equals(phone.getEmptyValue())) {
 			return false;
 		}
-		
-		if(streetName.getValue().equals(streetName.getEmptyValue())) {
+
+		if (streetName.getValue().equals(streetName.getEmptyValue())) {
 			return false;
 		}
-		
-		if(streetNumber.getValue().equals(streetNumber.getEmptyValue())) {
+
+		if (streetNumber.getValue().equals(streetNumber.getEmptyValue())) {
 			return false;
 		}
-		
-		if(city.getValue().equals(city.getEmptyValue())) {
+
+		if (city.getValue().equals(city.getEmptyValue())) {
 			return false;
 		}
-		
-		if(postalCode.getValue().equals(postalCode.getEmptyValue())) {
+
+		if (postalCode.getValue().equals(postalCode.getEmptyValue())) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -308,7 +323,7 @@ public class WaitingListView extends FlexLayout {
 		h3.addClassName("customheader");
 
 		FormLayout additionalFormLayout = new FormLayout();
-		
+
 		streetName = new TextField("Straße");
 		streetName.setAllowedCharPattern("[a-zA-ZäöüÄÖÜß\\-\\s']");
 
@@ -490,35 +505,27 @@ public class WaitingListView extends FlexLayout {
 		dialogLayout.add(h2);
 
 		FormLayout formLayout = new FormLayout();
-		TextField nameOfPerson = new TextField("Name");
-		nameOfPerson.setEnabled(false);
 
 		ComboBox<AssociationRole> comboBox = new ComboBox<AssociationRole>("Rolle");
 		comboBox.setItems(AssociationRole.values());
 		comboBox.setItemLabelGenerator(e -> e.getLabel());
 
-		formLayout.add(nameOfPerson, comboBox);
+		formLayout.add(nameOfFutureMember, comboBox);
 		dialogLayout.add(formLayout);
 
 		newMemberDialog.add(dialogLayout);
+
 		Button saveButton = new Button("Hinzufügen", e -> {
 
-			if (checkBeforeSave(comboBox, nameOfPerson)) {
-
-				Person person = new Person();
-				person.setAssociationId(associationId);
-				person.setAssociationRole(comboBox.getValue());
-				person.setDateOfBirth(waitingPerson.getDateOfBirth());
-				person.setEmail(waitingPerson.getEmail());
-				person.setPhone(waitingPerson.getPhone());
-				person.setFirstName(waitingPerson.getFirstName());
-				person.setLastName(waitingPerson.getLastName());
-				person.setMemberNumber(personService.getFreeMemberNumber(associationId));
-				person = personService.update(person);
+			if (checkBeforeSave(comboBox, nameOfFutureMember)) {
+				
+				Person person = createNewPersonObject(comboBox);
 
 				Optional<MemberData> optMemberData = memberDataService.findByMember(waitingPerson);
+				
 				if (optMemberData.isPresent()) {
-					person.setMemberData(optMemberData.get());
+					person.setMemberData(createNewMemberDataObject(optMemberData.get()));
+					personService.update(person);
 				}
 
 				if (waitingPerson.getId() != null) {
@@ -526,13 +533,19 @@ public class WaitingListView extends FlexLayout {
 				}
 				this.waitingPerson = null;
 
+				// create SubscriptionModel
 				createSingleSubscriptionForNewMember(person);
+
+				// create account data
+				createUserAccount(person);
 
 				newMemberDialog.close();
 				refreshLayout();
 
 				Notification notification = Notification.show("Neues Mitglied hinzugefügt.");
 				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
+				nameOfFutureMember.setValue("");
 			}
 		});
 		saveButton.addClassNames("save-button");
@@ -544,26 +557,91 @@ public class WaitingListView extends FlexLayout {
 		newMemberDialog.getFooter().add(saveButton);
 	}
 
+	private MemberData createNewMemberDataObject(MemberData memberData) {
+		
+		MemberData newData = new MemberData();
+		
+		newData.setCityName(memberData.getCityName());
+		newData.setDateOfRegistration(memberData.getDateOfRegistration());
+		newData.setPostalCode(memberData.getPostalCode());
+		newData.setStreetName(memberData.getStreetName());
+		newData.setStreetNumber(memberData.getStreetNumber());
+		
+		newData = memberDataService.update(newData);
+		
+		return newData;
+	}
+
+	private Person createNewPersonObject(ComboBox<AssociationRole> comboBox) {
+		
+		Person person = new Person();
+		person.setAssociationId(associationId);
+		person.setAssociationRole(comboBox.getValue());
+		person.setDateOfBirth(waitingPerson.getDateOfBirth());
+		person.setEmail(waitingPerson.getEmail());
+		person.setPhone(waitingPerson.getPhone());
+		person.setFirstName(waitingPerson.getFirstName());
+		person.setLastName(waitingPerson.getLastName());
+		person.setMemberNumber(personService.getFreeMemberNumber(associationId));
+		person = personService.update(person);
+		
+		return person;
+	}
+
+	private void createUserAccount(Person person) {
+
+		// create a new account for the login of a member
+		User newUser = new User();
+		newUser.setAssociationId(associationId);
+		newUser.setProfilePicture(null);
+		newUser.setName(person.getFirstName() + " " + person.getLastName());
+		newUser.setHashedPassword(BCrypt.hashpw("123456", BCrypt.gensalt()));
+		newUser.setUsername(person.getFirstName().charAt(0) + person.getLastName());
+
+		HashSet<Role> rolesOfUser = new HashSet<Role>();
+		rolesOfUser.add(Role.MEMBER);
+
+		newUser.setRoles(rolesOfUser);
+
+		// save new account
+		userService.update(newUser);
+
+
+		String to = person.getEmail();
+		String subject = "Jetzt ist es offiziell - " + " Herzlich willkommen in deinem Cannabis Social Club!";
+
+		try {
+			
+			
+			emailService.sendInitialMemberDataEmail(to, subject, newUser.getName());
+			
+		} catch (Exception e) {
+			
+			Notification note = new Notification("Fehler beim Versenden einer Email an das Mitglied. Bitte kontaktiere den Support!");
+			note.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			
+			e.printStackTrace();
+		} 
+
+	}
+
 	private boolean checkBeforeSave(ComboBox<AssociationRole> comboBox, TextField nameOfPerson) {
 		boolean returnValue = true;
 
 		if (comboBox.getValue() == null) {
-			returnValue = false;
 			Notification notification = Notification.show("Einer Person muss eine Rolle zugewiesen werden");
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-			return returnValue;
+			return false;
 		}
 		if (personService.count() >= 500) {
-			returnValue = false;
 			Notification notification = Notification.show("Die maximale Anzahl an Mitgliedern ist bereits erreicht !");
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-			return returnValue;
+			return false;
 		}
 		if (nameOfPerson.getValue().equals("")) {
-			returnValue = false;
 			Notification notification = Notification.show("Die Person braucht noch einen Namen !");
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-			return returnValue;
+			return false;
 		}
 
 		return returnValue;
@@ -573,8 +651,8 @@ public class WaitingListView extends FlexLayout {
 		grid.select(null);
 		List<WaitingPerson> allWaitingPeople = waitingPersonService.findAllByAssociation(associationId);
 		grid.setItems(allWaitingPeople);
-		
-		//refresh counter
+
+		// refresh counter
 		memberCountNumber.setText("Wartendene Personen: " + String.valueOf(allWaitingPeople.size()));
 		
 	}
@@ -668,7 +746,8 @@ public class WaitingListView extends FlexLayout {
 		HorizontalLayout statisticsLayout = new HorizontalLayout();
 		statisticsLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Left.MEDIUM,
 				LumoUtility.Margin.NONE, "header-statistics-item");
-		memberCountNumber = new H3("Wartendene Personen: " + waitingPersonService.findAllByAssociation(associationId).size());
+		memberCountNumber = new H3(
+				"Wartendene Personen: " + waitingPersonService.findAllByAssociation(associationId).size());
 		memberCountNumber.addClassName("no-extra-space");
 		statisticsLayout.add(memberCountNumber);
 
@@ -789,27 +868,28 @@ public class WaitingListView extends FlexLayout {
 			});
 		} else {
 
-			menuBar.addItem("Einladung erneut senden", event -> {
+			if (person.getOnboardingStatus() != OnboardingStatus.CAN_BE_MEMBER) {
+				menuBar.addItem("Einladung erneut senden", event -> {
 
-				if (person.getOnboardingStatus() == OnboardingStatus.STARTED) {
-					if (person.getEmail() != null) {
-						Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
+					if (person.getOnboardingStatus() == OnboardingStatus.STARTED) {
+						if (person.getEmail() != null) {
+							Optional<OnboardingToken> optToken = onboardingTokenService.findByWaitingPerson(person);
 
-						if (optToken.isPresent()) {
+							if (optToken.isPresent()) {
 
-							// delete old OnboardingData if already existing
-							Optional<OnboardingData> dataByToken = onboardingDataService
-									.findByToken(optToken.get().getId());
-							dataByToken.ifPresent(e -> onboardingDataService.delete(e.getId()));
+								// delete old OnboardingData if already existing
+								Optional<OnboardingData> dataByToken = onboardingDataService
+										.findByToken(optToken.get().getId());
+								dataByToken.ifPresent(e -> onboardingDataService.delete(e.getId()));
 
-							// then delete old token
-							onboardingTokenService.delete(optToken.get().getId());
+								// then delete old token
+								onboardingTokenService.delete(optToken.get().getId());
 
-							// send new email and generate new token
-							sendOnboardingEmail(person);
+								// send new email and generate new token
+								sendOnboardingEmail(person);
+							}
 						}
-					} else if (person.getOnboardingStatus() == OnboardingStatus.DATA_PROVIDED
-							|| person.getOnboardingStatus() == OnboardingStatus.CAN_BE_MEMBER) {
+					} else if (person.getOnboardingStatus() == OnboardingStatus.DATA_PROVIDED) {
 
 						// delete OnboardingData and send new email
 						Optional<OnboardingData> dataOfPerson = onboardingDataService.findByMemberId(person.getId());
@@ -826,8 +906,8 @@ public class WaitingListView extends FlexLayout {
 						Notification notification = Notification.show("Fehler: Problem mit Onboarding Token!");
 						notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 					}
-				}
-			});
+				});
+			}
 
 			// if person has already provided his information
 			if (person.getOnboardingStatus() == OnboardingStatus.DATA_PROVIDED) {
@@ -852,6 +932,7 @@ public class WaitingListView extends FlexLayout {
 
 				menuBar.addItem("Zum Mitglied machen", event -> {
 					this.waitingPerson = person;
+					nameOfFutureMember.setValue(waitingPerson.getFirstName() + " " + waitingPerson.getLastName());
 					newMemberDialog.open();
 				});
 			}
@@ -898,7 +979,6 @@ public class WaitingListView extends FlexLayout {
 
 	private void sendOnboardingEmail(WaitingPerson person) {
 
-		EmailService emailService = new EmailService();
 		String to = person.getEmail();
 		String subject = "Onboarding gestartet - " + " Herzlich willkommen " + person.getFirstName() + " "
 				+ person.getLastName() + "!";
