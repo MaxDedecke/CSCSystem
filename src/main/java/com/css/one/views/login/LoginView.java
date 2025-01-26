@@ -70,5 +70,7 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         }
 
         setError(event.getLocation().getQueryParameters().getParameters().containsKey("error"));
+        
+		getElement().executeJs("window.history.replaceState({}, '', window.location.pathname);");
     }
 }

@@ -29,7 +29,12 @@ public class User {
     private String name;
     @JsonIgnore
     private String hashedPassword;
-    @Enumerated(EnumType.STRING)
+    
+    @JsonIgnore
+    @Nullable
+    private Long entityId;
+    
+	@Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> roles;
     @Lob
@@ -46,9 +51,18 @@ public class User {
 		this.id = id;
 	}
 
-    public int getAssociationId() {
+	public Long getEntityId() {
+		return entityId;
+	}
+
+	public void setEntityId(Long entityId) {
+		this.entityId = entityId;
+	}
+
+	public int getAssociationId() {
 		return associationId;
 	}
+
 	public void setAssociationId(int associationId) {
 		this.associationId = associationId;
 	}

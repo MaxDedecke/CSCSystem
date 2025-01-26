@@ -15,6 +15,7 @@ import com.css.one.data.MemberData;
 import com.css.one.data.MemberSubscription;
 import com.css.one.data.OnboardingData;
 import com.css.one.data.OnboardingToken;
+import com.css.one.data.PasswordResetToken;
 import com.css.one.data.Person;
 import com.css.one.data.User;
 import com.css.one.data.WaitingPerson;
@@ -30,6 +31,7 @@ import com.css.one.services.MemberSubscriptionService;
 import com.css.one.services.OnboardingDataService;
 import com.css.one.services.OnboardingQuestionService;
 import com.css.one.services.OnboardingTokenService;
+import com.css.one.services.PasswordResetTokenService;
 import com.css.one.services.PersonService;
 import com.css.one.services.SubscriptionModelService;
 import com.css.one.services.UserService;
@@ -116,6 +118,7 @@ public class WaitingListView extends FlexLayout {
 	private OnboardingQuestionService onboardingQuestionService;
 	private WaitingPersonService waitingPersonService;
 	private UserService userService;
+	private PasswordResetTokenService passwordResetTokenService;
 
 	private int associationId;
 	private boolean isNewPerson = true;
@@ -126,7 +129,7 @@ public class WaitingListView extends FlexLayout {
 			MemberSubscriptionService subscriptionService, MemberDataService memberDataService,
 			OnboardingTokenService onboardingTokenService, AssociationSettingsService associationSettingsService,
 			SubscriptionModelService subscriptionModelService, OnboardingDataService onboardingDataService,
-			OnboardingQuestionService onboardingQuestionService, UserService userService) {
+			OnboardingQuestionService onboardingQuestionService, UserService userService, PasswordResetTokenService passwordResetTokenService) {
 
 		this.waitingPersonService = waitingPersonService;
 		this.personService = personService;
@@ -138,7 +141,8 @@ public class WaitingListView extends FlexLayout {
 		this.subscriptionModelService = subscriptionModelService;
 		this.onboardingQuestionService = onboardingQuestionService;
 		this.userService = userService;
-
+		this.passwordResetTokenService = passwordResetTokenService;
+		
 		addClassNames("waitinglist-view");
 
 		// Create UI
@@ -597,24 +601,22 @@ public class WaitingListView extends FlexLayout {
 		newUser.setName(person.getFirstName() + " " + person.getLastName());
 		newUser.setHashedPassword(BCrypt.hashpw("123456", BCrypt.gensalt()));
 		newUser.setUsername(person.getFirstName().charAt(0) + person.getLastName());
-
+		newUser.setEntityId(person.getId());
+		
 		HashSet<Role> rolesOfUser = new HashSet<Role>();
 		rolesOfUser.add(Role.MEMBER);
 
 		newUser.setRoles(rolesOfUser);
 
 		// save new account
-		userService.update(newUser);
-
+		newUser = userService.update(newUser);
 
 		String to = person.getEmail();
 		String subject = "Jetzt ist es offiziell - " + " Herzlich willkommen in deinem Cannabis Social Club!";
 
-		try {
+		try {	
 			
-			
-			emailService.sendInitialMemberDataEmail(to, subject, newUser.getName());
-			
+			emailService.sendFirstPasswordEmail(to, subject, newUser.getName(), generateTokenForPasswordReset(newUser));
 		} catch (Exception e) {
 			
 			Notification note = new Notification("Fehler beim Versenden einer Email an das Mitglied. Bitte kontaktiere den Support!");
@@ -623,6 +625,20 @@ public class WaitingListView extends FlexLayout {
 			e.printStackTrace();
 		} 
 
+	}
+
+	private String generateTokenForPasswordReset(User user) {
+
+		String token = passwordResetTokenService.generateToken();
+		
+		PasswordResetToken resetToken = new PasswordResetToken();
+		resetToken.setAssociationId(associationId);
+		resetToken.setExpirationDate(LocalDate.now().plusMonths(1));
+		resetToken.setToken(token);
+		resetToken.setUser(user);	
+		
+		resetToken = passwordResetTokenService.update(resetToken);
+		return token;
 	}
 
 	private boolean checkBeforeSave(ComboBox<AssociationRole> comboBox, TextField nameOfPerson) {

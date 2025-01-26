@@ -100,6 +100,32 @@ public class EmailService {
 		return token;
     }
     
+    public void sendFirstPasswordEmail(String to, String subject, String userName, String passwordToken) throws MessagingException, IOException {
+    	// HTML-Vorlage laden
+    	resourceLoader =  new DefaultResourceLoader();
+        Resource resource = resourceLoader.getResource(EmailType.NEW_INITIAL_MEMBER.getHtml());
+        
+		if (resource.exists()) {
+			String htmlContent = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+		    htmlContent = htmlContent.replace("${memberName}", userName);
+//	    	htmlContent = htmlContent.replace("${onboardingLink}", "https://cl-os.code-green-systems.de/passwordreset?token=");
+	    	htmlContent = htmlContent.replace("${resetLink}", "http://localhost:8080/passwordreset?token=" + passwordToken);
+
+		    try (InputStream imageStream = ImageUtil.class.getClassLoader().getResourceAsStream("logoCodeGreen.png")) {
+		    	if (imageStream == null) {
+		    		throw new IOException("Bild konnte nicht geladen werden: " + "logoCodeGreen");
+		    	}
+		    	byte[] imageBytes = imageStream.readAllBytes();
+		    	htmlContent = htmlContent.replace("logoCodeGreen.png","data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes));
+		    }
+			// E-Mail senden
+			sendHtmlMessage(to, subject, htmlContent);
+		} else {
+			Notification show = Notification.show("Resource could not be loaded");
+			show.addThemeVariants(NotificationVariant.LUMO_ERROR);			
+		}
+    }
+    
     public void sendInitialMemberDataEmail(String to, String subject, String userName) throws MessagingException, IOException {
     	// HTML-Vorlage laden
     	resourceLoader =  new DefaultResourceLoader();
@@ -108,8 +134,6 @@ public class EmailService {
 		if (resource.exists()) {
 			String htmlContent = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
 		    htmlContent = htmlContent.replace("${memberName}", userName);
-//	    	htmlContent = htmlContent.replace("${onboardingLink}", "https://cl-os.code-green-systems.de/reset-password?token=");
-	    	htmlContent = htmlContent.replace("${resetLink}", "http://localhost:8080/reset-password?token=");
 
 		    try (InputStream imageStream = ImageUtil.class.getClassLoader().getResourceAsStream("logoCodeGreen.png")) {
 		    	if (imageStream == null) {

@@ -72,7 +72,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     
     //onboarding navigation item
     private SideNavItem sideNavItemOnboarding = new SideNavItem("Onboarding", OnboardingView.class, LineAwesomeIcon.HANDS_HELPING_SOLID.create());
-
+    private SideNavItem sideNavItemPasswordReset = new SideNavItem("Passwort", PasswordView.class, LineAwesomeIcon.KEY_SOLID.create());
 
     public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
@@ -322,25 +322,29 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
             //url contaings onboarding means we only need onboarding side nav
         	
             //add it to navigation menu
-            if (accessChecker.hasAccess(OnboardingView.class)) {
-            	
-            	clearAllOtherNavigationItems(nav, sideNavItemOnboarding);
-                
-            }
-            
-            if (accessChecker.hasAccess(OnboardingView.class)) {
-            	
-            	Optional<User> maybeUser = authenticatedUser.get();
-            	
-                if (maybeUser.isPresent()) {
-                	currentUserRoles = maybeUser.get().getRoles();
-                	if (maybeUser.get().getRoles().contains(Role.MEMBER)) {               	
-                		clearAllOtherNavigationItems(nav, sideNavItemOnboarding);
-                    }
-                }         
-            }
-            
-            
+            if (accessChecker.hasAccess(OnboardingView.class)) {           	
+            	clearAllOtherNavigationItems(nav, sideNavItemOnboarding);   
+            }      
         }
+        
+        else if (event.getLocation().getSegments().contains("passwordreset")) {     
+        	
+        	if (accessChecker.hasAccess(PasswordView.class)) {        	
+        		clearAllOtherNavigationItems(nav, sideNavItemPasswordReset);
+        	}
+        	
+//        if (accessChecker.hasAccess(OnboardingView.class)) {
+//        	
+//        	Optional<User> maybeUser = authenticatedUser.get();
+//        	
+//            if (maybeUser.isPresent()) {
+//            	currentUserRoles = maybeUser.get().getRoles();
+//            	if (maybeUser.get().getRoles().contains(Role.MEMBER)) {               	
+//            		clearAllOtherNavigationItems(nav, sideNavItemOnboarding);
+//                }
+//            }         
+//        }
+        }
+        
 	}
 }
