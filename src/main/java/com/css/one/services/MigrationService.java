@@ -15,16 +15,17 @@ import org.slf4j.LoggerFactory;
 
 import com.css.one.data.SystemVersion;
 import com.css.one.migrations.DB;
+import com.css.one.migrations.classes.SetInitialUserRoles;
 
 public class MigrationService {
 	
 	private final Logger logger = LoggerFactory.getLogger(MigrationService.class);
 
-	private final String versionActiveString= "0.7.6";
-	private final int versionActive = 76;
+	private final String versionActiveString= "0.7.7";
+	private final int versionActive = 77;
 	
-	private final String versionInitialString= "0.7.5";
-	private final int versionInitial = 75;
+	private final String versionInitialString= "0.7.6";
+	private final int versionInitial = 76;
 	
     List<SystemVersion> versions = new ArrayList<>();
 		
@@ -32,7 +33,7 @@ public class MigrationService {
 		
 		//Create a connection to database
 		 try (var connection =  DB.connect()){
-	            logger.info("Connected to the database.");
+	            logger.info("Migrationservice successfuly connected to the database.");
 	            startMigration(connection);
 	        } catch (SQLException e) { 
 	            logger.error(e.getMessage());
@@ -163,7 +164,7 @@ public class MigrationService {
 		try {
 			var statement = connection.createStatement();
 			statement.executeUpdate(sql);
-			logger.info("Updated migration status of version: " + oldVersion.getVersionNumber());
+			logger.info("Outdated version: " + oldVersion.getVersionNumber());
 		} catch (Exception e) {
 			logger.error("FAILED UPDATING IS ACTIVE OF VERSION: " + oldVersion.getVersionNumber());
 			logger.error(e.getMessage());
@@ -296,9 +297,26 @@ public class MigrationService {
 		
 		if (version.getVersionInteger() == 76) {
 
-			// add migrations to version 0.7.5 here
+			// add migrations to version 0.7.6 here
 
 			// set is_migrated to true since all migrations where successful
+			updateVersionIsMigrated(version, connection);
+
+			// if version is not active and also not migrated, another version must be
+			// active version
+			if (version.isActive() == true) {
+				return;
+			}
+		}
+		
+		if (version.getVersionInteger() == 77) {
+
+			// add migrations to version 0.7.7 here
+			
+			
+			// set is_migrated to true since all migrations where successful
+			new SetInitialUserRoles(connection);
+			
 			updateVersionIsMigrated(version, connection);
 
 			// if version is not active and also not migrated, another version must be

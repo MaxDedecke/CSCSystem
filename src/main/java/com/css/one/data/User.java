@@ -30,8 +30,6 @@ public class User {
     @JsonIgnore
     private String hashedPassword;
     
-    @JsonIgnore
-    @Nullable
     private Long entityId;
     
 	@Enumerated(EnumType.STRING)

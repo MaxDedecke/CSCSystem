@@ -5,17 +5,14 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.css.one.data.PasswordResetToken;
 import com.css.one.data.Person;
 import com.css.one.data.User;
-import com.css.one.data.WaitingPerson;
 import com.css.one.services.EmailService;
 import com.css.one.services.PasswordResetTokenService;
 import com.css.one.services.PersonService;
 import com.css.one.services.UserService;
-import com.css.one.services.WaitingPersonService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
@@ -94,8 +91,13 @@ public class PasswordView extends VerticalLayout implements BeforeEnterObserver 
 		
 		savePasswordButton.addClickListener(e -> {
 			
-			if(newPasswordField.getValue().equals(repeatePasswordField.getValue())) {			
+			//if both inputs are equal
+			if(newPasswordField.getValue().equals(repeatePasswordField.getValue())) {		
+				
+				//set new password
 				setNewPassword();
+				
+				//show please close tab text
 				setUIClossable();
 			}
 		});
@@ -131,12 +133,9 @@ public class PasswordView extends VerticalLayout implements BeforeEnterObserver 
 		
 		userService.update(user);
 		
-		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-		String encodedEntityId = bCryptPasswordEncoder.encode(String.valueOf(user.getEntityId()));
-
 		try {
 			
-			Optional<Person> optionalPerson = personService.get(Long.valueOf(encodedEntityId));
+			Optional<Person> optionalPerson = personService.get(user.getEntityId());
 			
 			if(optionalPerson.isPresent()) {			
 				String to = optionalPerson.get().getEmail();
@@ -171,7 +170,6 @@ public class PasswordView extends VerticalLayout implements BeforeEnterObserver 
 	}
 
 	private void validateToken() {
-		
 		
 		Optional<PasswordResetToken> optionalToken = passwordResetTokenService.findByToken(token);
 		

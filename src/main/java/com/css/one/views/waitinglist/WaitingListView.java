@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.vaadin.lineawesome.LineAwesomeIcon;
@@ -78,6 +79,8 @@ public class WaitingListView extends FlexLayout {
 	private static final long serialVersionUID = -5000521119703456571L;
 
 	private final Grid<WaitingPerson> grid = new Grid<>(WaitingPerson.class, false);
+
+	private ComboBox<AssociationRole> comboBox = new ComboBox<AssociationRole>("Rolle");
 
 	private TextField firstName;
 	private TextField lastName;
@@ -510,7 +513,6 @@ public class WaitingListView extends FlexLayout {
 
 		FormLayout formLayout = new FormLayout();
 
-		ComboBox<AssociationRole> comboBox = new ComboBox<AssociationRole>("Rolle");
 		comboBox.setItems(AssociationRole.values());
 		comboBox.setItemLabelGenerator(e -> e.getLabel());
 
@@ -602,11 +604,8 @@ public class WaitingListView extends FlexLayout {
 		newUser.setHashedPassword(BCrypt.hashpw("123456", BCrypt.gensalt()));
 		newUser.setUsername(person.getFirstName().charAt(0) + person.getLastName());
 		newUser.setEntityId(person.getId());
-		
-		HashSet<Role> rolesOfUser = new HashSet<Role>();
-		rolesOfUser.add(Role.MEMBER);
 
-		newUser.setRoles(rolesOfUser);
+		newUser.setRoles(setRoles());
 
 		// save new account
 		newUser = userService.update(newUser);
@@ -625,6 +624,29 @@ public class WaitingListView extends FlexLayout {
 			e.printStackTrace();
 		} 
 
+	}
+
+	private Set<Role> setRoles() {
+		
+		HashSet<Role> rolesOfUser = new HashSet<Role>();
+		
+		if(comboBox.getValue().equals(AssociationRole.BOARD)) {
+			rolesOfUser.add(Role.ADMIN);
+		}
+		
+		if(comboBox.getValue().equals(AssociationRole.ACCOUNTANT)) {
+			rolesOfUser.add(Role.FINANCE_OFFICER);
+		}
+		
+		if(comboBox.getValue().equals(AssociationRole.PREVENTION)) {
+			rolesOfUser.add(Role.MEMBER);
+		}
+		
+		if(comboBox.getValue().equals(AssociationRole.MEMBER)) {
+			rolesOfUser.add(Role.MEMBER);
+		}
+		
+		return rolesOfUser;
 	}
 
 	private String generateTokenForPasswordReset(User user) {

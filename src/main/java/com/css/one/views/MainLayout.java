@@ -176,62 +176,73 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         nav.addClassNames("vaadin-app-layout");
         nav.setWidth("100%");
         
-        if (accessChecker.hasAccess(ÜbersichtView.class)) {
-            nav.addItem(new SideNavItem("Übersicht", ÜbersichtView.class, LineAwesomeIcon.GLOBE_SOLID.create()));
-            
-            clearNavigationFromItem(nav, sideNavItemOnboarding);            
-        }
-        
-        if (accessChecker.hasAccess(FinanzenView.class)) {
-            nav.addItem(
-                    new SideNavItem("Finanzen", FinanzenView.class, LineAwesomeIcon.MONEY_BILL_WAVE_SOLID.create()));
+		if (authenticatedUser.get().isPresent()) {
 
-        }
-        if (accessChecker.hasAccess(DiaryView.class)) {
-            nav.addItem(new SideNavItem("Tagebuch", DiaryView.class,
-                    LineAwesomeIcon.BOOK_OPEN_SOLID.create()));
+			if (accessChecker.hasAccess(ÜbersichtView.class)) {
+				nav.addItem(new SideNavItem("Übersicht", ÜbersichtView.class, LineAwesomeIcon.GLOBE_SOLID.create()));
 
-        }
-		if (accessChecker.hasAccess(ArbeitsplanungView.class)) {
-			nav.addItem(new SideNavItem("Zeiterfassung", ArbeitsplanungView.class,
-					LineAwesomeIcon.BUSINESS_TIME_SOLID.create()));
-		}
-		
-        if (accessChecker.hasAccess(RechtlichesView.class)) {
-            nav.addItem(new SideNavItem("Rechtliches", RechtlichesView.class,
-                    LineAwesomeIcon.BALANCE_SCALE_SOLID.create()));
+				clearNavigationFromItem(nav, sideNavItemOnboarding);
+			}
 
-        }
-        if (accessChecker.hasAccess(WarenlagerView.class)) {
-            nav.addItem(new SideNavItem("Bestand", WarenlagerView.class, LineAwesomeIcon.CANNABIS_SOLID.create()));
+			if (authenticatedUser.get().get().getRoles().iterator().next().equals(Role.ADMIN)) {
 
-        }
-        if (accessChecker.hasAccess(OutputView.class)) {
-            nav.addItem(new SideNavItem("Abgabe", OutputView.class, LineAwesomeIcon.HANDSHAKE.create()));
+				if (accessChecker.hasAccess(FinanzenView.class)) {
+					nav.addItem(new SideNavItem("Finanzen", FinanzenView.class,
+							LineAwesomeIcon.MONEY_BILL_WAVE_SOLID.create()));
 
-        }
-        if (accessChecker.hasAccess(MitgliederView.class)) {
-            nav.addItem(new SideNavItem("Mitglieder", MitgliederView.class, LineAwesomeIcon.USERS_SOLID.create()));
+				}
+				if (accessChecker.hasAccess(DiaryView.class)) {
+					nav.addItem(new SideNavItem("Tagebuch", DiaryView.class, LineAwesomeIcon.BOOK_OPEN_SOLID.create()));
 
-        }
-        if (accessChecker.hasAccess(WaitingListView.class)) {
-        	nav.addItem(new SideNavItem("Wartebereich", WaitingListView.class, LineAwesomeIcon.LIST_SOLID.create()));
-        	
-        }
-        if (accessChecker.hasAccess(VereinView.class)) {
-            nav.addItem(new SideNavItem("Verein", VereinView.class, LineAwesomeIcon.STORE_ALT_SOLID.create()));
+				}
+				if (accessChecker.hasAccess(ArbeitsplanungView.class)) {
+					nav.addItem(new SideNavItem("Zeiterfassung", ArbeitsplanungView.class,
+							LineAwesomeIcon.BUSINESS_TIME_SOLID.create()));
+				}
 
-        }
-        if (accessChecker.hasAccess(ConfigurationView.class)) {
-            nav.addItem(new SideNavItem("Konfiguration", ConfigurationView.class, LineAwesomeIcon.COG_SOLID.create()));
+				if (accessChecker.hasAccess(RechtlichesView.class)) {
+					nav.addItem(new SideNavItem("Rechtliches", RechtlichesView.class,
+							LineAwesomeIcon.BALANCE_SCALE_SOLID.create()));
 
-        }
+				}
+				if (accessChecker.hasAccess(WarenlagerView.class)) {
+					nav.addItem(
+							new SideNavItem("Bestand", WarenlagerView.class, LineAwesomeIcon.CANNABIS_SOLID.create()));
+
+				}
+				if (accessChecker.hasAccess(OutputView.class)) {
+					nav.addItem(new SideNavItem("Abgabe", OutputView.class, LineAwesomeIcon.HANDSHAKE.create()));
+
+				}
+				if (accessChecker.hasAccess(MitgliederView.class)) {
+					nav.addItem(
+							new SideNavItem("Mitglieder", MitgliederView.class, LineAwesomeIcon.USERS_SOLID.create()));
+
+				}
+				if (accessChecker.hasAccess(WaitingListView.class)) {
+					nav.addItem(new SideNavItem("Wartebereich", WaitingListView.class,
+							LineAwesomeIcon.LIST_SOLID.create()));
+
+				}
+				if (accessChecker.hasAccess(VereinView.class)) {
+					nav.addItem(new SideNavItem("Verein", VereinView.class, LineAwesomeIcon.STORE_ALT_SOLID.create()));
+
+				}
+				if (accessChecker.hasAccess(ConfigurationView.class)) {
+					nav.addItem(new SideNavItem("Konfiguration", ConfigurationView.class,
+							LineAwesomeIcon.COG_SOLID.create()));
+
+				}
+
+			}
 //        if (accessChecker.hasAccess(AiWizzardView.class)) {
 //            nav.addItem(new SideNavItem("AI Wizzard", AiWizzardView.class, LineAwesomeIcon.MAGIC_SOLID.create()));
 //
 //        }
 
-        return nav;
+		}
+
+		return nav;
     }
 
     private void clearNavigationFromItem(SideNav nav, SideNavItem sideNavItem) {
