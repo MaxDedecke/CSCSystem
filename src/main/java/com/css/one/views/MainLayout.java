@@ -22,6 +22,7 @@ import com.css.one.views.mitglieder.MitgliederView;
 import com.css.one.views.output.OutputView;
 import com.css.one.views.rechtliches.RechtlichesView;
 import com.css.one.views.settings.ConfigurationView;
+import com.css.one.views.userprofile.UserProfileView;
 import com.css.one.views.verein.VereinView;
 import com.css.one.views.waitinglist.WaitingListView;
 import com.css.one.views.warenlager.WarenlagerView;
@@ -235,6 +236,13 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 				}
 
 			}
+			
+			if (accessChecker.hasAccess(UserProfileView.class)) {
+				nav.addItem(new SideNavItem("Profil", UserProfileView.class,
+						LineAwesomeIcon.USER_CIRCLE_SOLID.create()));
+
+			}
+			
 //        if (accessChecker.hasAccess(AiWizzardView.class)) {
 //            nav.addItem(new SideNavItem("AI Wizzard", AiWizzardView.class, LineAwesomeIcon.MAGIC_SOLID.create()));
 //

@@ -6,10 +6,10 @@ public enum EmailType {
 	ONBOARDING_DATA_FINISHED("Data input finished", "classpath:emailOnboardingDataFinished.html"),
 	ONBOARDING_LINK_DATE_RESET("Onboarding link date reset", "classpath:emailOnboardingDateReset.html"),
 	
+	SET_INITIAL_PASSWORD("Set first user account password", "classpath:emailNewUserInitialPassword.html"),
 	NEW_INITIAL_MEMBER("New Member with initial data", "classpath:emailNewInitialMember.html"),
 	
 	//for later use
-	ONBOARDING_FINISHED("Onboarding of person finished", ""),
 	RESET_PASSWORD("Reset password", ""),
 	NEW_ROLE("New role", ""),
 	PUSHBACK_TO_WAITINGLIST("Sent back member to waitinglist", "")

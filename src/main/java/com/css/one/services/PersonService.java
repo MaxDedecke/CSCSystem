@@ -36,6 +36,11 @@ public class PersonService {
     public List<Person> findAllByAssociation(int associationId) {
     	return repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).toList();
     }
+    
+    public Optional<Person> findById(int associationId, Long id) {
+    	return repository.findAll().stream().filter(e -> e.getAssociationId() == associationId).toList()
+    			.stream().filter(p -> p.getId().equals(id)).findAny();
+    }
 
     public Page<Person> list(Pageable pageable) {
         return repository.findAll(pageable);

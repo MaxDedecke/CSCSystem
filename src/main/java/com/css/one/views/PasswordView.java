@@ -140,7 +140,7 @@ public class PasswordView extends VerticalLayout implements BeforeEnterObserver 
 			if(optionalPerson.isPresent()) {			
 				String to = optionalPerson.get().getEmail();
 				String subject = "Login - " + " Dein Nutzername";
-				emailService.sendInitialMemberDataEmail(to, subject, user.getUsername());
+				emailService.sendInitialMemberDataEmail(to, subject, user.getName(), user.getUsername());
 				
 			} else {
 				Notification show = Notification.show("Es ist ein Fehler aufgetreten. Kontaktiere deinen Verein!");

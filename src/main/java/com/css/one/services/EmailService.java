@@ -100,16 +100,17 @@ public class EmailService {
 		return token;
     }
     
-    public void sendFirstPasswordEmail(String to, String subject, String userName, String passwordToken) throws MessagingException, IOException {
+    public void sendFirstPasswordEmail(String to, String subject, String name, String passwordToken) throws MessagingException, IOException {
     	// HTML-Vorlage laden
     	resourceLoader =  new DefaultResourceLoader();
-        Resource resource = resourceLoader.getResource(EmailType.NEW_INITIAL_MEMBER.getHtml());
+    	
+        Resource resource = resourceLoader.getResource(EmailType.SET_INITIAL_PASSWORD.getHtml());
         
 		if (resource.exists()) {
 			String htmlContent = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
-		    htmlContent = htmlContent.replace("${memberName}", userName);
-//	    	htmlContent = htmlContent.replace("${onboardingLink}", "https://cl-os.code-green-systems.de/passwordreset?token=");
-	    	htmlContent = htmlContent.replace("${resetLink}", "http://localhost:8080/passwordreset?token=" + passwordToken);
+		    htmlContent = htmlContent.replace("${name}", name);
+	    	htmlContent = htmlContent.replace("${resetLink}", "https://cl-os.code-green-systems.de/passwordreset?token=" + passwordToken);
+//	    	htmlContent = htmlContent.replace("${resetLink}", "http://localhost:8080/passwordreset?token=" + passwordToken);
 
 		    try (InputStream imageStream = ImageUtil.class.getClassLoader().getResourceAsStream("logoCodeGreen.png")) {
 		    	if (imageStream == null) {
@@ -126,14 +127,17 @@ public class EmailService {
 		}
     }
     
-    public void sendInitialMemberDataEmail(String to, String subject, String userName) throws MessagingException, IOException {
+    public void sendInitialMemberDataEmail(String to, String subject, String name, String userName) throws MessagingException, IOException {
     	// HTML-Vorlage laden
     	resourceLoader =  new DefaultResourceLoader();
         Resource resource = resourceLoader.getResource(EmailType.NEW_INITIAL_MEMBER.getHtml());
         
 		if (resource.exists()) {
 			String htmlContent = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
-		    htmlContent = htmlContent.replace("${memberName}", userName);
+		    htmlContent = htmlContent.replace("${name}", name);
+		    htmlContent = htmlContent.replace("${userName}", userName);
+		    htmlContent = htmlContent.replace("${loginLink}", "https://cl-os.code-green-systems.de/login");
+//		    htmlContent = htmlContent.replace("${loginLink}", "http://localhost:8080/login");
 
 		    try (InputStream imageStream = ImageUtil.class.getClassLoader().getResourceAsStream("logoCodeGreen.png")) {
 		    	if (imageStream == null) {
