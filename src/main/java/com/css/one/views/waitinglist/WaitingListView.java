@@ -605,11 +605,13 @@ public class WaitingListView extends FlexLayout {
 		newUser.setUsername(person.getFirstName().charAt(0) + person.getLastName());
 		newUser.setEntityId(person.getId());
 
-		newUser.setRoles(setRoles());
-
 		// save new account
+		newUser.setRoles(new HashSet<Role>());
 		newUser = userService.update(newUser);
-
+		
+		newUser.setRoles(setRoles());
+		newUser = userService.update(newUser);
+		
 		String to = person.getEmail();
 		String subject = "Jetzt ist es offiziell - " + " Herzlich willkommen in deinem Cannabis Social Club!";
 
