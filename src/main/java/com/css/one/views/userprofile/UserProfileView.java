@@ -1,5 +1,6 @@
 package com.css.one.views.userprofile;
 
+import java.io.ByteArrayInputStream;
 import java.util.Optional;
 
 import com.css.one.data.Association;
@@ -12,16 +13,22 @@ import com.css.one.services.MemberDataService;
 import com.css.one.services.PersonService;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Unit;
+import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.component.avatar.AvatarVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import com.vaadin.flow.theme.lumo.LumoUtility.JustifyContent;
 
 import jakarta.annotation.security.PermitAll;
 
@@ -57,22 +64,61 @@ public class UserProfileView extends FlexLayout {
 		mainWrapper.addClassName("profile-box");
 		setSizeFull();
 		
-		VerticalLayout headerWrapper = new VerticalLayout();
+		HorizontalLayout headerWrapper = new HorizontalLayout();
 		headerWrapper.setWidthFull();
-		headerWrapper.addClassNames(LumoUtility.JustifyContent.CENTER);
+		headerWrapper.addClassNames(LumoUtility.Margin.MEDIUM);
 		
+		HorizontalLayout avatarWrapper = new HorizontalLayout();
+		avatarWrapper.setWidthFull();
+		avatarWrapper.addClassNames(LumoUtility.Margin.Top.LARGE, LumoUtility.Margin.Bottom.LARGE, LumoUtility.Margin.Left.MEDIUM, "background-user-profile");
+		
+		Avatar userProfilAvatar = setUserAvatar();
+				
 		H2 h2General = new H2("Deine Angaben");
 		h2General.addClassName("customHeader");
-		headerWrapper.add(h2General);
 		
-		mainWrapper.add(headerWrapper, createUserDataLayout());
+		headerWrapper.add(h2General);
+		avatarWrapper.add(userProfilAvatar);
+		
+		mainWrapper.add(avatarWrapper, headerWrapper, createUserDataLayout());
 		add(mainWrapper);
+	}
+
+	private Avatar setUserAvatar() {
+		Avatar avatar = new Avatar("user-avatar");
+		StreamResource resource;
+
+		if (authenticatedUser.get().isPresent()) {
+
+			if (authenticatedUser.get().get().getProfilePicture() == null) {
+				resource = new StreamResource("logoCodeGreen.png",
+						() -> getClass().getResourceAsStream("/logoCodeGreen.png"));
+			} else {
+				resource = new StreamResource("profile-pic",
+						() -> new ByteArrayInputStream(authenticatedUser.get().get().getProfilePicture()));
+			}
+
+		} else {
+			resource = new StreamResource("profile-pic",
+					() -> new ByteArrayInputStream(authenticatedUser.get().get().getProfilePicture()));
+		}
+
+		avatar.setImageResource(resource);
+		avatar.setMinHeight(200, Unit.PIXELS);
+		avatar.setMinWidth(200, Unit.PIXELS);
+		
+		avatar.addClassNames("round-avatar");
+		
+		avatar.addThemeVariants(AvatarVariant.LUMO_LARGE);
+		avatar.getElement().setAttribute("tabindex", "-1");
+		return avatar;
 	}
 
 	private Component createUserDataLayout() {
 		
 		VerticalLayout innerWrapper = new VerticalLayout();
 		innerWrapper.setSizeFull();
+		innerWrapper.addClassNames("inner-scroll-bar");
 		innerWrapper.getStyle().set("overflow", "auto"); // Scrollbarkeit aktivieren
 
 		
@@ -83,8 +129,7 @@ public class UserProfileView extends FlexLayout {
 			Optional<Person> personById = personService.findById(associationId, user.getEntityId());
 			Optional<Association> associationById = associationService.get(Integer.toUnsignedLong(associationId));
 			
-			if (personById.isPresent() && associationById.isPresent()) {
-				
+			if (personById.isPresent() && associationById.isPresent()) {		
 
 				Person person = personById.get();
 				Association association = associationById.get();

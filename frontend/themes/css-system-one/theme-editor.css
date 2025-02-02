@@ -364,6 +364,12 @@ vaadin-grid::part(row):hover {
 	font-weight: bold;
 }
 
+vaadin-vertical-layout::-webkit-scrollbar-thumb {
+  background-color:#8ABD3E;
+  background:#8ABD3E;
+  color:#8ABD3E;
+}
+
 vaadin-grid::-webkit-scrollbar-thumb {
   background-color:#8ABD3E;
   background:#8ABD3E;
@@ -600,8 +606,6 @@ vaadin-number-field::part(label) { color:#8ABD3E; }
 
 vaadin-number-field::part(input-field) {
 	background: #f9f9f9;
-	
-	
 }
 
 vaadin-tab { font-family:'Afacad Flux',sans-serif; }
@@ -651,6 +655,12 @@ vaadin-vertical-layout.profile-box {
   padding-left:8px;
   padding-right:8px;
   padding-top:8px;
+}
+
+vaadin-vertical-layout.profile-box::-webkit-scrollbar-thumb {
+  background-color:#8ABD3E;
+  background:#8ABD3E;
+  color:#8ABD3E;
 }
 
 vaadin-vertical-layout.onboarding-model-box {

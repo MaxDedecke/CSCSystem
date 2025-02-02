@@ -5,3 +5,25 @@
   height: 100%;
   background-color: #ffffff;
 }
+
+.inner-scroll-bar::-webkit-scrollbar-thumb {
+  background-color:#8ABD3E;
+  background:#8ABD3E;
+  color:#8ABD3E;
+}
+
+.round-avatar {
+    border-radius: 50%; /* Macht den Avatar rund */
+    border: 3px solid; /* Rahmenfarbe */
+    border-color: #8ABD3E;
+    width: 50px; /* Größe anpassen */
+    height: 50px;
+    object-fit: cover; /* Stellt sicher, dass das Bild den Rahmen ausfüllt */
+    margin-right: 24px;
+}
+
+.background-user-profile {
+	justify-content: space-between;
+	margin-right: 24px;
+	padding-right: 24px;
+}
