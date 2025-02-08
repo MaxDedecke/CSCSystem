@@ -21,7 +21,7 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -46,10 +46,12 @@ public class PasswordView extends VerticalLayout implements BeforeEnterObserver 
 	private PersonService personService;
 	private PasswordResetToken passwordResetToken;
 	
-	private TextField newPasswordField = new TextField("Neues Passwort");
-	private TextField repeatePasswordField = new TextField("Neues Passwort wiederholen");
+	private PasswordField newPasswordField = new PasswordField("Neues Passwort");
+	private PasswordField repeatePasswordField = new PasswordField("Neues Passwort wiederholen");
 
 	private EmailService emailService = new EmailService();
+	
+	private Button savePasswordButton = new Button("Passwort speichern");
 	
 	public PasswordView(PasswordResetTokenService passwordResetTokenService, UserService userService, PersonService personService) {
 		
@@ -76,14 +78,15 @@ public class PasswordView extends VerticalLayout implements BeforeEnterObserver 
 		H3 header = new H3("Erstelle dein Passwort");
 		header.addClassNames("customheader");
 		
-		Button savePasswordButton = new Button("Passwort speichern");
 		savePasswordButton.addClassName("save-button");
 		
 		newPasswordField.setWidthFull();
 		newPasswordField.addClassName(LumoUtility.Margin.MEDIUM);
+		newPasswordField.setPattern("^(?=.*[0-9])(?=.*[a-zA-Z]).{8}.*$");
 		
 		repeatePasswordField.setWidthFull();
 		repeatePasswordField.addClassName(LumoUtility.Margin.MEDIUM);
+		repeatePasswordField.setPattern("^(?=.*[0-9])(?=.*[a-zA-Z]).{8}.*$");
 		
 		VerticalLayout layout = new VerticalLayout();
 		layout.add(savePasswordButton);
@@ -91,8 +94,8 @@ public class PasswordView extends VerticalLayout implements BeforeEnterObserver 
 		
 		savePasswordButton.addClickListener(e -> {
 			
-			//if both inputs are equal
-			if(newPasswordField.getValue().equals(repeatePasswordField.getValue())) {		
+			//if both inputs are equal	
+			if(validatePasswords()) {		
 				
 				//set new password
 				setNewPassword();
@@ -105,6 +108,32 @@ public class PasswordView extends VerticalLayout implements BeforeEnterObserver 
 		mainWrapper.add(header, newPasswordField, repeatePasswordField, layout);	
 		wrapper.add(mainWrapper);
 		add(wrapper);
+	}
+	
+	private boolean validatePasswords() {
+		
+		boolean isValidated = true;
+		
+		if(!newPasswordField.getValue().equals(repeatePasswordField.getValue())) {		
+			
+			repeatePasswordField.setErrorMessage("Passwörter müssen identintisch sein!");
+			
+			isValidated = false;
+		} else {			
+			repeatePasswordField.setErrorMessage("");
+		}
+		
+		if(newPasswordField.getValue().isEmpty()|| repeatePasswordField.getValue().isEmpty()) {
+			repeatePasswordField.setErrorMessage("Passwörter müssen identintisch sein!");
+
+			isValidated = false;
+
+		} else {
+			repeatePasswordField.setErrorMessage("");
+		}
+		
+
+		return isValidated;
 	}
 
 	private void setUIClossable() {

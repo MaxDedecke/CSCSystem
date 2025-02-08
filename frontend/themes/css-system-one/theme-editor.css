@@ -427,6 +427,11 @@ vaadin-combo-box-item {
   font-family:'Afacad Flux',sans-serif;		
 }
 
+vaadin-password-field {
+  font-family:'Afacad Flux',sans-serif;		
+	
+}
+
 vaadin-combo-box-item[selected] {
 	color: #8ABD3E;
 }
