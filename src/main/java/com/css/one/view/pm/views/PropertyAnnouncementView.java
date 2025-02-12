@@ -14,6 +14,9 @@ public class PropertyAnnouncementView extends FlexLayout {
 	
 	public PropertyAnnouncementView(PropertyAnnouncementService propertyAnnouncementService) {
 		this.propertyAnnouncementService = propertyAnnouncementService;
+		
+		addClassName("propertyannouncement-view");
+		
 	}
 	
 }

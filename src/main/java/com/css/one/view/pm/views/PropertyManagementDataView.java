@@ -11,6 +11,9 @@ public class PropertyManagementDataView extends FlexLayout {
 	
 	public PropertyManagementDataView(PropertyManagementDataService propertyManagementDataService) {
 		this.propertyManagementDataService = propertyManagementDataService;
+		
+		addClassName("propertymanagementdata-service");
+		
 	}
 	
 }

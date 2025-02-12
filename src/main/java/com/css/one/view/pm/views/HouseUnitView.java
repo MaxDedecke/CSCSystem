@@ -14,6 +14,8 @@ public class HouseUnitView extends FlexLayout {
 	
 	public HouseUnitView(HouseUnitService houseUnitService) {
 		this.houseUnitService = houseUnitService;
+		
+		addClassName("houseunit-view");
 	}
 
 }

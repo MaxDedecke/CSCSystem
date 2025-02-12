@@ -11,6 +11,9 @@ public class PropertyDocumentView extends FlexLayout{
 	
 	public PropertyDocumentView(PropertyDocumentService propertyDocumentService) {
 		this.propertyDocumentService = propertyDocumentService;
+		
+		addClassName("propertydocument-view");
+		
 	}
 	
 }

@@ -11,5 +11,7 @@ public class HousePartyView extends FlexLayout {
 	
 	public HousePartyView(HousePartyService housePartyService) {
 		this.housePartyService = housePartyService;
+		
+		addClassName("houseparty-view");
 	}
 }

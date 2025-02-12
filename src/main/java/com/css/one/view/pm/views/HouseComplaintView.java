@@ -22,7 +22,7 @@ public class HouseComplaintView extends FlexLayout {
 	public HouseComplaintView(HouseComplaintService houseComplaintService) {
 		this.houseComplaintService = houseComplaintService;
 		
-		
+		addClassName("housecomplaint-view");
 	}
 	
 	

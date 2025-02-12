@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 
 @Entity
 public class PropertyDocument {
@@ -17,6 +18,7 @@ public class PropertyDocument {
 	
 	private String pathToDocument;
 	
+	@ManyToMany
 	private List<HouseParty> sharedParties;
 	
 	private Long propertyManagementId;

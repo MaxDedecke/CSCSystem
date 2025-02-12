@@ -1,0 +1,8 @@
+.houseunit-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #ffffff;
+  padding-left: none;
+  margin-left: none;
+}

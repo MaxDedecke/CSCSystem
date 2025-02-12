@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 
 @Entity
 public class PropertyAppointment {
@@ -20,6 +21,7 @@ public class PropertyAppointment {
 	private LocalDateTime dateOfAppointment;
 	private String note;
 	
+	@ManyToMany
 	private List<HouseParty> invitedPeople;
 
 	public Long getId() {

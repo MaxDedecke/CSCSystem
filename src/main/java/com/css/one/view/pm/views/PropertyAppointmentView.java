@@ -11,6 +11,8 @@ public class PropertyAppointmentView extends FlexLayout{
 	
 	public PropertyAppointmentView(PropertyAppointmentService propertyAppointmentService) {
 		this.propertyAppointmentService = propertyAppointmentService;
+		
+		addClassName("propertyappointment-view");
 	}
 	
 }
