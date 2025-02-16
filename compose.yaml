@@ -7,6 +7,8 @@ services:
         env_file: ~/docker_data/postgres/postgres.env
         volumes:
             - postgres_data:/var/lib/postgresql/data/
+        networks:
+          - public
 
     adminer:
         image: adminer:latest
@@ -15,7 +17,22 @@ services:
             - postgresql
         ports:
             - 17080:8080
+        networks:
+          - public
 
+    cscs-hvs: # Property Management
+        image: cgs/cscs:latest
+        build: .
+        hostname: hvs.cscs.local
+        restart: always
+        depends_on:
+            - postgresql
+        volumes:
+            - ~/docker_data/cscs-hvs/application.properties:/application.properties
+            - cscs_hvs_data:/Data
+        networks:
+          - public
+    
     cscs-test:
         image: cgs/cscs:latest
         build: .
@@ -26,6 +43,8 @@ services:
         volumes:
             - ~/docker_data/cscs-test/application.properties:/application.properties
             - cscs_test_data:/Data
+        networks:
+          - public
 
     cscs:
         image: cgs/cscs:latest
@@ -37,6 +56,8 @@ services:
         volumes:
             - ~/docker_data/cscs/application.properties:/application.properties
             - cscs_data:/Data
+        networks:
+          - public
 
     mariadb:
         image: mariadb:latest
@@ -45,6 +66,8 @@ services:
         env_file: ~/docker_data/mariadb/mariadb.env
         volumes:
           - mariadb_data:/var/lib/mysql
+        networks:
+          - public
 
     joomla:
         image: joomla:latest
@@ -53,6 +76,8 @@ services:
         env_file: ~/docker_data/joomla/joomla.env
         volumes:
           - joomla_data:/var/www/html
+        networks:
+          - public
     
     portainer:
         image: portainer/portainer-ce:latest
@@ -61,6 +86,8 @@ services:
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
           - portainer_data:/data
+        networks:
+          - public
 
     watchtower:
         image: containrrr/watchtower:latest
@@ -101,6 +128,8 @@ services:
       volumes:
         - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile
         - caddy_data:/data
+      networks:
+        - public
 
 volumes:
     joomla_data:
@@ -110,3 +139,8 @@ volumes:
     mariadb_data:
     caddy_data:
     cscs_test_data:
+    cscs_hvs_data:
+
+networks:
+  public:
+    name: public

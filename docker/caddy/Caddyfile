@@ -21,3 +21,11 @@ cl-os.code-green-systems.de {
 test.code-green-systems.de {
     reverse_proxy http://test.cscs.local:8080
 }
+
+hvs.code-green-systems.de {
+    reverse_proxy http://hvs.cscs.local:8080
+}
+
+bitwarden.code-green-systems.de {
+    reverse_proxy http://bitwarden-nginx:8080
+}
