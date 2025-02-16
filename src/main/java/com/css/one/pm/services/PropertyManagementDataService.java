@@ -2,9 +2,12 @@ package com.css.one.pm.services;
 
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
 import com.css.one.pm.data.PropertyManagementData;
 import com.css.one.pm.data.repos.PropertyManagementDataRepository;
 
+@Service
 public class PropertyManagementDataService {
 	 private final PropertyManagementDataRepository repository;
 

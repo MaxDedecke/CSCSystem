@@ -12,10 +12,20 @@
   color:#8ABD3E;
 }
 
-.round-avatar {
+.round-avatar-green {
     border-radius: 50%; /* Macht den Avatar rund */
     border: 3px solid; /* Rahmenfarbe */
     border-color: #8ABD3E;
+    width: 50px; /* Größe anpassen */
+    height: 50px;
+    object-fit: cover; /* Stellt sicher, dass das Bild den Rahmen ausfüllt */
+    margin-right: 24px;
+}
+
+.round-avatar-blue {
+    border-radius: 50%; /* Macht den Avatar rund */
+    border: 3px solid; /* Rahmenfarbe */
+    border-color: #0080cA;
     width: 50px; /* Größe anpassen */
     height: 50px;
     object-fit: cover; /* Stellt sicher, dass das Bild den Rahmen ausfüllt */

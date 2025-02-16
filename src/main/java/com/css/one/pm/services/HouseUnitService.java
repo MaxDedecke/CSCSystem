@@ -2,9 +2,12 @@ package com.css.one.pm.services;
 
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
 import com.css.one.pm.data.HouseUnit;
 import com.css.one.pm.data.repos.HouseUnitRepository;
 
+@Service
 public class HouseUnitService {
 
 	 private final HouseUnitRepository repository;

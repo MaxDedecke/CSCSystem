@@ -2,9 +2,12 @@ package com.css.one.pm.services;
 
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
 import com.css.one.pm.data.PropertyAnnouncement;
 import com.css.one.pm.data.repos.PropertyAnnouncementRepository;
 
+@Service
 public class PropertyAnnouncementService {
 	
 	 private final PropertyAnnouncementRepository repository;

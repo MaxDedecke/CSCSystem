@@ -2,9 +2,12 @@ package com.css.one.pm.services;
 
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
 import com.css.one.pm.data.PropertyDocument;
 import com.css.one.pm.data.repos.PropertyDocumentRepository;
 
+@Service
 public class PropertyDocumentService {
 
 	 private final PropertyDocumentRepository repository;

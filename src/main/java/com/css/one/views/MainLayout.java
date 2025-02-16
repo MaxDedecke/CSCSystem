@@ -17,6 +17,12 @@ import com.css.one.security.AuthenticatedUser;
 import com.css.one.security.BusinessCase;
 import com.css.one.services.PropertyService;
 import com.css.one.view.pm.views.HouseComplaintView;
+import com.css.one.view.pm.views.HousePartyView;
+import com.css.one.view.pm.views.HouseUnitView;
+import com.css.one.view.pm.views.PropertyAnnouncementView;
+import com.css.one.view.pm.views.PropertyAppointmentView;
+import com.css.one.view.pm.views.PropertyDocumentView;
+import com.css.one.view.pm.views.PropertyManagementDataView;
 import com.css.one.views.arbeitsplanung.ArbeitsplanungView;
 import com.css.one.views.diary.DiaryView;
 import com.css.one.views.finanzen.FinanzenView;
@@ -183,6 +189,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 			
 			if(authenticatedUser.get().get().getBusinessCase() == BusinessCase.CSC) {
 				nav.addClassNames("vaadin-app-layout");
+				addClassNames("green-navbar", "green-menu-icon");
 				createNavigationForCsc();
 				
 				if (accessChecker.hasAccess(UserProfileView.class)) {
@@ -190,9 +197,10 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 							LineAwesomeIcon.USER_CIRCLE_SOLID.create()));
 					
 				}
-				addClassNames("green", "green-active", "set-green-color");
+				addClassNames("green", "green-active", "set-green-color", "green-theme-icon", "green-theme-menu-bar-overlay-frame");
 			} else {
 				//else until now can only property management
+				addClassNames("blue-navbar", "blue-menu-icon", "blue-theme-icon", "blue-theme-menu-bar-overlay-frame");
 				createNavigationForPropertyManagement();
 				addClassNames("blue", "blue-active");
 
@@ -210,11 +218,73 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     private void createNavigationForPropertyManagement() {
     	
+    	addClassName("blue-navbar");
+    	
+    	if (accessChecker.hasAccess(PropertyManagementDataView.class)) {
+			SvgIcon svgIcon = LineAwesomeIcon.EXCLAMATION_SOLID.create();
+			svgIcon.addClassName("blue");
+			SideNavItem sideNavItem =  new SideNavItem("Infocenter", PropertyManagementDataView.class,
+					svgIcon);
+			
+			sideNavItem.addClassNames("blue", "blue-icon");
+			nav.addItem(sideNavItem);			
+		}
+    	
+    	if (accessChecker.hasAccess(PropertyDocumentView.class)) {
+			SvgIcon svgIcon = LineAwesomeIcon.COPY_SOLID.create();
+			svgIcon.addClassName("blue");
+			SideNavItem sideNavItem =  new SideNavItem("Dokumente", PropertyDocumentView.class,
+					svgIcon);
+			
+			sideNavItem.addClassNames("blue", "blue-icon");
+			nav.addItem(sideNavItem);			
+		}
+    	
+    	if (accessChecker.hasAccess(PropertyAppointmentView.class)) {
+			SvgIcon svgIcon = LineAwesomeIcon.CALENDAR_ALT_SOLID.create();
+			svgIcon.addClassName("blue");
+			SideNavItem sideNavItem =  new SideNavItem("Termine", PropertyAppointmentView.class,
+					svgIcon);
+			
+			sideNavItem.addClassNames("blue", "blue-icon");
+			nav.addItem(sideNavItem);			
+		}
+    	
+    	if (accessChecker.hasAccess(PropertyAnnouncementView.class)) {
+			SvgIcon svgIcon = LineAwesomeIcon.WINDOW_RESTORE_SOLID.create();
+			svgIcon.addClassName("blue");
+			SideNavItem sideNavItem =  new SideNavItem("Schwarzes Brett", PropertyAnnouncementView.class,
+					svgIcon);
+			
+			sideNavItem.addClassNames("blue", "blue-icon");
+			nav.addItem(sideNavItem);			
+		}
+    	
+    	if (accessChecker.hasAccess(HousePartyView.class)) {
+			SvgIcon svgIcon = LineAwesomeIcon.ADDRESS_BOOK_SOLID.create();
+			svgIcon.addClassName("blue");
+			SideNavItem sideNavItem =  new SideNavItem("Parteien", HousePartyView.class,
+					svgIcon);
+			
+			sideNavItem.addClassNames("blue", "blue-icon");
+			nav.addItem(sideNavItem);			
+		}
+    	
+    	if (accessChecker.hasAccess(HouseUnitView.class)) {
+			SvgIcon svgIcon = LineAwesomeIcon.CITY_SOLID.create();
+			svgIcon.addClassName("blue");
+			SideNavItem sideNavItem =  new SideNavItem("Liegenschaften", HouseUnitView.class,
+					svgIcon);
+			
+			sideNavItem.addClassNames("blue", "blue-icon");
+			nav.addItem(sideNavItem);			
+		}
+    	
 		if (accessChecker.hasAccess(HouseComplaintView.class)) {
 			SvgIcon svgIcon = LineAwesomeIcon.EXCLAMATION_CIRCLE_SOLID.create();
 			svgIcon.addClassName("blue");
-			SideNavItem sideNavItem = new SideNavItem("Beschwerden", HouseComplaintView.class, svgIcon);
-			sideNavItem.addClassName("blue");
+			SideNavItem sideNavItem = new SideNavItem("Anträge/Beschwerden", HouseComplaintView.class, svgIcon);
+			sideNavItem.addClassNames("blue", "blue-icon");
 			
 			nav.addItem(sideNavItem);
 
@@ -226,7 +296,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 			SideNavItem sideNavItem =  new SideNavItem("Profil", UserProfileView.class,
 					svgIcon);
 			
-			sideNavItem.addClassName("blue");
+			sideNavItem.addClassNames("blue", "blue-icon");
 			nav.addItem(sideNavItem);			
 		}
 	}
@@ -390,6 +460,13 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
             div.getElement().getStyle().set("align-items", "center");
             div.getElement().getStyle().set("gap", "var(--lumo-space-s)");
             userName.add(div);
+            
+            if(maybeUser.get().getBusinessCase() == BusinessCase.CSC) {
+            	userName.addClassName("green-menu-bar-item");
+            } else {
+            	userName.addClassName("blue-menu-bar-item");
+            }
+            	
             userName.getSubMenu().addItem("Logout", e -> {
                 authenticatedUser.logout();
             });

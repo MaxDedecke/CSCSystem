@@ -168,8 +168,8 @@ vaadin-tab {
 
 .blue {
 	font-family:'Afacad Flux',sans-serif;
-	color: #0080cA;
 	font-size: medium;
+	color: black;
 }
 
 .blue::icon {
@@ -491,7 +491,9 @@ vaadin-horizontal-layout.uebersicht-view-horizontal-layout-1 {
   box-shadow:2px 2px 5px #8ABD3E;
 }
 
-vaadin-icon { color:#8ABD3E; }
+.green-theme-icon vaadin-icon { color:#8ABD3E; }
+
+.blue-theme-icon vaadin-icon { color:#0080cA; }
 
 vaadin-login-overlay-wrapper { font-family:'Afacad Flux',sans-serif; }
 
@@ -601,7 +603,9 @@ vaadin-menu-bar-overlay vaadin-menu-bar-item::part(content) { background-color:#
 
 vaadin-menu-bar-overlay vaadin-menu-bar-item:hover { font-size:large; }
 
-vaadin-menu-bar-overlay::part(overlay) { background-color:#8ABD3E; }
+.green-theme-menu-bar-overlay-frame vaadin-menu-bar-overlay::part(overlay) { background-color:#8ABD3E; }
+
+.blue-theme-menu-bar-overlay-frame vaadin-menu-bar-overlay::part(overlay) { background-color:#0080cA; }
 
 vaadin-menu-bar vaadin-menu-bar-button {
   --lumo-button-size:var(--lumo-size-m);
@@ -674,6 +678,30 @@ vaadin-vertical-layout.profile-box::-webkit-scrollbar-thumb {
   background-color:#8ABD3E;
   background:#8ABD3E;
   color:#8ABD3E;
+}
+
+vaadin-vertical-layout.profile-box-blue {
+  background:#ffffff;	
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  width: inherit;
+  height: auto;
+  box-shadow:5px 5px 5px 5px #0080cA;;
+  margin-bottom:8px;
+  margin-left:8px;
+  margin-right:8px;
+  margin-top:8px;
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:8px;
+}
+
+vaadin-vertical-layout.profile-box-blue::-webkit-scrollbar-thumb {
+  background-color:#0080cA;
+  background:#0080cA;
+  color:#0080cA;
 }
 
 vaadin-vertical-layout.onboarding-model-box {

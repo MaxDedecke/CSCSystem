@@ -26,7 +26,7 @@ public class HouseComplaintView extends FlexLayout {
 	private HouseComplaintService houseComplaintService;
 	
 	public HouseComplaintView(HouseComplaintService houseComplaintService) {
-		this.houseComplaintService = houseComplaintService;
+		this.houseComplaintService = houseComplaintService;	
 		
 		addClassName("housecomplaint-view");
 		

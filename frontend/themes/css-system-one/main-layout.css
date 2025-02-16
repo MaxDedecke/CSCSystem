@@ -80,12 +80,36 @@ vaadin-drawer-toggle {
   --lumo-border-radius: 8px;
 }
 
-vaadin-app-layout::part(navbar) {
+.blue-navbar::part(navbar) {
+  background-color: #ffffff;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #0080cA;
+  gap:var(--lumo-space-xs);
+}
+
+.green-navbar::part(navbar) {
   background-color: #ffffff;
     border-width:10px;
   border:thick;
   box-shadow:2px 2px 5px #8ABD3E;
   gap:var(--lumo-space-xs);
+}
+
+.green-menu-bar-item {
+  color: #8ABD3E;
+}
+
+.blue-menu-bar-item {
+  color: #0080cA;
+}
+
+.green-menu-icon vaadin-drawer-toggle::part(icon) {
+  color:#8ABD3E;
+}
+
+.blue-menu-icon vaadin-drawer-toggle::part(icon) {
+  color:#0080cA;
 }
 
 [slot="drawer"]:is(header, footer) {
@@ -136,6 +160,7 @@ vaadin-app-layout::part(navbar) {
 [slot="drawer"] a[active] .green-active {
     font-weight: bold;
     border-radius: 5px;
+    
 }
 
 [slot="drawer"] [current] .blue {
@@ -146,7 +171,28 @@ vaadin-app-layout::part(navbar) {
 [slot="drawer"] a[active] .blue-active {
     font-weight: bold;
     border-radius: 5px;
-    color: #0080cA;
+    font-size:x-large;
+}
+
+vaadin-side-nav > [slot="label"] .blue {
+	background-color: #ffffff;
+  --lumo-base-color: #0080cA;
+  --lumo-primary-color: #0080cA;
+  --lumo-primary-text-color: #0080cA;
+  --lumo-header-text-color: #0080cA;
+  --lumo-body-text-color: #0080cA;
+  --lumo-border-radius: 8px;
+    font-family: 'Afacad Flux', sans-serif;   
+      	font-weight: 750;
+     
+}
+
+vaadin-side-nav-item vaadin-icon .blue-icon {
+  padding: 0;
+  color: #0080cA;
+  --lumo-base-color: #0080cA;
+  --lumo-border-radius: 14px;
+    font-family: 'Afacad Flux', sans-serif; 
 }
 
 .blue::part(content)[selected] {
