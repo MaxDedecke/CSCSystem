@@ -1,6 +1,7 @@
 package com.css.one.views.login;
 
 import com.css.one.security.AuthenticatedUser;
+import com.css.one.security.BusinessCase;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Image;
@@ -66,7 +67,12 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         if (authenticatedUser.get().isPresent()) {
             // Already logged in
             setOpened(false);
-            event.forwardTo("");
+            
+            if(authenticatedUser.get().get().getBusinessCase() == BusinessCase.CSC) {            	
+            	event.forwardTo("uebersicht/");
+            } else {
+            	event.forwardTo("profil/");
+            }
         }
 
         setError(event.getLocation().getQueryParameters().getParameters().containsKey("error"));

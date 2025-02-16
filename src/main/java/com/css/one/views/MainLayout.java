@@ -36,6 +36,7 @@ import com.css.one.views.waitinglist.WaitingListView;
 import com.css.one.views.warenlager.WarenlagerView;
 import com.css.one.views.übersicht.ÜbersichtView;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -499,22 +500,39 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     
     @Override
 	public void beforeEnter(BeforeEnterEvent event) {
-		//check if url must result in different menu	
     	
-        if (event.getLocation().getSegments().contains("onboarding")) {
-            //url contaings onboarding means we only need onboarding side nav
+		// check if url must result in different menu
+		if (authenticatedUser.get().isPresent()) {
+
+			if (authenticatedUser.get().get().getBusinessCase() == BusinessCase.CSC) {
+
+				if (event.getLocation().getSegments().get(0).isBlank()) {
+					UI.getCurrent().navigate("/uebersicht");
+				}
+			} else {
+				if (event.getLocation().getSegments().get(0).isBlank()) {
+					UI.getCurrent().navigate("/profil");
+				}
+			}
+			
+		} else {
+			if (event.getLocation().getSegments().contains("onboarding")) {
+				// url contaings onboarding means we only need onboarding side nav
+
+				// add it to navigation menu
+				if (accessChecker.hasAccess(OnboardingView.class)) {
+					clearAllOtherNavigationItems(nav, sideNavItemOnboarding);
+				}
+			}
+
+			else if (event.getLocation().getSegments().contains("passwordreset")) {
+
+				if (accessChecker.hasAccess(PasswordView.class)) {
+					clearAllOtherNavigationItems(nav, sideNavItemPasswordReset);
+				}
+
+			}
         	
-            //add it to navigation menu
-            if (accessChecker.hasAccess(OnboardingView.class)) {           	
-            	clearAllOtherNavigationItems(nav, sideNavItemOnboarding);   
-            }      
-        }
-        
-        else if (event.getLocation().getSegments().contains("passwordreset")) {     
-        	
-        	if (accessChecker.hasAccess(PasswordView.class)) {        	
-        		clearAllOtherNavigationItems(nav, sideNavItemPasswordReset);
-        	}
         	
 //        if (accessChecker.hasAccess(OnboardingView.class)) {
 //        	

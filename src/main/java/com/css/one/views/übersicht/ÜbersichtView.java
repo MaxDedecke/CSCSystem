@@ -71,7 +71,7 @@ import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Übersicht")
 @Route(value = "", layout = MainLayout.class)
-@RouteAlias(value = "uebersicht/", layout = MainLayout.class)
+@RouteAlias(value = "uebersicht", layout = MainLayout.class)
 @PermitAll
 public class ÜbersichtView extends FlexLayout {
 
