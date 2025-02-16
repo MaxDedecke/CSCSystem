@@ -6,3 +6,437 @@
   padding-left: none;
   margin-left: none;
 }
+
+
+.pm-color {
+	color: #0080cA;
+}
+
+vaadin-vertical-layout.complaint-box {
+  background:#ffffff;
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #0080cA;
+  margin-bottom:8px;
+  margin-left:8px;
+  margin-top:8px;
+  padding-bottom:8px;
+  padding-bottom:none;
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:8px;
+}
+
+vaadin-text-field { font-family:'Afacad Flux',sans-serif; }
+
+vaadin-text-field.finanzen-view-text-field-1::part(label) { color:#0080cA; }
+
+vaadin-text-field::part(label) { color:#0080cA; }
+
+vaadin-text-field::part(input-field) {
+	background: #f9f9f9;
+}
+
+vaadin-vertical-layout.profile-box::-webkit-scrollbar-thumb {
+  background-color:#0080cA;
+  background:#0080cA;
+  color:#0080cA;
+}
+
+.save-button {
+  background-color: #0080cA;
+  color: white;
+}
+
+.save-button > vaadin-icon{
+  color: white;
+}
+
+.save-button[disabled] {
+  background-color: #a3a3a3;
+  color: white;
+}
+
+.save-button:hover {
+  background-color: #408080;
+  color: white;
+}
+
+vaadin-dialog-overlay::part(content) {
+	  background:white;
+}
+
+vaadin-dialog-overlay::part(title) {
+	  border:thick;
+  box-shadow:2px 2px 5px #0080cA;
+  gap:var(--lumo-space-xs);
+}
+
+vaadin-dialog-overlay::part(footer) {
+	background: white;
+	border: thick;
+	box-shadow: 2px 2px 7px 2px #0080cA;
+	gap: var(--lumo-space-xs);
+}
+
+.red {
+	background: #ffbbbb;
+}
+
+vaadin-menu-bar-overlay.main-layout-menu-bar-1 vaadin-menu-bar-item {
+  background-color:rgb(255,255,255);
+  font-family:'Afacad Flux',sans-serif;
+  font-weight:bold;
+}
+
+vaadin-menu-bar-overlay vaadin-menu-bar-button vaadin-menu-bar-item vaadin-icon { color:rgb(255,255,255); }
+
+vaadin-menu-bar-overlay vaadin-menu-bar-item {
+  background-color:#ffffff;
+  border-radius:0px;
+  color:rgba(69,37,18,1);
+  font-family:'Afacad Flux',sans-serif;
+}
+
+vaadin-menu-bar-overlay vaadin-menu-bar-item::part(content) { background-color:#ffffff; }
+
+vaadin-menu-bar-overlay vaadin-menu-bar-item:hover { font-size:large; }
+
+vaadin-menu-bar-overlay::part(overlay) { background-color:#0080cA; }
+
+vaadin-menu-bar vaadin-menu-bar-button {
+  --lumo-button-size:var(--lumo-size-m);
+  background-color:rgba(222,222,222,0);
+  border-color:#0080cA;
+  color:#0080cA;
+}
+
+vaadin-menu-bar vaadin-menu-bar-button vaadin-menu-bar-item {
+  background-color:#efefef;
+  color:#0080cA;
+}
+
+vaadin-number-field::part(label) { color:#0080cA; }
+
+vaadin-number-field::part(input-field) {
+	background: #f9f9f9;
+}
+
+vaadin-tab { font-family:'Afacad Flux',sans-serif; }
+
+
+vaadin-icon { color:#0080cA; }
+
+
+vaadin-combo-box-item[selected] {
+	color: #0080cA;
+}
+
+vaadin-combo-box-item::part(checkmark)::before {
+	color: #0080cA;
+}
+
+vaadin-combo-box[focused] {
+	color: black;
+}
+
+vaadin-combo-box[focus-ring] {
+border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #0080cA;
+    border-radius:10px;
+}
+
+vaadin-combo-box-item:hover {
+	background: #d2e7b4;
+	font-size: large;
+}
+
+vaadin-combo-box-item {
+  font-family:'Afacad Flux',sans-serif;		
+}
+
+vaadin-date-picker-overlay.waiting-list-view-date-picker-1::part(overlay) {
+  border-color:#0080cA;
+  border-radius:var(--lumo-border-radius-l);
+  font-family:'Afacad Flux',sans-serif;
+}
+
+vaadin-date-picker.waiting-list-view-date-picker-1::part(helper-text) {
+	font-family: 'Afacad Flux', sans-serif;
+	color: grey;
+}
+
+vaadin-date-picker.waiting-list-view-date-picker-1::part(label) {
+  color:#0080cA;
+  font-family:'Afacad Flux',sans-serif;
+}
+
+vaadin-date-picker.waiting-list-view-date-picker-1::part(toggle-button) {
+  color:#0080cA;
+  font-family:'Afacad Flux',sans-serif;
+}
+
+vaadin-date-picker::part(label) {
+  color:#0080cA;
+  font-family:'Afacad Flux',sans-serif;
+}
+
+vaadin-date-picker::part(toggle-button) {
+  color:#0080cA;
+  font-family:'Afacad Flux',sans-serif;
+}
+
+vaadin-date-time-picker { font-family:'Afacad Flux',sans-serif; }
+
+vaadin-grid::part(collapsed-row-cell):hover {
+	font-size: medium;
+	font-weight: bold;
+}
+
+vaadin-grid::part(collapsed-row-cell){
+	font-size: medium;
+	height: 80px;
+}
+
+vaadin-grid::part(expanded-row-cell):hover {
+	font-size: medium;
+	font-weight: bold;
+}
+
+vaadin-grid::part(expanded-row-cell) {
+	font-size: medium;
+	height: 80px;
+}
+
+vaadin-grid-tree-toggle::part(toggle) {
+	font-size: medium;
+}
+
+vaadin-grid-tree-toggle:hover {
+	font-size: medium;
+	font-weight: bold;
+}
+
+vaadin-grid-tree-toggle[expanded]:hover {
+	font-size: medium;
+}
+
+vaadin-date-time-picker.finanzen-view-date-time-picker-1::part(label) {
+  color:#0080cA;
+  font-family:'Afacad Flux',sans-serif;
+}
+
+vaadin-date-time-picker::part(label) {
+  color:#0080cA;
+  font-family:'Afacad Flux',sans-serif;
+}
+
+vaadin-details {
+  border-color:#0080cA;
+  border-width:2px;
+  font-family:'Afacad Flux',sans-serif;
+}
+
+vaadin-details-summary.diary-view-details-summary-1 { color:#0080cA; }
+
+vaadin-details.diary-view-details-summary-1 {
+  border-radius:var(--lumo-border-radius-l);
+  border-style:solid;
+  border-width:2px;
+  margin-right:12px;
+  padding-left:var(--lumo-space-xs);
+}
+
+vaadin-grid {
+  border-color:rgba(255,255,255,0.65);
+  border-radius:10px;
+  border-width:0px;
+  font-family:'Afacad Flux',sans-serif;
+  font-size: large;
+  height: 100%;
+  width: 100%;
+  display:flex;
+  flex-direction: c 	olumn;
+  background: #efefef;
+}
+
+vaadin-grid::part(row) {
+	font-size: large;
+	height: 80px;
+}
+
+vaadin-grid::part(row):hover {
+	font-size: large;
+	font-weight: bold;
+}
+
+vaadin-vertical-layout::-webkit-scrollbar-thumb {
+  background-color:#0080cA;
+  background:#0080cA;
+  color:#0080cA;
+}
+
+vaadin-grid::-webkit-scrollbar-thumb {
+  background-color:#0080cA;
+  background:#0080cA;
+  color:#0080cA;
+}
+
+vaadin-grid::part(body-cell) {
+  background-color:rgba(191,191,191,0.08);
+  color:var(--lumo-header-text-color);
+  font-family:'Afacad Flux',sans-serif;
+  font-size:var(--lumo-font-size-s);
+}
+
+vaadin-grid::part(header-cell) {
+	--lumo-font-size-s: var(--lumo-font-size-l);
+	border-bottom: none;
+	border-radius: 10px;
+	color: rgba(69, 37, 18, 1);
+	font-family: 'Afacad Flux', sans-serif;
+}
+
+vaadin-grid::part(selected-row-cell) { background-color:rgba(138,148,123,0.95); }
+
+vaadin-checkbox { font-family:'Afacad Flux',sans-serif; }
+
+vaadin-checkbox label { color:var(--lumo-body-text-color); }
+
+vaadin-checkbox::part(checkbox)::after { color:rgb(255,255,255); }
+
+vaadin-checkbox[checked]::part(checkbox) { background-color:#0080cA; }
+
+vaadin-combo-box { 
+	font-family:'Afacad Flux',sans-serif; 
+	border-bottom: medium;
+	border-bottom-color: lime;
+}
+
+vaadin-combo-box::part(input-field) {
+	background: #f9f9f9;
+}
+
+vaadin-combo-box.diary-view-combo-box-1::part(label) { color:#0080cA; }
+
+vaadin-combo-box::part(label) { color:#0080cA; }
+
+vaadin-date-picker::part(input-field) {
+	background: #f9f9f9;
+}
+
+vaadin-date-picker-overlay {
+	border-bottom-color: fuchsia;
+	
+}
+
+vaadin-date-picker-overlay-content {
+	border-bottom: medium;
+	border-bottom-color: black;
+}
+
+vaadin-date-picker-overlay vaadin-date-picker-year::part(year-number) { color:#0080cA; }
+
+vaadin-date-picker-overlay vaadin-month-calendar::part(month-header) { color:#0080cA; }
+
+vaadin-date-picker-overlay vaadin-month-calendar::part(date) { color:#0080cA; }
+
+vaadin-date-picker-overlay vaadin-month-calendar::part(weekday) {
+  color:#0080cA;
+  font-family:'Afacad Flux',sans-serif;
+  font-weight:bold;
+}
+
+vaadin-tab {
+  color: #333;  /* Farbe des Textes auf den Tabs */
+  border-radius: 5px 5px 0 0; /* Abgerundete Ecken oben am Tab */
+  font-family:'Afacad Flux',sans-serif;
+}
+
+vaadin-tab::before, vaadin-tab::after {
+	content: '';
+	position: absolute;
+	display: var(--_lumo-tab-marker-display, block);
+	bottom: 0;
+	left: 50%;
+	width: var(--lumo-size-s);
+	height: 2px;
+	background-color: #282828;
+	border-radius: var(--lumo-border-radius-s) var(--lumo-border-radius-s) 0
+		0;
+	transform: translateX(-50%) scale(0);
+	transform-origin: 50% 100%;
+	transition: 0.14s transform cubic-bezier(0.12, 0.32, 0.54, 1);
+	will-change: transform;
+}
+
+vaadin-tab[active] {
+  color: #FFFFFF;  /* Dunklere Textfarbe für bessere Lesbarkeit */
+  background-color: #cccccc;
+}
+
+vaadin-tab[selected] {
+  color:  #FFFFFF;  /* Dunklere Textfarbe für bessere Lesbarkeit */
+  background-color: #0080cA;
+  font-family:'Afacad Flux',sans-serif;
+  font-size: large;
+}
+
+vaadin-app-layout { background-color:rgb(0, 128, 64); }
+
+vaadin-app-layout.main-layout-app-layout-1 { background-color:#ffffff; }
+
+vaadin-app-layout::part(navbar) { background-color:#ffffff; }
+
+vaadin-button {
+  background-color:rgba(24,102,32,0.05);
+  border-color:rgba(0,219,61,1);
+  border-radius:var(--lumo-border-radius-l);
+  font-family:'Afacad Flux',sans-serif;
+}
+
+
+vaadin-text-area {
+	font-family:'Afacad Flux',sans-serif; 	
+}
+
+vaadin-text-area::part(label) { color:#0080cA; }
+
+vaadin-button.button-neutral {
+  background-color:transparent;
+  border-color: rgba(69,37,18,1);
+  border-radius:var(--lumo-border-radius-xl);
+  border: thick;
+  font-family:'Afacad Flux',sans-serif;
+  color: #0080cA;
+  height: 100%;
+  padding: none;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  font-size: x-large;
+}
+
+vaadin-button:hover.button-neutral {
+  background-color:transparent;
+  padding: none;
+  margin: none;
+  height: 100%;
+  border-radius:var(--lumo-border-radius-);
+  font-family:'Afacad Flux',sans-serif;
+  font-size: x-large;
+  color: #0080cA;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  border-left: none;
+  border-right: none;
+  box-shadow: 0px 2px 0px 0px #8ABD3E;
+}
+
+vaadin-button > vaadin-icon {
+	color: rgba(69,37,18,1);
+}
+

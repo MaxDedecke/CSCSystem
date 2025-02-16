@@ -1,6 +1,7 @@
 package com.css.one.data;
 
 import com.css.one.data.enums.Role;
+import com.css.one.security.BusinessCase;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.annotation.Nullable;
@@ -41,6 +42,8 @@ public class User {
     private byte[] profilePicture;
     
     private int associationId;
+    
+    private BusinessCase businessCase;
     
     public Long getId() {
 		return id;
@@ -94,5 +97,11 @@ public class User {
     public void setProfilePicture(byte[] profilePicture) {
         this.profilePicture = profilePicture;
     }
+	public BusinessCase getBusinessCase() {
+		return businessCase;
+	}
+	public void setBusinessCase(BusinessCase businessCase) {
+		this.businessCase = businessCase;
+	}
 
 }

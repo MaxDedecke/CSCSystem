@@ -15,17 +15,18 @@ import org.slf4j.LoggerFactory;
 
 import com.css.one.data.SystemVersion;
 import com.css.one.migrations.DB;
+import com.css.one.migrations.classes.AddBusinessCaseToExistingUsers;
 import com.css.one.migrations.classes.SetInitialUserRoles;
 
 public class MigrationService {
 	
 	private final Logger logger = LoggerFactory.getLogger(MigrationService.class);
 
-	private final String versionActiveString= "0.7.7";
-	private final int versionActive = 77;
+	private final String versionActiveString= "0.7.8";
+	private final int versionActive = 78;
 	
-	private final String versionInitialString= "0.7.6";
-	private final int versionInitial = 76;
+	private final String versionInitialString= "0.7.7";
+	private final int versionInitial = 77;
 	
     List<SystemVersion> versions = new ArrayList<>();
 		
@@ -316,6 +317,23 @@ public class MigrationService {
 			
 			// set is_migrated to true since all migrations where successful
 			new SetInitialUserRoles(connection);
+			
+			updateVersionIsMigrated(version, connection);
+
+			// if version is not active and also not migrated, another version must be
+			// active version
+			if (version.isActive() == true) {
+				return;
+			}
+		}
+		
+		if (version.getVersionInteger() == 78) {
+
+			// add migrations to version 0.7.7 here
+			
+			
+			// set is_migrated to true since all migrations where successful
+			new AddBusinessCaseToExistingUsers(connection);
 			
 			updateVersionIsMigrated(version, connection);
 
