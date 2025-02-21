@@ -35,6 +35,11 @@ h3.diary-view-h3-1 { font-weight:bold; }
     animation: shadowPulse 2s infinite;
 }
 
+.logo-padding {
+	border-radius: 0;
+	padding: 24px;	
+}
+
 .margin-extra-top-css {
 	margin-top: 40px;
 }

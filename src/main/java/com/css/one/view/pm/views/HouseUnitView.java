@@ -1,10 +1,12 @@
 package com.css.one.view.pm.views;
 
 import com.css.one.pm.services.HouseUnitService;
+import com.css.one.security.AuthenticatedUser;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -24,9 +26,11 @@ public class HouseUnitView extends FlexLayout {
 	private static final long serialVersionUID = 5326082228917237685L;
 	
 	private HouseUnitService houseUnitService;
+	private AuthenticatedUser authenticatedUser;
 	
-	public HouseUnitView(HouseUnitService houseUnitService) {
+	public HouseUnitView(HouseUnitService houseUnitService, AuthenticatedUser authenticatedUser) {
 		this.houseUnitService = houseUnitService;
+		this.authenticatedUser = authenticatedUser;
 		
 		addClassName("houseunit-view");
 		
@@ -41,16 +45,17 @@ public class HouseUnitView extends FlexLayout {
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setHeight("100%");
 		mainLayout.setWidthFull();
-		mainLayout.addClassName(LumoUtility.JustifyContent.CENTER);
-		H1 help = new H1("Work in progress.");
+		mainLayout.addClassName(LumoUtility.AlignItems.CENTER);
+		H1 help = new H1("Work in progress");
 
-		StreamResource imageResource = new StreamResource("potteriepng.png",
-				() -> getClass().getResourceAsStream("/potteriepng.png"));
+		StreamResource imageResource = new StreamResource("Mousepad.jpeg",
+				() -> getClass().getResourceAsStream("/Mousepad.jpeg"));
 
-		Avatar avatar = new Avatar("logo_club");
-		avatar.setImageResource(imageResource);
-		avatar.setHeight(250, Unit.PIXELS);
-	    avatar.setWidth(250, Unit.PIXELS);
+		Image avatar = new Image(imageResource,"logo_club");
+		
+		avatar.setWidth(800, Unit.PIXELS);
+		avatar.setHeight(600, Unit.PIXELS);
+		avatar.addClassName("logo-padding");
 		
 		mainLayout.add(avatar, help);
 		mainWrapper.add(mainLayout);

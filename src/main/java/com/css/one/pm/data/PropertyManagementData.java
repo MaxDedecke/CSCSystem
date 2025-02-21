@@ -13,8 +13,6 @@ public class PropertyManagementData {
     @GeneratedValue(strategy = GenerationType.AUTO)
  	private Long id;
 	
-	private Long propertyManagementId;
-	
 	private String streetName;
 	private int postalCode;
 	private String houseNumbers;
@@ -28,12 +26,6 @@ public class PropertyManagementData {
 	}
 	public void setId(Long id) {
 		this.id = id;
-	}
-	public Long getPropertyManagementId() {
-		return propertyManagementId;
-	}
-	public void setPropertyManagementId(Long propertyManagementId) {
-		this.propertyManagementId = propertyManagementId;
 	}
 	public String getStreetName() {
 		return streetName;

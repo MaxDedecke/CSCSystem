@@ -32,6 +32,6 @@ public class PropertyManagementDataService {
 	    }
 	    
 	    public Optional<PropertyManagementData> findAllByPropertyManagementId(Long propertyManagementId) { 
-	    	return repository.findAll().stream().filter(e -> e.getPropertyManagementId().equals(propertyManagementId)).findAny();
+	    	return repository.findAll().stream().filter(e -> e.getId().equals(propertyManagementId)).findAny();
 	    }
 }

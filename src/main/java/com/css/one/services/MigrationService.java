@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.css.one.data.SystemVersion;
+import com.css.one.migrations.AddFirstPropertyManagementMigration;
 import com.css.one.migrations.DB;
 import com.css.one.migrations.classes.AddBusinessCaseToExistingUsers;
 import com.css.one.migrations.classes.SetInitialUserRoles;
@@ -22,11 +23,11 @@ public class MigrationService {
 	
 	private final Logger logger = LoggerFactory.getLogger(MigrationService.class);
 
-	private final String versionActiveString= "0.7.8";
-	private final int versionActive = 78;
+	private final String versionActiveString= "0.7.9";
+	private final int versionActive = 79;
 	
-	private final String versionInitialString= "0.7.7";
-	private final int versionInitial = 77;
+	private final String versionInitialString= "0.7.8";
+	private final int versionInitial = 78;
 	
     List<SystemVersion> versions = new ArrayList<>();
 		
@@ -329,10 +330,7 @@ public class MigrationService {
 		
 		if (version.getVersionInteger() == 78) {
 
-			// add migrations to version 0.7.7 here
-			
-			
-			// set is_migrated to true since all migrations where successful
+			// add migrations to version 0.7.8 here
 			new AddBusinessCaseToExistingUsers(connection);
 			
 			updateVersionIsMigrated(version, connection);
@@ -344,6 +342,19 @@ public class MigrationService {
 			}
 		}
 		
+		if (version.getVersionInteger() == 79) {			
+			
+			// add migrations to version 0.7.9 here
+			new AddFirstPropertyManagementMigration(connection);
+			
+			updateVersionIsMigrated(version, connection);
+
+			// if version is not active and also not migrated, another version must be
+			// active version
+			if (version.isActive() == true) {
+				return;
+			}
+		}
 		
 		//
 		//Migrations of 1.X - first productive stage

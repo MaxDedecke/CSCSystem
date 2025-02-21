@@ -77,6 +77,8 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     private AccessAnnotationChecker accessChecker;
         
     static int associationId; 
+    static int propertyManagementId;
+    
     static Set<Role> currentUserRoles;
     
     private SideNav nav = new SideNav();
@@ -195,9 +197,9 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 				
 				if (accessChecker.hasAccess(UserProfileView.class)) {
 					nav.addItem( new SideNavItem("Profil", UserProfileView.class,
-							LineAwesomeIcon.USER_CIRCLE_SOLID.create()));
-					
+							LineAwesomeIcon.USER_CIRCLE_SOLID.create()));					
 				}
+				
 				addClassNames("green", "green-active", "set-green-color", "green-theme-icon", "green-theme-menu-bar-overlay-frame");
 			} else {
 				//else until now can only property management
@@ -284,7 +286,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 		if (accessChecker.hasAccess(HouseComplaintView.class)) {
 			SvgIcon svgIcon = LineAwesomeIcon.EXCLAMATION_CIRCLE_SOLID.create();
 			svgIcon.addClassName("blue");
-			SideNavItem sideNavItem = new SideNavItem("Anträge/Beschwerden", HouseComplaintView.class, svgIcon);
+			SideNavItem sideNavItem = new SideNavItem("Anfragen/Anträge", HouseComplaintView.class, svgIcon);
 			sideNavItem.addClassNames("blue", "blue-icon");
 			
 			nav.addItem(sideNavItem);
@@ -298,7 +300,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 					svgIcon);
 			
 			sideNavItem.addClassNames("blue", "blue-icon");
-			nav.addItem(sideNavItem);			
+			nav.addItem(sideNavItem);				
 		}
 	}
 
@@ -429,8 +431,13 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
             
-            associationId = user.getAssociationId();
-                        
+			if (user.getBusinessCase() == BusinessCase.CSC) {
+				associationId = user.getAssociationId();
+
+			} else {
+				propertyManagementId = user.getAssociationId();
+			}
+            
             Avatar avatar = new Avatar(user.getName());
     
             StreamResource resource;
@@ -510,8 +517,10 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 					UI.getCurrent().navigate("/uebersicht");
 				}
 			} else {
+				//event.forwardTo("profil/");
 				if (event.getLocation().getSegments().get(0).isBlank()) {
-					UI.getCurrent().navigate("/profil");
+					UI.getCurrent().navigate("profil/");
+					event.forwardTo("profil/");
 				}
 			}
 			
