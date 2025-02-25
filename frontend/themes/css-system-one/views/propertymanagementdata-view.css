@@ -3,26 +3,27 @@
   flex-direction: column;
   height: 100%;
   background-color: #ffffff;
-  padding-left: none;
-  margin-left: none;
+  margin:none;
+  padding: none;
 }
 
 
-.propertymanagementdata-view  vaadin-vertical-layout.complaint-box {
+.complaint-box {
   background:#ffffff;
   border-color:#000000;
   border-radius:10px;
   border-width:10px;
   border:thick;
   box-shadow:2px 2px 5px #0080cA;
-  margin-bottom:8px;
-  margin-left:8px;
-  margin-top:8px;
   padding-bottom:8px;
   padding-bottom:none;
   padding-left:8px;
   padding-right:8px;
   padding-top:8px;
+}
+
+.custom-margin-top-edit-icon {
+	margin-top: 14px;
 }
 
 .propertymanagementdata-view  vaadin-text-field { font-family:'Afacad Flux',sans-serif; }

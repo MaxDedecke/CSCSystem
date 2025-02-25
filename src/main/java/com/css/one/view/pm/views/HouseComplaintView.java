@@ -4,7 +4,6 @@ import com.css.one.pm.services.HouseComplaintService;
 import com.css.one.security.AuthenticatedUser;
 import com.css.one.views.MainLayout;
 import com.vaadin.flow.component.Unit;
-import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
@@ -38,14 +37,15 @@ public class HouseComplaintView extends FlexLayout {
 	}
 
 	private void createMainLayout() {
-		// TODO
+		
 		VerticalLayout mainWrapper = new VerticalLayout();
 		mainWrapper.addClassNames("complaint-box");
 		
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setHeight("100%");
 		mainLayout.setWidthFull();
-		mainLayout.addClassName(LumoUtility.AlignItems.CENTER);
+		mainLayout.addClassNames(LumoUtility.AlignItems.CENTER, LumoUtility.Padding.MEDIUM);
+		
 		H1 help = new H1("Work in progress");
 
 		StreamResource imageResource = new StreamResource("Mousepad.jpeg",

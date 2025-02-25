@@ -1,13 +1,19 @@
 package com.css.one.view.pm.views;
 
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
 import com.css.one.pm.services.PropertyDocumentService;
 import com.css.one.security.AuthenticatedUser;
 import com.css.one.views.MainLayout;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -40,25 +46,69 @@ public class PropertyDocumentView extends FlexLayout{
 	private void createMainLayout() {
 		// TODO
 		VerticalLayout mainWrapper = new VerticalLayout();
-		mainWrapper.addClassNames("complaint-box");
 		
 		VerticalLayout mainLayout = new VerticalLayout();
+		mainLayout.addClassNames("complaint-box", LumoUtility.Padding.NONE, LumoUtility.Margin.NONE);
+		
 		mainLayout.setHeight("100%");
 		mainLayout.setWidthFull();
 		mainLayout.addClassName(LumoUtility.AlignItems.CENTER);
 		H1 help = new H1("Work in progress");
 
-		StreamResource imageResource = new StreamResource("Mousepad.jpeg",
-				() -> getClass().getResourceAsStream("/Mousepad.jpeg"));
-
-		Image avatar = new Image(imageResource,"logo_club");
-		
-		avatar.setWidth(800, Unit.PIXELS);
-		avatar.setHeight(600, Unit.PIXELS);
-		avatar.addClassName("logo-padding");
-		
-		mainLayout.add(avatar, help);
-		mainWrapper.add(mainLayout);
+		mainLayout.add(help);
+		mainWrapper.add(createButtonAndInfoComponent(), mainLayout);
 		add(mainWrapper);
+	}
+	
+	private Component createButtonAndInfoComponent() {
+		HorizontalLayout wrapper = new HorizontalLayout();
+		wrapper.setWidthFull();
+		wrapper.addClassNames("header-bar-custom-blue");
+
+		Button buttonAddPerson = new Button("Dokument hochladen");
+		buttonAddPerson.setIcon(LineAwesomeIcon.UPLOAD_SOLID.create());
+		buttonAddPerson.addClassName("button-neutral");
+
+		buttonAddPerson.addClickListener(e -> {
+//			headerPersonInfo.setText("Person hinzufügen");
+//			this.waitingPerson = null;
+//			personInfoDialog.open();
+		});
+
+		FlexLayout flexWrapper = new FlexLayout();
+		flexWrapper.addClassNames(LumoUtility.AlignItems.END);
+		flexWrapper.setWidthFull();
+
+		VerticalLayout secondWrapper = new VerticalLayout();
+		secondWrapper.addClassNames(LumoUtility.JustifyContent.END, LumoUtility.AlignContent.END);
+		secondWrapper.setSpacing(false);
+		secondWrapper.setPadding(false);
+
+		VerticalLayout innerWrapper = new VerticalLayout();
+		innerWrapper.addClassNames(LumoUtility.Border.LEFT, LumoUtility.BorderRadius.NONE, "padding-extra-top");
+		innerWrapper.setSpacing(false);
+		innerWrapper.setPadding(false);
+
+		HorizontalLayout bottomLayout = new HorizontalLayout();
+		bottomLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Left.MEDIUM, LumoUtility.Margin.NONE);
+//		memberCount = new H3("Statistik");
+//		memberCount.addClassNames("header-statistics", "no-extra-space");
+//		bottomLayout.add(memberCount);
+
+		HorizontalLayout statisticsLayout = new HorizontalLayout();
+		statisticsLayout.addClassNames(LumoUtility.Padding.NONE, LumoUtility.Padding.Left.MEDIUM,
+				LumoUtility.Margin.NONE, "header-statistics-item");
+//		memberCountNumber = new H3(
+//				"Wartendene Personen: " + waitingPersonService.findAllByAssociation(associationId).size());
+//		memberCountNumber.addClassName("no-extra-space");
+//		statisticsLayout.add(memberCountNumber);
+
+		innerWrapper.add(bottomLayout, statisticsLayout);
+		flexWrapper.add(secondWrapper, innerWrapper);
+
+		wrapper.add(buttonAddPerson, flexWrapper);
+		flexWrapper.setFlexGrow(3, secondWrapper);
+		flexWrapper.setFlexGrow(2, innerWrapper);
+		return wrapper;
 	}
 }

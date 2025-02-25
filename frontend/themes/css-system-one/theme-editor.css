@@ -19,6 +19,12 @@ h3.diary-view-h3-1 { font-weight:bold; }
 	  font-family:'Afacad Flux', sans-serif;
 }
 
+@media (max-width: 600px) {
+    .responsive-layout {
+        flex-direction: column !important;
+    }
+}
+
 @keyframes shadowPulse {
     0% {
         box-shadow: 0 4px 8px #5918ab;
@@ -165,6 +171,19 @@ vaadin-horizontal-layout.header-bar-custom {
   margin-top: 8px;
 }
 
+vaadin-horizontal-layout.header-bar-custom-blue {
+  background:#ffffff;
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #0080cA;
+  min-height: 72px;
+  padding: none;
+  margin: none;
+  margin-top: 8px;
+}
+
 vaadin-tab {
   color: #333;  /* Farbe des Textes auf den Tabs */
   border-radius: 5px 5px 0 0; /* Abgerundete Ecken oben am Tab */
@@ -305,6 +324,30 @@ vaadin-grid::part(collapsed-row-cell):hover {
 vaadin-grid::part(collapsed-row-cell){
 	font-size: medium;
 	height: 80px;
+}
+
+.icon-edit {
+	width: 28px;
+	height: 28px;
+	padding: 2px;
+}
+
+.icon-edit:hover {
+	box-shadow: 2px 2px 2px 2px #8ABD3E;
+	border-radius: 12px;
+	margin-bottom: none;
+}
+
+.icon-edit-blue {
+	width: 28px;
+	height: 28px;
+	padding: 2px;
+}
+
+.icon-edit-blue:hover {
+	box-shadow: 2px 2px 2px 2px #0080cA;
+	border-radius: 12px;
+	margin-bottom: none;
 }
 
 vaadin-grid::part(expanded-row-cell):hover {
