@@ -19,6 +19,12 @@ h3.diary-view-h3-1 { font-weight:bold; }
 	  font-family:'Afacad Flux', sans-serif;
 }
 
+@media (max-width: 600px) {
+    .responsive-layout {
+        flex-direction: column !important;
+    }
+}
+
 @keyframes shadowPulse {
     0% {
         box-shadow: 0 4px 8px #5918ab;
@@ -33,6 +39,11 @@ h3.diary-view-h3-1 { font-weight:bold; }
 
 .pulsing-shadow {
     animation: shadowPulse 2s infinite;
+}
+
+.logo-padding {
+	border-radius: 0;
+	padding: 24px;	
 }
 
 .margin-extra-top-css {
@@ -87,8 +98,6 @@ header-statistics-item {
 	margin-bottom: 24px;
 	padding-bottom: 24px;
 }
-
-
 
 vaadin-app-layout { background-color:rgb(0, 128, 64); }
 
@@ -162,10 +171,35 @@ vaadin-horizontal-layout.header-bar-custom {
   margin-top: 8px;
 }
 
+vaadin-horizontal-layout.header-bar-custom-blue {
+  background:#ffffff;
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  box-shadow:2px 2px 5px #0080cA;
+  min-height: 72px;
+  padding: none;
+  margin: none;
+  margin-top: 8px;
+}
+
 vaadin-tab {
   color: #333;  /* Farbe des Textes auf den Tabs */
   border-radius: 5px 5px 0 0; /* Abgerundete Ecken oben am Tab */
   font-family:'Afacad Flux',sans-serif;
+}
+
+.blue {
+	font-family:'Afacad Flux',sans-serif;
+	font-size: medium;
+	color: black;
+}
+
+.blue::icon {
+	font-family:'Afacad Flux',sans-serif;
+	color: #0080cA;
+	font-size: x-large;
 }
 
 vaadin-tab::before, vaadin-tab::after {
@@ -290,6 +324,30 @@ vaadin-grid::part(collapsed-row-cell):hover {
 vaadin-grid::part(collapsed-row-cell){
 	font-size: medium;
 	height: 80px;
+}
+
+.icon-edit {
+	width: 28px;
+	height: 28px;
+	padding: 2px;
+}
+
+.icon-edit:hover {
+	box-shadow: 2px 2px 2px 2px #8ABD3E;
+	border-radius: 12px;
+	margin-bottom: none;
+}
+
+.icon-edit-blue {
+	width: 28px;
+	height: 28px;
+	padding: 2px;
+}
+
+.icon-edit-blue:hover {
+	box-shadow: 2px 2px 2px 2px #0080cA;
+	border-radius: 12px;
+	margin-bottom: none;
 }
 
 vaadin-grid::part(expanded-row-cell):hover {
@@ -481,7 +539,9 @@ vaadin-horizontal-layout.uebersicht-view-horizontal-layout-1 {
   box-shadow:2px 2px 5px #8ABD3E;
 }
 
-vaadin-icon { color:#8ABD3E; }
+.green-theme-icon vaadin-icon { color:#8ABD3E; }
+
+.blue-theme-icon vaadin-icon { color:#0080cA; }
 
 vaadin-login-overlay-wrapper { font-family:'Afacad Flux',sans-serif; }
 
@@ -578,8 +638,6 @@ vaadin-menu-bar-overlay.main-layout-menu-bar-1 vaadin-menu-bar-item {
   font-weight:bold;
 }
 
-vaadin-menu-bar-overlay::part(overlay) { background-color:rgba(247,11,11,1); }
-
 vaadin-menu-bar-overlay vaadin-menu-bar-button vaadin-menu-bar-item vaadin-icon { color:rgb(255,255,255); }
 
 vaadin-menu-bar-overlay vaadin-menu-bar-item {
@@ -593,7 +651,9 @@ vaadin-menu-bar-overlay vaadin-menu-bar-item::part(content) { background-color:#
 
 vaadin-menu-bar-overlay vaadin-menu-bar-item:hover { font-size:large; }
 
-vaadin-menu-bar-overlay::part(overlay) { background-color:#8ABD3E; }
+.green-theme-menu-bar-overlay-frame vaadin-menu-bar-overlay::part(overlay) { background-color:#8ABD3E; }
+
+.blue-theme-menu-bar-overlay-frame vaadin-menu-bar-overlay::part(overlay) { background-color:#0080cA; }
 
 vaadin-menu-bar vaadin-menu-bar-button {
   --lumo-button-size:var(--lumo-size-m);
@@ -666,6 +726,30 @@ vaadin-vertical-layout.profile-box::-webkit-scrollbar-thumb {
   background-color:#8ABD3E;
   background:#8ABD3E;
   color:#8ABD3E;
+}
+
+vaadin-vertical-layout.profile-box-blue {
+  background:#ffffff;	
+  border-color:#000000;
+  border-radius:10px;
+  border-width:10px;
+  border:thick;
+  width: inherit;
+  height: auto;
+  box-shadow:5px 5px 5px 5px #0080cA;
+  margin-bottom:8px;
+  margin-left:8px;
+  margin-right:8px;
+  margin-top:8px;
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:8px;
+}
+
+vaadin-vertical-layout.profile-box-blue::-webkit-scrollbar-thumb {
+  background-color:#0080cA;
+  background:#0080cA;
+  color:#0080cA;
 }
 
 vaadin-vertical-layout.onboarding-model-box {

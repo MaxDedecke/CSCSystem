@@ -15,3 +15,10 @@
 @import url('./views/onboarding-view.css');
 @import url('./views/password-view.css');
 @import url('./views/userprofile-view.css');
+@import url('./views/housecomplaint-view.css');
+@import url('./views/propertymanagementdata-view.css');
+@import url('./views/propertydocument-view.css');
+@import url('./views/propertyappointment-view.css');
+@import url('./views/propertyannouncement-view.css');
+@import url('./views/houseparty-view.css');
+@import url('./views/houseunit-view.css');

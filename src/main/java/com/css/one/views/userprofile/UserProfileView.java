@@ -8,6 +8,7 @@ import com.css.one.data.MemberData;
 import com.css.one.data.Person;
 import com.css.one.data.User;
 import com.css.one.security.AuthenticatedUser;
+import com.css.one.security.BusinessCase;
 import com.css.one.services.AssociationService;
 import com.css.one.services.MemberDataService;
 import com.css.one.services.PersonService;
@@ -60,7 +61,12 @@ public class UserProfileView extends FlexLayout {
 	
 	private void createUserDetailsLayout() {
 		VerticalLayout mainWrapper = new VerticalLayout();
-		mainWrapper.addClassName("profile-box");
+		
+		if(authenticatedUser.get().get().getBusinessCase() == BusinessCase.CSC) {			
+			mainWrapper.addClassName("profile-box");
+		} else {
+			mainWrapper.addClassName("profile-box-blue");
+		}
 		setSizeFull();
 		
 		HorizontalLayout headerWrapper = new HorizontalLayout();
@@ -106,7 +112,11 @@ public class UserProfileView extends FlexLayout {
 		avatar.setMinHeight(200, Unit.PIXELS);
 		avatar.setMinWidth(200, Unit.PIXELS);
 		
-		avatar.addClassNames("round-avatar");
+		if(authenticatedUser.get().get().getBusinessCase() == BusinessCase.CSC) {
+			avatar.addClassNames("round-avatar-green");
+		} else {
+			avatar.addClassNames("round-avatar-blue");			
+		}
 		
 		avatar.addThemeVariants(AvatarVariant.LUMO_LARGE);
 		avatar.getElement().setAttribute("tabindex", "-1");
