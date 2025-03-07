@@ -47,6 +47,7 @@ public class HouseComplaintView extends FlexLayout {
 		mainLayout.addClassNames(LumoUtility.AlignItems.CENTER, LumoUtility.Padding.MEDIUM);
 		
 		H1 help = new H1("Work in progress");
+		
 
 		StreamResource imageResource = new StreamResource("Mousepad.jpeg",
 				() -> getClass().getResourceAsStream("/Mousepad.jpeg"));
